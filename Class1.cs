@@ -8,5 +8,6 @@ namespace Linq2Azure
 {
     public class Class1
     {
+        public void Foo() { }
     }
 }
