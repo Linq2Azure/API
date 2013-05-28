@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Linq2Azure", "Linq2Azure.csproj", "{A0F88280-078F-4E05-9A63-5D09DA1936AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LINQPadDriver", "LINQPadDriver\LINQPadDriver.csproj", "{67F412BD-9398-41BB-A059-722DD1D6CCCA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{16E307A2-365E-4946-BC5A-9D68A16EBE64}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +17,14 @@ Global
 		{A0F88280-078F-4E05-9A63-5D09DA1936AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0F88280-078F-4E05-9A63-5D09DA1936AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0F88280-078F-4E05-9A63-5D09DA1936AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67F412BD-9398-41BB-A059-722DD1D6CCCA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67F412BD-9398-41BB-A059-722DD1D6CCCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67F412BD-9398-41BB-A059-722DD1D6CCCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67F412BD-9398-41BB-A059-722DD1D6CCCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

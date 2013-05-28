@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Linq2Azure
+namespace LINQPadDriver
 {
     public class Class1
     {
-        public void Foo() { }
     }
 }

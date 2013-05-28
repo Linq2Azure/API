@@ -1,0 +1,18 @@
+﻿SCOPE
+
+Phase 1
+
+Manage follownig services:
+- Cloud Services
+  - Deployments
+    - Instances [crud operations, update config, VIP swap]
+- SQL Databases
+  - Servers [change admin password and configure firewall]
+    - Databases [change database type and size]
+		- GeoDr (Linq2AzureEx?)
+- Networks
+	- Traffic Manager [crud]
+
+Phase 2
+
+- Storage accounts [manage keys and configure]
