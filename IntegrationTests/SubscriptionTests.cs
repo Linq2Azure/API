@@ -13,7 +13,7 @@ namespace IntegrationTests
         public void CanLoadFromPublisherSettingsFile()
         {
             Assert.IsTrue(!string.IsNullOrEmpty(TestConstants.Subscription.SubscriptionName));
-            Assert.IsTrue(TestConstants.Subscription.SubscriptionId != Guid.Empty);
+            Assert.IsTrue(TestConstants.Subscription.SubscriptionID != Guid.Empty);
             Assert.IsNotNull(TestConstants.Subscription.ManagementCertificate);
         }
 

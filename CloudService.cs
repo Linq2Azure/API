@@ -17,52 +17,6 @@ namespace Linq2Azure
 {
     public class CloudService
     {
-        static async Task Throw(HttpResponseMessage response)
-        {
-            string responseString = null;
-            try { responseString = await response.Content.ReadAsStringAsync(); }
-            catch { }
-
-            string code = null, message = null;
-
-            if (!string.IsNullOrWhiteSpace(responseString))
-            {
-                var ns = Constants.AzureXmlNamespace;
-                var errorElement = XElement.Parse(responseString);
-                code = (string)errorElement.Element(ns + "Code");
-                message = (string)errorElement.Element(ns + "Message");
-            }
-
-            if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(message))
-                throw new InvalidOperationException("Error: " + response.StatusCode);
-            else
-                throw new InvalidOperationException(string.Join(" - ", new[] { code, message }));
-        }
-
-        internal static CloudService Load(XElement element, Subscription subscription)
-        {
-            Contract.Requires(element != null);
-            Contract.Requires(subscription != null);
-
-            var cs = new CloudService { Subscription = subscription };
-            XNamespace ns = Constants.AzureXmlNamespace;
-
-            cs.Url = new Uri((string)element.Element(ns + "Url"));
-            cs.ServiceName = (string)element.Element(ns + "ServiceName");
-
-            var properties = element.Element(ns + "HostedServiceProperties");
-            cs.Description = (string)properties.Element(ns + "Description");
-            cs.AffinityGroup = (string)properties.Element(ns + "AffinityGroup");
-            cs.Label = ((string)properties.Element(ns + "Label")).FromBase64String();
-            cs.Status = (string)properties.Element(ns + "Status");
-            cs.DateCreated = (DateTime)properties.Element(ns + "DateCreated");
-            cs.DateLastModified = (DateTime)properties.Element(ns + "DateLastModified");
-            cs.Location = (string)properties.Element(ns + "Location");
-            cs.ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements().ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
-
-            return cs;
-        }
-
         public Subscription Subscription { get; private set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
         public DateTime DateLastModified { get; private set; }
@@ -80,7 +34,29 @@ namespace Linq2Azure
             ExtendedProperties = new Dictionary<string, string>();
         }
 
-        public async Task Create(Subscription subscription)
+        internal CloudService (XElement element, Subscription subscription) : this()
+        {
+            Contract.Requires(element != null);
+            Contract.Requires(subscription != null);
+
+            Subscription = subscription;
+            XNamespace ns = XmlNamespaces.Base;
+
+            Url = new Uri((string)element.Element(ns + "Url"));
+            ServiceName = (string)element.Element(ns + "ServiceName");
+
+            var properties = element.Element(ns + "HostedServiceProperties");
+            Description = (string)properties.Element(ns + "Description");
+            AffinityGroup = (string)properties.Element(ns + "AffinityGroup");
+            Label = ((string)properties.Element(ns + "Label")).FromBase64String();
+            Status = (string)properties.Element(ns + "Status");
+            DateCreated = (DateTime)properties.Element(ns + "DateCreated");
+            DateLastModified = (DateTime)properties.Element(ns + "DateLastModified");
+            Location = (string)properties.Element(ns + "Location");
+            ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements().ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
+        }
+
+        public async Task CreateAsync(Subscription subscription)
         {
             Contract.Requires(Subscription == null);
             Contract.Requires(subscription != null);
@@ -90,7 +66,7 @@ namespace Linq2Azure
             Contract.Requires(AffinityGroup == null || AffinityGroup.Trim().Length > 0);
             Contract.Requires((Location == null) != (AffinityGroup == null));
 
-            var ns = Constants.AzureXmlNamespace;
+            var ns = XmlNamespaces.Base;
 
             var content = new XElement(ns + "CreateHostedService",
                 new XElement(ns + "ServiceName", ServiceName),
@@ -105,21 +81,16 @@ namespace Linq2Azure
                             new XElement(ns + "Value", kv.Value))))
                             );
 
-            var hc = subscription.GetHttpClient();
-            var payload = new StringContent(content.ToString());
-            payload.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
-            var response = await hc.PostAsync("", payload);
-            if (response.StatusCode != HttpStatusCode.Created) await Throw(response);
+            var hc = subscription.GetRestClient("hostedservices");
+            await hc.PostAsync(content);
             Subscription = subscription;
         }
 
-        public async Task Delete()
+        public async Task DeleteAsync()
         {
             Contract.Requires(Subscription != null);
-            var hc = Subscription.GetHttpClient(ServiceName);
-            
-            var response = await hc.DeleteAsync ("");            
-            if (response.StatusCode != HttpStatusCode.OK) await Throw(response);
+            var hc = Subscription.GetRestClient("hostedservices/" + ServiceName);
+            await hc.DeleteAsync();
             Subscription = null;
         }
 
@@ -138,7 +109,7 @@ namespace Linq2Azure
 
                 // Create the request.
                 requestUri = new Uri("https://management.core.windows.net/"
-                                     + Subscription.SubscriptionId
+                                     + Subscription.SubscriptionID
                                      + "/services/"
                                      + operation + "/"
                                      + ServiceName
@@ -176,12 +147,11 @@ namespace Linq2Azure
                     }
 
                     var xdocument = XDocument.Parse(xmlResponse);
-                    return xdocument.Descendants(Constants.AzureXmlNamespace + "Deployment")
-                        .Select(x => Deployment.Load(x, this));
+                    return xdocument.Descendants(XmlNamespaces.Base + "Deployment")
+                        .Select(x => new Deployment(x, this));
                 });
             }
         }
-
 
     }
 }

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LINQPadDriver", "LINQPadDri
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{16E307A2-365E-4946-BC5A-9D68A16EBE64}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{404DB523-9C4D-41E6-86C2-E792359BEFFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{16E307A2-365E-4946-BC5A-9D68A16EBE64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
