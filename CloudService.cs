@@ -39,8 +39,6 @@ namespace Linq2Azure
                 throw new InvalidOperationException(string.Join(" - ", new[] { code, message }));
         }
 
-        public Subscription Subscription { get; private set; }
-
         internal static CloudService Load(XElement element, Subscription subscription)
         {
             Contract.Requires(element != null);
@@ -55,7 +53,7 @@ namespace Linq2Azure
             var properties = element.Element(ns + "HostedServiceProperties");
             cs.Description = (string)properties.Element(ns + "Description");
             cs.AffinityGroup = (string)properties.Element(ns + "AffinityGroup");
-            cs.Label = Encoding.UTF8.GetString (Convert.FromBase64String ((string)properties.Element(ns + "Label")));
+            cs.Label = ((string)properties.Element(ns + "Label")).FromBase64String();
             cs.Status = (string)properties.Element(ns + "Status");
             cs.DateCreated = (DateTime)properties.Element(ns + "DateCreated");
             cs.DateLastModified = (DateTime)properties.Element(ns + "DateLastModified");
@@ -65,6 +63,7 @@ namespace Linq2Azure
             return cs;
         }
 
+        public Subscription Subscription { get; private set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
         public DateTime DateLastModified { get; private set; }
         public DateTime DateCreated { get; private set; }
@@ -95,7 +94,7 @@ namespace Linq2Azure
 
             var content = new XElement(ns + "CreateHostedService",
                 new XElement(ns + "ServiceName", ServiceName),
-                new XElement(ns + "Label", Convert.ToBase64String(Encoding.UTF8.GetBytes(Label))),
+                new XElement(ns + "Label", Label.ToBase64String()),
                 string.IsNullOrWhiteSpace(Description) ? null : new XElement(ns + "Description", Description),
                 string.IsNullOrWhiteSpace(Location) ? null : new XElement(ns + "Location", Location),
                 string.IsNullOrWhiteSpace(AffinityGroup) ? null : new XElement(ns + "AffinityGroup", AffinityGroup),
@@ -178,7 +177,7 @@ namespace Linq2Azure
 
                     var xdocument = XDocument.Parse(xmlResponse);
                     return xdocument.Descendants(Constants.AzureXmlNamespace + "Deployment")
-                        .Select(x => Deployment.LoadAttached(x, Subscription, this));
+                        .Select(x => Deployment.Load(x, this));
                 });
             }
         }
