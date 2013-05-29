@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -32,7 +33,7 @@ namespace Linq2Azure
             DeploymentSlot = (string)element.Element(XmlNamespaces.Base + "DeploymentSlot");
             PrivateID = (string)element.Element(XmlNamespaces.Base + "PrivateID");
             Label = ((string)element.Element(XmlNamespaces.Base + "Label")).FromBase64String();
-            Configuration = new ServiceConfiguration(element.Element(XmlNamespaces.Base + "Configuration"));
+            Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.Base + "Configuration").Value.FromBase64String()));
         }
 
         public string DeploymentName { get; set; }
@@ -41,6 +42,37 @@ namespace Linq2Azure
         public string PrivateID { get; private set; }
         public string Label { get; set; }
         public ServiceConfiguration Configuration { get; set; }
+
+        public async Task CreateAsync(CloudService parent, Uri packageUrl, CreationOptions options = null)
+        {
+            if (options == null) options = new CreationOptions();
+            var ns = XmlNamespaces.Base;
+            var content = new XElement(ns + "CreateDeployment",
+                new XElement(ns + "Name", DeploymentName),
+                new XElement(ns + "PackageUrl", packageUrl.ToString()),
+                new XElement(ns + "Label", Label.ToBase64String()),
+                new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()),
+                new XElement(ns + "StartDeployment", options.StartDeployment),
+                new XElement(ns + "TreatWarningsAsError", options.TreatWarningsAsError)
+                );
+
+            AzureRestClient client = parent.Subscription.GetRestClient("services/hostedservices/" + parent.ServiceName + "/deploymentslots/" + DeploymentSlot);
+            HttpResponseMessage response = await client.PostAsync(content);
+            await parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        public async Task DeleteAsync()
+        {
+            var client = Subscription.GetRestClient("services/hostedservices/" + Parent.ServiceName + "/deploymentslots/" + DeploymentSlot);
+            var response = await client.DeleteAsync();
+            await Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        public class CreationOptions
+        {
+            public bool StartDeployment { get; set; }
+            public bool TreatWarningsAsError { get; set; }
+        }
 
         //        public string UpdateDeploymentConfiguration()
         //        {

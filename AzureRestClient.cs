@@ -22,7 +22,7 @@ namespace Linq2Azure
         {
             Contract.Requires(subscription != null);
 
-            Uri requestUri = new Uri(BaseUri + subscription.SubscriptionID + "/services/" + relativeUri);
+            Uri requestUri = new Uri(BaseUri + subscription.SubscriptionID + "/" + relativeUri);
             var handler = new WebRequestHandler();
             handler.ClientCertificates.Add(subscription.ManagementCertificate);
             var logger = new LoggingHandler(handler);
@@ -38,20 +38,22 @@ namespace Linq2Azure
             return XElement.Parse(await HttpClient.GetStringAsync(""));
         }
 
-        public async Task PostAsync (XElement xml)
+        public async Task<HttpResponseMessage> PostAsync (XElement xml)
         {
             Contract.Requires(xml != null);
 
             var payload = new StringContent(xml.ToString());
             payload.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
             var response = await HttpClient.PostAsync("", payload);
-            if (response.StatusCode != HttpStatusCode.Created) await ThrowAsync(response);
+            if ((int)response.StatusCode >= 300) await ThrowAsync(response);
+            return response;
         }
 
-        public async Task DeleteAsync()
+        public async Task<HttpResponseMessage> DeleteAsync()
         {
             var response = await HttpClient.DeleteAsync("");
-            if (response.StatusCode != HttpStatusCode.OK) await ThrowAsync(response);
+            if ((int)response.StatusCode >= 300) await ThrowAsync(response);
+            return response;
         }
 
         static async Task ThrowAsync(HttpResponseMessage response)
@@ -60,18 +62,26 @@ namespace Linq2Azure
             try { responseString = await response.Content.ReadAsStringAsync(); }
             catch { }
 
+            XElement errorElement = null;
+            if (!string.IsNullOrWhiteSpace(responseString))
+                errorElement = XElement.Parse(responseString);
+
+            Throw(response.StatusCode, errorElement);
+        }
+
+        internal static void Throw(HttpStatusCode statusCode, XElement errorElement)
+        {
             string code = null, message = null;
 
-            if (!string.IsNullOrWhiteSpace(responseString))
+            if (errorElement != null)
             {
                 var ns = XmlNamespaces.Base;
-                var errorElement = XElement.Parse(responseString);
                 code = (string)errorElement.Element(ns + "Code");
                 message = (string)errorElement.Element(ns + "Message");
             }
 
             if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(message))
-                throw new InvalidOperationException("Error: " + response.StatusCode);
+                throw new InvalidOperationException("Error: " + statusCode);
             else
                 throw new InvalidOperationException(string.Join(" - ", new[] { code, message }));
         }

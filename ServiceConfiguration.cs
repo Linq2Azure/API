@@ -23,7 +23,7 @@ namespace Linq2Azure
         public ServiceConfiguration(XElement configData)
         {
             ServiceName = (string)configData.Attribute("serviceName");
-            OsFamily = (int)configData.Attribute("osFamily");
+            OsFamily = (int?)configData.Attribute("osFamily") ?? 0;
             OsVersion = (string)configData.Attribute("osVersion");
 
             ConfigurationItems = new List<RoleConfiguration>(

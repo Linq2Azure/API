@@ -50,8 +50,39 @@ namespace Linq2Azure
 
         async Task<CloudService[]> GetCloudServices()
         {
-            XElement xe = await GetRestClient("hostedServices").GetXmlAsync();
+            XElement xe = await GetRestClient("services/hostedServices").GetXmlAsync();
             return xe.Descendants(XmlNamespaces.Base + "HostedService").Select(x => new CloudService(x, this)).ToArray();
+        }
+
+        async Task<string> GetOperationResult(string requestId)
+        {
+            var client = GetRestClient("operations/" + requestId);
+            var result = await client.GetXmlAsync();
+
+            var error = result.Element("Error");
+            if (error != null)
+            {
+                var httpStatus = (HttpStatusCode)(int)result.Element("HttpStatusCode");
+                AzureRestClient.Throw(httpStatus, error);
+            }
+
+            return (string) result.Element(XmlNamespaces.Base + "Status");
+        }
+
+        internal async Task WaitForOperationCompletionAsync(HttpResponseMessage operationResponse)
+        {
+            var requestID = operationResponse.Headers.Single(h => h.Key == "x-ms-request-id").Value.Single();
+            while (true)
+            {
+                var result = await GetOperationResult(requestID);
+
+                if (result == "Succeeded")
+                    return;
+                else if (result != "InProgress")
+                    throw new InvalidOperationException("Unknown error");
+
+                await Task.Delay(1000);
+            }
         }
     }
 }

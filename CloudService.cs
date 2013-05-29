@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using System.Reactive.Threading.Tasks;
 
 namespace Linq2Azure
 {
@@ -81,7 +82,7 @@ namespace Linq2Azure
                             new XElement(ns + "Value", kv.Value))))
                             );
 
-            var hc = subscription.GetRestClient("hostedservices");
+            var hc = subscription.GetRestClient("services/hostedservices");
             await hc.PostAsync(content);
             Subscription = subscription;
         }
@@ -89,69 +90,21 @@ namespace Linq2Azure
         public async Task DeleteAsync()
         {
             Contract.Requires(Subscription != null);
-            var hc = Subscription.GetRestClient("hostedservices/" + ServiceName);
+            var hc = Subscription.GetRestClient("services/hostedservices/" + ServiceName);
             await hc.DeleteAsync();
             Subscription = null;
         }
 
         public IObservable<Deployment> Deployments
         {
-            get
-            {
-                if (Subscription == null) throw new InvalidOperationException();
-
-                // URI variable.
-                Uri requestUri = null;
-
-                // Specify operation to use for the service management call.
-                // This sample will use the operation for listing the hosted services.
-                string operation = "hostedservices";
-
-                // Create the request.
-                requestUri = new Uri("https://management.core.windows.net/"
-                                     + Subscription.SubscriptionID
-                                     + "/services/"
-                                     + operation + "/"
-                                     + ServiceName
-                                     + "?embed-detail=true");
-
-                var httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(requestUri);
-
-                // Add the certificate to the request.
-                httpWebRequest.ClientCertificates.Add(Subscription.ManagementCertificate);
-
-                // Specify the version information in the header.
-                httpWebRequest.Headers.Add("x-ms-version", "2012-03-01");
-                return Observable.FromAsyncPattern<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse)()
-                .SelectMany(response =>
-                {
-                    // Make the call using the web request.
-                    var httpWebResponse = (HttpWebResponse)response;
-
-                    // TODO: handle other status codes?
-                    // Display the web response status code.
-                    //Console.WriteLine("Response status code: " + httpWebResponse.StatusCode);
-
-                    string xmlResponse;
-
-                    // Parse the web response.
-                    using (var responseStream = httpWebResponse.GetResponseStream())
-                    {
-                        using (var reader = new StreamReader(responseStream))
-                        {
-                            xmlResponse = reader.ReadToEnd();
-                            reader.Close();
-                        }
-                        // Close the resources no longer needed.
-                        httpWebResponse.Close();
-                    }
-
-                    var xdocument = XDocument.Parse(xmlResponse);
-                    return xdocument.Descendants(XmlNamespaces.Base + "Deployment")
-                        .Select(x => new Deployment(x, this));
-                });
-            }
+            get { return GetDeployments().ToObservable().SelectMany(x => x); }
         }
 
+        async Task<Deployment[]> GetDeployments()
+        {
+            var client = Subscription.GetRestClient("services/hostedservices/" + ServiceName + "?embed-detail=true");
+            var results = await client.GetXmlAsync();
+            return results.Descendants(XmlNamespaces.Base + "Deployments").Select(x => new Deployment(x, this)).ToArray();
+        }
     }
 }
