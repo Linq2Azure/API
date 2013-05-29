@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
@@ -16,47 +17,59 @@ namespace Linq2Azure
     {
         public static readonly string BaseUri = "https://management.core.windows.net/";
 
-        public readonly HttpClient HttpClient;
+        public readonly Subscription Subscription;
+        public readonly Uri Uri;
+        readonly HttpClient _httpClient;
 
-        public AzureRestClient(Subscription subscription, string relativeUri)
+        // We use the same HttpClient for all calls to the same subscription; this allows DNS and proxy details to be
+        // cached across requests. Note that HttpClient allows parallel operations.
+        internal static HttpClient CreateHttpClient (Subscription subscription)
         {
-            Contract.Requires(subscription != null);
-
-            Uri requestUri = new Uri(BaseUri + subscription.SubscriptionID + "/" + relativeUri);
             var handler = new WebRequestHandler();
             handler.ClientCertificates.Add(subscription.ManagementCertificate);
             var logger = new LoggingHandler(handler);
-            HttpClient = new HttpClient(logger, true) { BaseAddress = requestUri };
-            HttpClient.DefaultRequestHeaders.Add("x-ms-version", "2012-03-01");
+            var client = new HttpClient(logger, true);
+            client.DefaultRequestHeaders.Add("x-ms-version", "2012-03-01");
+            return client;
+        }
+
+        public AzureRestClient(Subscription subscription, HttpClient httpClient, string relativeUri)
+        {
+            Contract.Requires(subscription != null);
+            Contract.Requires(httpClient != null);
+            Subscription = subscription;
+            _httpClient = httpClient;
+            Uri = new Uri(BaseUri + subscription.ID + "/" + relativeUri);
         }
 
         public async Task<XElement> GetXmlAsync()
         {
-            var response = await HttpClient.GetAsync("");
+            var response = await _httpClient.GetAsync(Uri);
             if ((int)response.StatusCode >= 300) await AzureRestClient.ThrowAsync(response);
             string result = await response.Content.ReadAsStringAsync();
-            return XElement.Parse(await HttpClient.GetStringAsync(""));
+            return XElement.Parse(await _httpClient.GetStringAsync(Uri));
         }
 
         public async Task<HttpResponseMessage> PostAsync (XElement xml)
         {
             Contract.Requires(xml != null);
 
-            var payload = new StringContent(xml.ToString());
+            string xmlString = xml.ToString();
+            var payload = new StringContent(xmlString);
             payload.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
-            var response = await HttpClient.PostAsync("", payload);
-            if ((int)response.StatusCode >= 300) await ThrowAsync(response);
+            var response = await _httpClient.PostAsync(Uri, payload);
+            if ((int)response.StatusCode >= 300) await ThrowAsync(response, xmlString);
             return response;
         }
 
         public async Task<HttpResponseMessage> DeleteAsync()
         {
-            var response = await HttpClient.DeleteAsync("");
+            var response = await _httpClient.DeleteAsync(Uri);
             if ((int)response.StatusCode >= 300) await ThrowAsync(response);
             return response;
         }
 
-        static async Task ThrowAsync(HttpResponseMessage response)
+        static async Task ThrowAsync(HttpResponseMessage response, object debugInfo = null)
         {            
             string responseString = null;
             try { responseString = await response.Content.ReadAsStringAsync(); }
@@ -66,10 +79,10 @@ namespace Linq2Azure
             if (!string.IsNullOrWhiteSpace(responseString))
                 errorElement = XElement.Parse(responseString);
 
-            Throw(response.StatusCode, errorElement);
+            Throw(response, errorElement, debugInfo);
         }
 
-        internal static void Throw(HttpStatusCode statusCode, XElement errorElement)
+        internal static void Throw(HttpResponseMessage responseMessage, XElement errorElement, object debugInfo = null)
         {
             string code = null, message = null;
 
@@ -81,9 +94,9 @@ namespace Linq2Azure
             }
 
             if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(message))
-                throw new InvalidOperationException("Error: " + statusCode);
+                throw new AzureRestException(responseMessage, null, "Unknown error", debugInfo);
             else
-                throw new InvalidOperationException(string.Join(" - ", new[] { code, message }));
+                throw new AzureRestException(responseMessage, code, message, debugInfo);
         }
 
         // TODO - make this optional
@@ -94,12 +107,12 @@ namespace Linq2Azure
                 InnerHandler = nextHandler;
             }
 
-            protected async override Task<HttpResponseMessage> SendAsync
-              (HttpRequestMessage request, CancellationToken cancellationToken)
+            protected async override Task<HttpResponseMessage> SendAsync (HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                Console.WriteLine("Requesting: " + request.RequestUri);
-                var response = await base.SendAsync(request, cancellationToken);
-                Console.WriteLine("Got response: " + response.StatusCode);
+                bool operation = request.RequestUri.AbsolutePath.Contains("/operations/");                
+                if (!operation) Debug.Write(request.Method + ": " + request.RequestUri);                
+                var response = await base.SendAsync(request, cancellationToken);                
+                if (operation) Debug.Write('.'); else Debug.WriteLine(" " + response.StatusCode);                
                 return response;
             }
         }

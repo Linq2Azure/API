@@ -16,3 +16,45 @@ Manage follownig services:
 Phase 2
 
 - Storage accounts [manage keys and configure]
+
+
+
+
+New Service + Production Deployment
+ 
+LoadSusbcription()
+ 
+CreateNewService("geo location")
+var certificates = CreateCertificates() // shells to makecert / pvk2pfx
+UploadCertificates(certificates)
+CreateDatabase();
+ 
+var config = PrepareDeployment() // alters config templates with deployment specifics (certificate thumbprints, sql connection strings etc)
+ 
+Retry () => PublishDeployment(config, Slot = Production)
+Retry () => UpdateProductionDeploymentConfiguration() // enable message processor
+Retry () => CreateTrafficManagerPolicies()
+ 
+New Staging Deployment + VIP Swap
+ 
+LoadSusbcription()
+ 
+var certificates = DownloadCertificates(); // we pull down information (thumbprints) from the hosted service about the certificates that are being used
+var config = PrepareDeployment() // alters config templates with deployment specifics (certificate thumbprints, sql connection strings etc)
+PublishDeployment(config, Slot = Staging)
+ 
+try
+{
+                Retry () => UpdateDeploymentConfiguration(Slot = Production) // stops message processor & mark as upgrading
+                UpdateDatabase()
+                Retry () => VipSwap()
+}
+catch
+{
+                Retry () => UpdateDeploymentConfiguration(Slot = Production) // enable message processor & remove upgrading flag
+                throw
+}
+finally
+{
+                DeleteDeployment(Slot = Staging)          
+}

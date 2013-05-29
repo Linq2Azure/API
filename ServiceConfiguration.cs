@@ -27,8 +27,7 @@ namespace Linq2Azure
             OsVersion = (string)configData.Attribute("osVersion");
 
             ConfigurationItems = new List<RoleConfiguration>(
-                configData.Descendants(XmlNamespaces.ServiceConfig + "Role")
-                             .Select(RoleConfiguration.Load));
+                configData.Elements(XmlNamespaces.ServiceConfig + "Role").Select(RoleConfiguration.Load));
         }
 
         public XElement ToXml()
@@ -59,9 +58,9 @@ namespace Linq2Azure
         {
             var rc = new RoleConfiguration();
             rc.RoleName = (string)element.Attribute("name");
-            rc.InstanceCount = (int)element.Descendants(XmlNamespaces.ServiceConfig + "Instances").Single().Attribute("count");
-            rc.ConfigurationSettings = element.Descendants(XmlNamespaces.ServiceConfig + "ConfigurationSettings").SelectMany(d => d.Elements()).ToDictionary(x => (string)x.Attribute("name"), x => (string)x.Attribute("value"));
-            rc.Certificates = element.Descendants(XmlNamespaces.ServiceConfig + "Certificates").SelectMany(d => d.Elements()).ToDictionary(x => (string)x.Attribute("name"), x => new CertificateConfig(x));
+            rc.InstanceCount = (int)element.Elements(XmlNamespaces.ServiceConfig + "Instances").Single().Attribute("count");
+            rc.ConfigurationSettings = element.Elements(XmlNamespaces.ServiceConfig + "ConfigurationSettings").SelectMany(d => d.Elements()).ToDictionary(x => (string)x.Attribute("name"), x => (string)x.Attribute("value"));
+            rc.Certificates = element.Elements(XmlNamespaces.ServiceConfig + "Certificates").SelectMany(d => d.Elements()).ToDictionary(x => (string)x.Attribute("name"), x => new CertificateConfig(x));
             return rc;
         }
 

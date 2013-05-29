@@ -22,36 +22,45 @@ namespace Linq2Azure
             Contract.Requires(!string.IsNullOrWhiteSpace(publishingSettingsPath));
 
             return (
-                from c in XDocument.Load(publishingSettingsPath).Descendants("PublishProfile")
-                from s in c.Descendants("Subscription")
-                select new Subscription
-                {
-                    SubscriptionID = Guid.Parse((string)s.Attribute("Id")),
-                    SubscriptionName = (string)s.Attribute("Name"),
-                    ManagementCertificate =
-                        new X509Certificate2(
-                        Convert.FromBase64String((string)c.Attribute("ManagementCertificate"))),
-                }).Single();
+                from c in XDocument.Load(publishingSettingsPath).Root.Elements("PublishProfile")
+                from s in c.Elements("Subscription")
+                select new Subscription (
+                    subscriptionID: Guid.Parse((string)s.Attribute("Id")),
+                    subscriptionName: (string)s.Attribute("Name"),
+                    managementCertificate: new X509Certificate2(Convert.FromBase64String((string)c.Attribute("ManagementCertificate")))
+                    )
+                ).Single();
         }
 
-        public X509Certificate2 ManagementCertificate { get; set; }
-        public Guid SubscriptionID { get; set; }
-        public string SubscriptionName { get; set; }
+        public Guid ID { get; private set; }
+        public string Name { get; private set; }
+        public X509Certificate2 ManagementCertificate { get; private set; }
+        
+        readonly HttpClient _httpClient;
 
-        public IObservable<CloudService> CloudServices
+        public Subscription(Guid subscriptionID, string subscriptionName, X509Certificate2 managementCertificate)
         {
-            get { return GetCloudServices().ToObservable().SelectMany(x => x); }
+            ID = subscriptionID;
+            Name = subscriptionName;
+            ManagementCertificate = managementCertificate;
+
+            _httpClient = AzureRestClient.CreateHttpClient(this);
+        }
+
+        public IObservable<CloudService> GetCloudServices()
+        {
+            return GetCloudServicesAsync().ToObservable().SelectMany(x => x);
+        }
+
+        public async Task<CloudService[]> GetCloudServicesAsync()
+        {
+            XElement xe = await GetRestClient("services/hostedServices").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.Base + "HostedService").Select(x => new CloudService(x, this)).ToArray();
         }
 
         internal AzureRestClient GetRestClient(string relativeUri)
         {
-            return new AzureRestClient(this, relativeUri);
-        }
-
-        async Task<CloudService[]> GetCloudServices()
-        {
-            XElement xe = await GetRestClient("services/hostedServices").GetXmlAsync();
-            return xe.Descendants(XmlNamespaces.Base + "HostedService").Select(x => new CloudService(x, this)).ToArray();
+            return new AzureRestClient(this, _httpClient, relativeUri);
         }
 
         async Task<string> GetOperationResult(string requestId)
@@ -60,11 +69,7 @@ namespace Linq2Azure
             var result = await client.GetXmlAsync();
 
             var error = result.Element("Error");
-            if (error != null)
-            {
-                var httpStatus = (HttpStatusCode)(int)result.Element("HttpStatusCode");
-                AzureRestClient.Throw(httpStatus, error);
-            }
+            if (error != null) AzureRestClient.Throw(null, error);
 
             return (string) result.Element(XmlNamespaces.Base + "Status");
         }
@@ -79,7 +84,7 @@ namespace Linq2Azure
                 if (result == "Succeeded")
                     return;
                 else if (result != "InProgress")
-                    throw new InvalidOperationException("Unknown error");
+                    throw new InvalidOperationException("Unknown error: result=" + result);
 
                 await Task.Delay(1000);
             }

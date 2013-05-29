@@ -18,33 +18,49 @@ namespace Linq2Azure
 {
     public class CloudService
     {
-        public Subscription Subscription { get; private set; }
+        public string Name { get; set; }
+        public string Label { get; set; }
+        public string Description { get; set; }
+        public string Location { get; set; }
+        public string AffinityGroup { get; set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
         public DateTime DateLastModified { get; private set; }
         public DateTime DateCreated { get; private set; }
         public string Status { get; private set; }
-        public string Label { get; set; }
-        public string AffinityGroup { get; set; }
-        public string Description { get; set; }
-        public string Location { get; set; }
         public Uri Url { get; private set; }
-        public string ServiceName { get; set; }
 
-        public CloudService()
+        public Subscription Subscription { get; private set; }
+
+        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false)
         {
+            Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
+            Contract.Requires(!string.IsNullOrWhiteSpace(locationOrAffinityGroup));
+
+            Name = Label = serviceName;
+
+            if (isAffinityGroup)
+                AffinityGroup = locationOrAffinityGroup;
+            else
+                Location = locationOrAffinityGroup;
+
             ExtendedProperties = new Dictionary<string, string>();
         }
 
-        internal CloudService (XElement element, Subscription subscription) : this()
+        internal CloudService (XElement element, Subscription subscription) 
         {
             Contract.Requires(element != null);
             Contract.Requires(subscription != null);
 
             Subscription = subscription;
+            PopulateFromXml(element);
+        }
+
+        void PopulateFromXml(XElement element)
+        {
             XNamespace ns = XmlNamespaces.Base;
 
             Url = new Uri((string)element.Element(ns + "Url"));
-            ServiceName = (string)element.Element(ns + "ServiceName");
+            Name = (string)element.Element(ns + "ServiceName");
 
             var properties = element.Element(ns + "HostedServiceProperties");
             Description = (string)properties.Element(ns + "Description");
@@ -61,16 +77,15 @@ namespace Linq2Azure
         {
             Contract.Requires(Subscription == null);
             Contract.Requires(subscription != null);
-            Contract.Requires(!string.IsNullOrWhiteSpace(ServiceName));
+            Contract.Requires(!string.IsNullOrWhiteSpace(Name));
             Contract.Requires(!string.IsNullOrWhiteSpace(Label));
             Contract.Requires(Location == null || Location.Trim().Length > 0);
             Contract.Requires(AffinityGroup == null || AffinityGroup.Trim().Length > 0);
             Contract.Requires((Location == null) != (AffinityGroup == null));
 
             var ns = XmlNamespaces.Base;
-
             var content = new XElement(ns + "CreateHostedService",
-                new XElement(ns + "ServiceName", ServiceName),
+                new XElement(ns + "ServiceName", Name),
                 new XElement(ns + "Label", Label.ToBase64String()),
                 string.IsNullOrWhiteSpace(Description) ? null : new XElement(ns + "Description", Description),
                 string.IsNullOrWhiteSpace(Location) ? null : new XElement(ns + "Location", Location),
@@ -87,24 +102,65 @@ namespace Linq2Azure
             Subscription = subscription;
         }
 
+        public async Task Refresh()
+        {
+            Contract.Requires(Subscription != null);
+            XElement xe = await GetRestClient().GetXmlAsync();
+            PopulateFromXml(xe);
+        }
+
+        public async Task SwapDeploymentsAsync()
+        {
+            Contract.Requires(Subscription != null);
+            var deployments = await GetDeploymentsAsync();
+            
+            var production = deployments.SingleOrDefault(d => d.Slot == DeploymentSlot.Production);
+            if (production == null) throw new InvalidOperationException("Cannot swap deployments: No production slot found");
+            
+            var staging = deployments.SingleOrDefault(d => d.Slot == DeploymentSlot.Staging);
+            if (production == null) throw new InvalidOperationException("Cannot swap deployments: No staging slot found");
+
+            var ns = XmlNamespaces.Base;
+            var content = new XElement(ns + "Swap",
+                new XElement(ns + "Production", production.Name),
+                new XElement(ns + "SourceDeployment", staging.Name));
+
+            var response = await GetRestClient().PostAsync(content);
+            await Subscription.WaitForOperationCompletionAsync(response);
+        }
+
         public async Task DeleteAsync()
         {
             Contract.Requires(Subscription != null);
-            var hc = Subscription.GetRestClient("services/hostedservices/" + ServiceName);
-            await hc.DeleteAsync();
+            await GetRestClient().DeleteAsync();
             Subscription = null;
         }
 
-        public IObservable<Deployment> Deployments
+        AzureRestClient GetRestClient(string queryString = null)
         {
-            get { return GetDeployments().ToObservable().SelectMany(x => x); }
+            string uri = "services/hostedServices/" + Name;
+            if (!string.IsNullOrEmpty(queryString)) uri += queryString;
+            return Subscription.GetRestClient(uri);
         }
 
-        async Task<Deployment[]> GetDeployments()
+        public IObservable<Deployment> GetDeployments()
         {
-            var client = Subscription.GetRestClient("services/hostedservices/" + ServiceName + "?embed-detail=true");
+            return GetDeploymentsAsync().ToObservable().SelectMany(x => x);
+        }
+
+        public async Task<Deployment> GetDeploymentAsync(DeploymentSlot slot)
+        {
+            return (await GetDeploymentsAsync()).SingleOrDefault(d => d.Slot == slot);
+        }
+
+        public async Task<Deployment[]> GetDeploymentsAsync()
+        {
+            var client = GetRestClient("?embed-detail=true");
             var results = await client.GetXmlAsync();
-            return results.Descendants(XmlNamespaces.Base + "Deployments").Select(x => new Deployment(x, this)).ToArray();
+            return results.Element(XmlNamespaces.Base + "Deployments")
+                .Elements(XmlNamespaces.Base + "Deployment")
+                .Select(x => new Deployment(x, this))
+                .ToArray();
         }
     }
 }
