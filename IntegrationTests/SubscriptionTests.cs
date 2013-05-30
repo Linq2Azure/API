@@ -21,10 +21,10 @@ namespace IntegrationTests
         [TestMethod]
         public async Task CleanupOldResidue()
         {
-            foreach (var cs in await TestConstants.Subscription.GetCloudServicesAsync())
+            foreach (var cs in await TestConstants.Subscription.CloudServices.AsTask())
                 if (cs.Name.StartsWith("Test-") && cs.DateLastModified < DateTime.UtcNow.AddMinutes(-5))
                 {
-                    foreach (var d in await cs.GetDeploymentsAsync()) await d.DeleteAsync();
+                    foreach (var d in await cs.Deployments.AsTask()) await d.DeleteAsync();
                     cs.DeleteAsync().Wait();
                 }
         }

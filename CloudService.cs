@@ -28,10 +28,17 @@ namespace Linq2Azure
         public DateTime DateCreated { get; private set; }
         public string Status { get; private set; }
         public Uri Url { get; private set; }
-
+        public DeploymentSet Deployments { get; private set; }
+        public LatentSequence<ServiceCertificate> Certificates { get; private set; }
         public Subscription Subscription { get; private set; }
 
-        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false)
+        CloudService()
+        {
+            Deployments = new DeploymentSet(GetDeploymentsAsync);
+            Certificates = new LatentSequence<ServiceCertificate>(GetCertificatesAsync);
+        }
+
+        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false) : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
             Contract.Requires(!string.IsNullOrWhiteSpace(locationOrAffinityGroup));
@@ -46,7 +53,7 @@ namespace Linq2Azure
             ExtendedProperties = new Dictionary<string, string>();
         }
 
-        internal CloudService (XElement element, Subscription subscription) 
+        internal CloudService(XElement element, Subscription subscription) : this()
         {
             Contract.Requires(element != null);
             Contract.Requires(subscription != null);
@@ -102,7 +109,7 @@ namespace Linq2Azure
             Subscription = subscription;
         }
 
-        public async Task Refresh()
+        public async Task RefreshAsync()
         {
             Contract.Requires(Subscription != null);
             XElement xe = await GetRestClient().GetXmlAsync();
@@ -143,17 +150,7 @@ namespace Linq2Azure
             return Subscription.GetRestClient(uri);
         }
 
-        public IObservable<Deployment> GetDeployments()
-        {
-            return GetDeploymentsAsync().ToObservable().SelectMany(x => x);
-        }
-
-        public async Task<Deployment> GetDeploymentAsync(DeploymentSlot slot)
-        {
-            return (await GetDeploymentsAsync()).SingleOrDefault(d => d.Slot == slot);
-        }
-
-        public async Task<Deployment[]> GetDeploymentsAsync()
+        async Task<Deployment[]> GetDeploymentsAsync()
         {
             var client = GetRestClient("?embed-detail=true");
             var results = await client.GetXmlAsync();
@@ -163,13 +160,30 @@ namespace Linq2Azure
                 .ToArray();
         }
 
-        public async Task<ServiceCertificate[]> GetCertificatesAsync()
+        async Task<ServiceCertificate[]> GetCertificatesAsync()
         {
             var client = GetRestClient("/certificates");
             var results = await client.GetXmlAsync();
             return results.Elements(XmlNamespaces.Base + "Certificate")
                 .Select(x => new ServiceCertificate(x, this))
                 .ToArray();
+        }
+    }
+
+    public class DeploymentSet : LatentSequence<Deployment>
+    {
+        public DeploymentSet(Func<Task<Deployment[]>> taskGenerator) : base (taskGenerator)
+        {
+        }
+
+        public async Task<Deployment> GetProductionAsync()
+        {
+            return (await AsTask()).SingleOrDefault(d => d.Slot == DeploymentSlot.Production);
+        }
+
+        public async Task<Deployment> GetStagingAsync()
+        {
+            return (await AsTask()).SingleOrDefault(d => d.Slot == DeploymentSlot.Staging);
         }
     }
 }

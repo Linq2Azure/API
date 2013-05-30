@@ -47,11 +47,11 @@ namespace IntegrationTests
             Assert.AreEqual(_retrievedStaging.Slot, DeploymentSlot.Staging);
 
             Debug.WriteLine("TestCreate: Production Refresh");
-            await Production.Refresh();
+            await Production.RefreshAsync();
             Assert.AreEqual(_retrievedProduction.Url, Production.Url);
 
             Debug.WriteLine("TestCreate: Staging Refresh");
-            await Staging.Refresh();
+            await Staging.RefreshAsync();
             Assert.AreEqual(_retrievedStaging.Url, Staging.Url);
         }
 
@@ -59,10 +59,10 @@ namespace IntegrationTests
         {
             Debug.WriteLine("TestStartStop: Starting Deployment");
             await Production.StartAsync();
-            string powerState = (await Production.GetRoleInstancesAsync()).First().PowerState;
+            string powerState = (await Production.RoleInstances.AsTask()).First().PowerState;
             Assert.IsTrue (powerState == "Started" || powerState == "Starting");
             await Production.StopAsync();
-            powerState = (await Production.GetRoleInstancesAsync()).First().PowerState;
+            powerState = (await Production.RoleInstances.AsTask()).First().PowerState;
             Assert.IsTrue(powerState == "Stopped" || powerState == "Stopping");
         }
 
@@ -87,7 +87,7 @@ namespace IntegrationTests
 
         async Task RetrieveDeployments()
         {
-            var deployments = await CloudService.GetDeploymentsAsync();
+            var deployments = await CloudService.Deployments.AsTask();
             _retrievedProduction = deployments.Single(d => d.Slot == DeploymentSlot.Production);
             _retrievedStaging = deployments.Single(d => d.Slot == DeploymentSlot.Staging);
         }

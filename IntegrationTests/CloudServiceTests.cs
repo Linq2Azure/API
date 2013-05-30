@@ -28,7 +28,7 @@ namespace IntegrationTests
         public async Task CanCreateAndRefresh()
         {
             CloudService cs1 = CloudService;
-            var cs2 = (await Subscription.GetCloudServicesAsync()).SingleOrDefault(s => s.Label == cs1.Label && s.Name == cs1.Name);
+            var cs2 = (await Subscription.CloudServices.AsTask()).SingleOrDefault(s => s.Label == cs1.Label && s.Name == cs1.Name);
             Assert.IsNotNull(cs2, "Creation failed");
 
             Assert.AreEqual("Created", cs2.Status);
@@ -36,7 +36,7 @@ namespace IntegrationTests
             Assert.AreEqual(TestLocation, cs2.Location);
             Assert.AreEqual(cs1.Description, cs2.Description);
 
-            cs1.Refresh().Wait();
+            cs1.RefreshAsync().Wait();
             Assert.AreEqual(cs1.DateCreated, cs2.DateCreated);
             Assert.AreEqual(cs1.DateLastModified, cs2.DateLastModified);
             Assert.AreEqual(cs1.Description, cs2.Description);
@@ -53,7 +53,7 @@ namespace IntegrationTests
             IsDisposed = true;
             if (GetType() == typeof(CloudServiceTests))
             {
-                var cs = Subscription.GetCloudServicesAsync().Result.FirstOrDefault(s => s.Name == CloudService.Name);
+                var cs = Subscription.CloudServices.AsArray().FirstOrDefault(s => s.Name == CloudService.Name);
                 Assert.IsNull(cs, "Deletion failed");
             }
         }

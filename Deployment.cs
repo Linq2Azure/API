@@ -22,10 +22,15 @@ namespace Linq2Azure
         public string PrivateID { get; private set; }
         public string Label { get; set; }
         public ServiceConfiguration Configuration { get; set; }
-
+        public LatentSequence<RoleInstance> RoleInstances { get; private set; }
         public CloudService Parent { get; private set; }
 
-        public Deployment(string deploymentName, DeploymentSlot deploymentSlot, ServiceConfiguration serviceConfig)
+        Deployment()
+        {
+            RoleInstances = new LatentSequence<RoleInstance>(GetRoleInstancesAsync);
+        }
+
+        public Deployment(string deploymentName, DeploymentSlot deploymentSlot, ServiceConfiguration serviceConfig) : this()
         {
             Contract.Requires(deploymentName != null);
             Contract.Requires(serviceConfig != null);
@@ -35,7 +40,7 @@ namespace Linq2Azure
             Configuration = serviceConfig;
         }
 
-        internal Deployment(XElement element, CloudService parent)
+        internal Deployment(XElement element, CloudService parent) : this()
         {
             Contract.Requires(element != null);
             Contract.Requires(parent != null);
@@ -77,14 +82,14 @@ namespace Linq2Azure
             Parent = parent;
         }
 
-        public async Task Refresh()
+        public async Task RefreshAsync()
         {
             Contract.Requires(Parent != null);
             XElement xe = await GetRestClient().GetXmlAsync();
             PopulateFromXml(xe);
         }
 
-        public async Task UpdateConfiguration()
+        public async Task UpdateConfigurationAsync()
         {
             Contract.Requires(Parent != null);
             
@@ -99,16 +104,16 @@ namespace Linq2Azure
         public Task StartAsync()
         {
             Contract.Requires(Parent != null);
-            return UpdateDeploymentStatus("Running");
+            return UpdateDeploymentStatusAsync("Running");
         }
 
         public Task StopAsync()
         {
             Contract.Requires(Parent != null);
-            return UpdateDeploymentStatus("Suspended");
+            return UpdateDeploymentStatusAsync("Suspended");
         }
 
-        async Task UpdateDeploymentStatus(string status)
+        async Task UpdateDeploymentStatusAsync(string status)
         {
             var ns = XmlNamespaces.Base;
             var content = new XElement(ns + "UpdateDeploymentStatus", new XElement(ns + "Status", status));
@@ -123,12 +128,7 @@ namespace Linq2Azure
             Parent = null;
         }
 
-        public IObservable<RoleInstance> GetRoleInstances()
-        {
-            return GetRoleInstancesAsync().ToObservable().SelectMany(x => x);
-        }
-
-        public async Task<RoleInstance[]> GetRoleInstancesAsync()
+        async Task<RoleInstance[]> GetRoleInstancesAsync()
         {
             Contract.Requires(Parent != null);
             XElement xe = await GetRestClient().GetXmlAsync();

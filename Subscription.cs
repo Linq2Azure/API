@@ -35,6 +35,7 @@ namespace Linq2Azure
         public Guid ID { get; private set; }
         public string Name { get; private set; }
         public X509Certificate2 ManagementCertificate { get; private set; }
+        public LatentSequence<CloudService> CloudServices { get; private set; }
         
         readonly HttpClient _httpClient;
 
@@ -45,14 +46,11 @@ namespace Linq2Azure
             ManagementCertificate = managementCertificate;
 
             _httpClient = AzureRestClient.CreateHttpClient(this);
+
+            CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
         }
 
-        public IObservable<CloudService> GetCloudServices()
-        {
-            return GetCloudServicesAsync().ToObservable().SelectMany(x => x);
-        }
-
-        public async Task<CloudService[]> GetCloudServicesAsync()
+        async Task<CloudService[]> GetCloudServicesAsync()
         {
             XElement xe = await GetRestClient("services/hostedServices").GetXmlAsync();
             return xe.Elements(XmlNamespaces.Base + "HostedService").Select(x => new CloudService(x, this)).ToArray();
@@ -63,7 +61,7 @@ namespace Linq2Azure
             return new AzureRestClient(this, _httpClient, relativeUri);
         }
 
-        async Task<string> GetOperationResult(string requestId)
+        async Task<string> GetOperationResultAsync(string requestId)
         {
             var client = GetRestClient("operations/" + requestId);
             var result = await client.GetXmlAsync();
@@ -77,16 +75,18 @@ namespace Linq2Azure
         internal async Task WaitForOperationCompletionAsync(HttpResponseMessage operationResponse)
         {
             var requestID = operationResponse.Headers.Single(h => h.Key == "x-ms-request-id").Value.Single();
+            int delay = 1000;
             while (true)
             {
-                var result = await GetOperationResult(requestID);
+                var result = await GetOperationResultAsync(requestID);
 
                 if (result == "Succeeded")
                     return;
                 else if (result != "InProgress")
                     throw new InvalidOperationException("Unknown error: result=" + result);
 
-                await Task.Delay(1000);
+                await Task.Delay(delay);
+                if (delay < 5000) delay += 1000;
             }
         }
     }
