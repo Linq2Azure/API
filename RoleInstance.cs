@@ -24,11 +24,7 @@ namespace Linq2Azure
 
         public RoleInstance(XElement element)
         {
-            foreach (var prop in GetType().GetProperties().Where (p => p.PropertyType == typeof (string)))
-            {
-                var child = element.Element(XmlNamespaces.Base + prop.Name);
-                if (child != null) prop.SetValue(this, child.Value);
-            }
+            element.HydrateObject(XmlNamespaces.WindowsAzure, this);
         }
     }
 }

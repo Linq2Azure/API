@@ -29,7 +29,7 @@ namespace Linq2Azure
 
         public ServiceCertificate(XElement element, CloudService parent)
         {
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             Uri = new Uri((string)element.Element(ns + "CertificateUrl"));
             Thumbprint = (string)element.Element(ns + "Thumbprint");
             ThumbprintAlgorithm = (string)element.Element(ns + "ThumbprintAlgorithm");
@@ -39,7 +39,7 @@ namespace Linq2Azure
 
         public async Task AddAsync(CloudService parent)
         {
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "CertificateFile",
                 new XElement(ns + "Data", Convert.ToBase64String(Certificate.Export(X509ContentType.Pfx))),
                 //new XElement(ns + "Data", Convert.ToBase64String(File.ReadAllBytes (@"c:\temp\centralserver.sprint.cer"))),
@@ -61,11 +61,11 @@ namespace Linq2Azure
 
         AzureRestClient GetRestClient(string suffix = null) { return GetRestClient(Parent, suffix); }
 
-        AzureRestClient GetRestClient(CloudService parent, string suffix = null)
+        AzureRestClient GetRestClient(CloudService parent, string pathSuffix = null)
         {
-            string uri = "services/hostedServices/" + parent.Name + "/certificates";
-            if (suffix != null) uri += suffix;
-            return parent.Subscription.GetRestClient(uri);
+            string servicePath = "services/hostedServices/" + parent.Name + "/certificates";
+            if (pathSuffix != null) servicePath += pathSuffix;
+            return parent.Subscription.GetCoreRestClient(servicePath);
         }
 
     }

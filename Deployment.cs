@@ -51,12 +51,10 @@ namespace Linq2Azure
 
         void PopulateFromXml(XElement element)
         {
-            Name = (string)element.Element(XmlNamespaces.Base + "Name");
-            Url = (string)element.Element(XmlNamespaces.Base + "Url");
-            Slot = (DeploymentSlot)Enum.Parse(typeof(DeploymentSlot), (string)element.Element(XmlNamespaces.Base + "DeploymentSlot"), true);
-            PrivateID = (string)element.Element(XmlNamespaces.Base + "PrivateID");
-            Label = ((string)element.Element(XmlNamespaces.Base + "Label")).FromBase64String();
-            Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.Base + "Configuration").Value.FromBase64String()));
+            element.HydrateObject(XmlNamespaces.WindowsAzure, this);
+            Slot = (DeploymentSlot)Enum.Parse(typeof(DeploymentSlot), (string)element.Element(XmlNamespaces.WindowsAzure + "DeploymentSlot"), true);
+            if (!string.IsNullOrEmpty (Label)) Label = Label.FromBase64String();
+            Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.WindowsAzure + "Configuration").Value.FromBase64String()));
         }
 
         public async Task CreateAsync(CloudService parent, Uri packageUrl, CreationOptions options = null)
@@ -67,7 +65,7 @@ namespace Linq2Azure
             Contract.Requires(Configuration != null);
 
             if (options == null) options = new CreationOptions();
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "CreateDeployment",
                 new XElement(ns + "Name", Name),
                 new XElement(ns + "PackageUrl", packageUrl.ToString()),
@@ -93,11 +91,12 @@ namespace Linq2Azure
         {
             Contract.Requires(Parent != null);
             
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "ChangeConfiguration",
                 new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));
 
-            HttpResponseMessage response = await GetRestClient(Parent, "?comp=config").PostAsync(content);
+            // With the deployments endpoint, you need a forward slash separating the URI from the query string!
+            HttpResponseMessage response = await GetRestClient(Parent, "/?comp=config").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
@@ -115,9 +114,11 @@ namespace Linq2Azure
 
         async Task UpdateDeploymentStatusAsync(string status)
         {
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "UpdateDeploymentStatus", new XElement(ns + "Status", status));
-            HttpResponseMessage response = await GetRestClient("?comp=status").PostAsync(content);
+
+            // With the deployments endpoint, you need a forward slash separating the URI from the query string!
+            HttpResponseMessage response = await GetRestClient("/?comp=status").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
@@ -132,20 +133,19 @@ namespace Linq2Azure
         {
             Contract.Requires(Parent != null);
             XElement xe = await GetRestClient().GetXmlAsync();
-            return xe.Element(XmlNamespaces.Base + "RoleInstanceList")
-                .Elements(XmlNamespaces.Base + "RoleInstance")
+            return xe.Element(XmlNamespaces.WindowsAzure + "RoleInstanceList")
+                .Elements(XmlNamespaces.WindowsAzure + "RoleInstance")
                 .Select(r => new RoleInstance(r))
                 .ToArray();
         }
 
-        AzureRestClient GetRestClient(string queryString = null) { return GetRestClient(Parent, queryString); }
+        AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Parent, pathSuffix); }
 
-        AzureRestClient GetRestClient(CloudService cloudService, string queryString = null)
+        AzureRestClient GetRestClient(CloudService cloudService, string pathSuffix = null)
         {
-            string uri = "services/hostedservices/" + cloudService.Name + "/deploymentslots/" + Slot.ToString().ToLowerInvariant();
-            // With the deployments endpoint, you need a forward slash separating the URI from the query string!
-            if (!string.IsNullOrEmpty(queryString)) uri += "/" + queryString;
-            return cloudService.Subscription.GetRestClient(uri);
+            string servicePath = "services/hostedservices/" + cloudService.Name + "/deploymentslots/" + Slot.ToString().ToLowerInvariant();
+            if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
+            return cloudService.Subscription.GetCoreRestClient(servicePath);
         }
 
         public class CreationOptions

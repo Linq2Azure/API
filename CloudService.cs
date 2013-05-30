@@ -64,19 +64,16 @@ namespace Linq2Azure
 
         void PopulateFromXml(XElement element)
         {
-            XNamespace ns = XmlNamespaces.Base;
+            XNamespace ns = XmlNamespaces.WindowsAzure;
 
             Url = new Uri((string)element.Element(ns + "Url"));
             Name = (string)element.Element(ns + "ServiceName");
 
             var properties = element.Element(ns + "HostedServiceProperties");
-            Description = (string)properties.Element(ns + "Description");
-            AffinityGroup = (string)properties.Element(ns + "AffinityGroup");
-            Label = ((string)properties.Element(ns + "Label")).FromBase64String();
-            Status = (string)properties.Element(ns + "Status");
+            properties.HydrateObject(ns, this);
+            if (!string.IsNullOrEmpty (Label)) Label = Label.FromBase64String();
             DateCreated = (DateTime)properties.Element(ns + "DateCreated");
             DateLastModified = (DateTime)properties.Element(ns + "DateLastModified");
-            Location = (string)properties.Element(ns + "Location");
             ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements().ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
         }
 
@@ -90,7 +87,7 @@ namespace Linq2Azure
             Contract.Requires(AffinityGroup == null || AffinityGroup.Trim().Length > 0);
             Contract.Requires((Location == null) != (AffinityGroup == null));
 
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "CreateHostedService",
                 new XElement(ns + "ServiceName", Name),
                 new XElement(ns + "Label", Label.ToBase64String()),
@@ -104,7 +101,7 @@ namespace Linq2Azure
                             new XElement(ns + "Value", kv.Value))))
                             );
 
-            var hc = subscription.GetRestClient("services/hostedservices");
+            var hc = subscription.GetCoreRestClient("services/hostedservices");
             await hc.PostAsync(content);
             Subscription = subscription;
         }
@@ -127,7 +124,7 @@ namespace Linq2Azure
             var staging = deployments.SingleOrDefault(d => d.Slot == DeploymentSlot.Staging);
             if (production == null) throw new InvalidOperationException("Cannot swap deployments: No staging slot found");
 
-            var ns = XmlNamespaces.Base;
+            var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "Swap",
                 new XElement(ns + "Production", production.Name),
                 new XElement(ns + "SourceDeployment", staging.Name));
@@ -143,19 +140,19 @@ namespace Linq2Azure
             Subscription = null;
         }
 
-        AzureRestClient GetRestClient(string suffix = null)
+        AzureRestClient GetRestClient(string pathSuffix = null)
         {
-            string uri = "services/hostedServices/" + Name;
-            if (!string.IsNullOrEmpty(suffix)) uri += suffix;
-            return Subscription.GetRestClient(uri);
+            string servicePath = "services/hostedServices/" + Name;
+            if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
+            return Subscription.GetCoreRestClient(servicePath);
         }
 
         async Task<Deployment[]> GetDeploymentsAsync()
         {
             var client = GetRestClient("?embed-detail=true");
             var results = await client.GetXmlAsync();
-            return results.Element(XmlNamespaces.Base + "Deployments")
-                .Elements(XmlNamespaces.Base + "Deployment")
+            return results.Element(XmlNamespaces.WindowsAzure + "Deployments")
+                .Elements(XmlNamespaces.WindowsAzure + "Deployment")
                 .Select(x => new Deployment(x, this))
                 .ToArray();
         }
@@ -164,7 +161,7 @@ namespace Linq2Azure
         {
             var client = GetRestClient("/certificates");
             var results = await client.GetXmlAsync();
-            return results.Elements(XmlNamespaces.Base + "Certificate")
+            return results.Elements(XmlNamespaces.WindowsAzure + "Certificate")
                 .Select(x => new ServiceCertificate(x, this))
                 .ToArray();
         }

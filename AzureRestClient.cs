@@ -15,31 +15,29 @@ namespace Linq2Azure
 {
     class AzureRestClient
     {
-        public static readonly string BaseUri = "https://management.core.windows.net/";
-
         public readonly Subscription Subscription;
         public readonly Uri Uri;
         readonly HttpClient _httpClient;
 
         // We use the same HttpClient for all calls to the same subscription; this allows DNS and proxy details to be
         // cached across requests. Note that HttpClient allows parallel operations.
-        internal static HttpClient CreateHttpClient (Subscription subscription)
+        internal static HttpClient CreateHttpClient (Subscription subscription, string msVersion)
         {
             var handler = new WebRequestHandler();
             handler.ClientCertificates.Add(subscription.ManagementCertificate);
             var logger = new LoggingHandler(handler);
             var client = new HttpClient(logger, true);
-            client.DefaultRequestHeaders.Add("x-ms-version", "2012-03-01");
+            client.DefaultRequestHeaders.Add("x-ms-version", msVersion);
             return client;
         }
 
-        public AzureRestClient(Subscription subscription, HttpClient httpClient, string relativeUri)
+        public AzureRestClient(Subscription subscription, HttpClient httpClient, string baseUri, string servicePath)
         {
             Contract.Requires(subscription != null);
             Contract.Requires(httpClient != null);
             Subscription = subscription;
             _httpClient = httpClient;
-            Uri = new Uri(BaseUri + subscription.ID + "/" + relativeUri);
+            Uri = new Uri(baseUri + subscription.ID + "/" + servicePath);
         }
 
         public async Task<XElement> GetXmlAsync()
@@ -88,13 +86,20 @@ namespace Linq2Azure
 
             if (errorElement != null)
             {
-                var ns = XmlNamespaces.Base;
-                code = (string)errorElement.Element(ns + "Code");
-                message = (string)errorElement.Element(ns + "Message");
+                var ns = XmlNamespaces.WindowsAzure;
+                code = (string)errorElement.Elements().FirstOrDefault (e => e.Name.LocalName == "Code");
+                message = (string)errorElement.Elements().FirstOrDefault(e => e.Name.LocalName == "Message");
             }
 
             if (string.IsNullOrWhiteSpace(code) && string.IsNullOrWhiteSpace(message))
+            {
+                if (errorElement != null)
+                    debugInfo = debugInfo == null 
+                        ? errorElement.ToString()
+                        : (debugInfo + "\r\n\r\n" + errorElement);
+
                 throw new AzureRestException(responseMessage, null, "Unknown error", debugInfo);
+            }
             else
                 throw new AzureRestException(responseMessage, code, message, debugInfo);
         }

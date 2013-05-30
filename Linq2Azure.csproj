@@ -91,10 +91,12 @@
     <Compile Include="AzureRestClient.cs" />
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudService.cs" />
+    <Compile Include="DatabaseServer.cs" />
     <Compile Include="LatentSequence.cs" />
     <Compile Include="LINQPad\ICustomMemberProvider.cs" />
     <Compile Include="RoleInstance.cs" />
     <Compile Include="ServiceCertificate.cs" />
+    <Compile Include="XmlHelper.cs" />
     <Compile Include="XmlNamespaces.cs" />
     <Compile Include="Deployment.cs" />
     <Compile Include="Extensions.cs" />

@@ -75,6 +75,7 @@
     <Compile Include="CloudServiceTests.cs" />
     <Compile Include="TestConstants.cs" />
     <Compile Include="DeploymentTests.cs" />
+    <Compile Include="DatabaseServerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Linq2Azure.csproj">

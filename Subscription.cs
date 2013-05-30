@@ -17,6 +17,9 @@ namespace Linq2Azure
 {
     public class Subscription
     {
+        public static readonly string CoreUri = "https://management.core.windows.net/";
+        public static readonly string DatabaseUri = "https://management.database.windows.net:8443/";
+
         public static Subscription FromPublisherSettingsPath(string publishingSettingsPath)
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(publishingSettingsPath));
@@ -36,8 +39,9 @@ namespace Linq2Azure
         public string Name { get; private set; }
         public X509Certificate2 ManagementCertificate { get; private set; }
         public LatentSequence<CloudService> CloudServices { get; private set; }
+        public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
         
-        readonly HttpClient _httpClient;
+        readonly HttpClient _coreHttpClient, _databaseHttpClient;
 
         public Subscription(Guid subscriptionID, string subscriptionName, X509Certificate2 managementCertificate)
         {
@@ -45,31 +49,44 @@ namespace Linq2Azure
             Name = subscriptionName;
             ManagementCertificate = managementCertificate;
 
-            _httpClient = AzureRestClient.CreateHttpClient(this);
+            _coreHttpClient = AzureRestClient.CreateHttpClient(this, "2012-03-01");
+            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0");
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
+            DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
         }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
-            XElement xe = await GetRestClient("services/hostedServices").GetXmlAsync();
-            return xe.Elements(XmlNamespaces.Base + "HostedService").Select(x => new CloudService(x, this)).ToArray();
+            XElement xe = await GetCoreRestClient("services/hostedServices").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "HostedService").Select(x => new CloudService(x, this)).ToArray();
         }
 
-        internal AzureRestClient GetRestClient(string relativeUri)
+        async Task<DatabaseServer[]> GetDatabaseServersAsync()
         {
-            return new AzureRestClient(this, _httpClient, relativeUri);
+            XElement xe = await GetDatabaseRestClient("servers").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.SqlAzure + "Server").Select(x => new DatabaseServer(x, this)).ToArray();
+        }
+
+        internal AzureRestClient GetCoreRestClient(string servicePath)
+        {
+            return new AzureRestClient(this, _coreHttpClient, CoreUri, servicePath);
+        }
+
+        internal AzureRestClient GetDatabaseRestClient(string servicePath)
+        {
+            return new AzureRestClient(this, _databaseHttpClient, DatabaseUri, servicePath);
         }
 
         async Task<string> GetOperationResultAsync(string requestId)
         {
-            var client = GetRestClient("operations/" + requestId);
+            var client = GetCoreRestClient("operations/" + requestId);
             var result = await client.GetXmlAsync();
 
             var error = result.Element("Error");
             if (error != null) AzureRestClient.Throw(null, error);
 
-            return (string) result.Element(XmlNamespaces.Base + "Status");
+            return (string) result.Element(XmlNamespaces.WindowsAzure + "Status");
         }
 
         internal async Task WaitForOperationCompletionAsync(HttpResponseMessage operationResponse)
