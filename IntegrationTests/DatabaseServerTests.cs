@@ -13,10 +13,15 @@ namespace IntegrationTests
         public async Task TestCreateDelete()
         {
             var sub = TestConstants.Subscription;
-            var server = new DatabaseServer("myadmin", "West US");
+            var server = new DatabaseServer("testadmin", "West US");
+            
             Debug.WriteLine("Creating server...");
             await server.CreateAsync(sub, "gj3eowl%5fi:edf");
             Assert.IsNotNull(server.Name);
+
+            Debug.WriteLine("Updating password...");
+            await server.UpdateAdminPassword("gj3eowl%5fi:edf2");
+
             Debug.WriteLine("Dropping server...");
             await server.DropAsync();            
         }

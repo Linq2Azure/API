@@ -21,12 +21,18 @@ namespace IntegrationTests
         [TestMethod]
         public async Task CleanupOldResidue()
         {
+            DateTime cutoff = DateTime.UtcNow.AddMinutes(-5);
+
             foreach (var cs in await TestConstants.Subscription.CloudServices.AsTask())
-                if (cs.Name.StartsWith("Test-") && cs.DateLastModified < DateTime.UtcNow.AddMinutes(-5))
+                if (cs.Name.StartsWith("Test-") && cs.DateLastModified < cutoff)
                 {
                     foreach (var d in await cs.Deployments.AsTask()) await d.DeleteAsync();
-                    cs.DeleteAsync().Wait();
+                    await cs.DeleteAsync();
                 }
+
+            foreach (var s in await TestConstants.Subscription.DatabaseServers.AsTask()) 
+                if (s.AdministratorLogin == "testadmin")
+                    await s.DropAsync();
         }
     }
 }

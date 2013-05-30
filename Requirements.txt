@@ -59,5 +59,3 @@ finally
                 DeleteDeployment(Slot = Staging)          
 }
 
-
-http://msdn.microsoft.com/en-us/library/windowsazure/ee460812.aspx

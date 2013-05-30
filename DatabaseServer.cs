@@ -27,18 +27,18 @@ namespace Linq2Azure
             Location = location;
         }
 
-        public async Task CreateAsync(Subscription subscription, string password)
+        public async Task CreateAsync(Subscription subscription, string adminPassword)
         {
             Contract.Requires(Subscription == null);
             Contract.Requires(subscription != null);
-            Contract.Requires(!string.IsNullOrWhiteSpace(password));
+            Contract.Requires(!string.IsNullOrWhiteSpace(adminPassword));
             Contract.Requires(!string.IsNullOrWhiteSpace(AdministratorLogin));
             Contract.Requires(!string.IsNullOrWhiteSpace(Location));
 
             var ns = XmlNamespaces.SqlAzure;
             var content = new XElement(ns + "Server",
                 new XElement(ns + "AdministratorLogin", AdministratorLogin),
-                new XElement(ns + "AdministratorLoginPassword", password),
+                new XElement(ns + "AdministratorLoginPassword", adminPassword),
                 new XElement(ns + "Location", Location)
                 );
 
@@ -50,6 +50,15 @@ namespace Linq2Azure
             Name = result.Value;
 
             Subscription = subscription;
+        }
+
+        public async Task UpdateAdminPassword(string newAdminPassword)
+        {
+            Contract.Requires(Subscription != null);
+
+            var ns = XmlNamespaces.SqlAzure;
+            var content = new XElement(ns + "AdministratorLoginPassword", newAdminPassword);
+            await GetRestClient("/" + Name + "?op=ResetPassword").PostAsync(content);
         }
 
         public async Task DropAsync()
