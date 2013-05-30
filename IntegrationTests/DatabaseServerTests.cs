@@ -12,6 +12,7 @@ namespace IntegrationTests
         [TestMethod]
         public async Task TestCreateDelete()
         {
+            // TODO - put create/delete into constructor and write subclass for testing firewall rules
             var sub = TestConstants.Subscription;
             var server = new DatabaseServer("testadmin", "West US");
             
