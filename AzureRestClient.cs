@@ -48,14 +48,20 @@ namespace Linq2Azure
             return XElement.Parse(await _httpClient.GetStringAsync(Uri));
         }
 
-        public async Task<HttpResponseMessage> PostAsync (XElement xml)
+        public Task<HttpResponseMessage> PostAsync(XElement xml) { return SendAsync(xml, HttpMethod.Post); }
+        public Task<HttpResponseMessage> PutAsync(XElement xml) { return SendAsync(xml, HttpMethod.Put); }
+
+        async Task<HttpResponseMessage> SendAsync (XElement xml, HttpMethod method)
         {
             Contract.Requires(xml != null);
 
             string xmlString = xml.ToString();
             var payload = new StringContent(xmlString);
             payload.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
-            var response = await _httpClient.PostAsync(Uri, payload);
+
+            HttpRequestMessage request = new HttpRequestMessage(method, Uri) { Content = payload };
+            var response = await _httpClient.SendAsync(request);
+
             if ((int)response.StatusCode >= 300) await ThrowAsync(response, xmlString);
             return response;
         }

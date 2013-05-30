@@ -14,15 +14,24 @@ namespace Linq2Azure
         public string AdministratorLogin { get; private set; }
         public string Location { get; private set; }
         public Subscription Subscription { get; private set; }
+        public LatentSequence<FirewallRule> FirewallRules { get; private set; }
 
-        internal DatabaseServer(XElement xml, Subscription subscription)
+        DatabaseServer()
+        {
+            FirewallRules = new LatentSequence<FirewallRule>(GetFirewallRulesAsync);
+        }
+
+        internal DatabaseServer(XElement xml, Subscription subscription) : this()
         {
             xml.HydrateObject(XmlNamespaces.SqlAzure, this);
             Subscription = subscription;
         }
 
-        public DatabaseServer(string administratorLogin, string location)
+        public DatabaseServer(string administratorLogin, string location) : this()
         {
+            Contract.Requires(!string.IsNullOrWhiteSpace(administratorLogin));
+            Contract.Requires(!string.IsNullOrWhiteSpace(location));
+
             AdministratorLogin = administratorLogin;
             Location = location;
         }
@@ -66,6 +75,12 @@ namespace Linq2Azure
             Contract.Requires(Subscription != null);
             await GetRestClient("/" + Name).DeleteAsync();
             Subscription = null;
+        }
+
+        async Task<FirewallRule[]> GetFirewallRulesAsync()
+        {
+            XElement xe = await GetRestClient("/" + Name + "/firewallrules").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.SqlAzure + "FirewallRule").Select(x => new FirewallRule(x, this)).ToArray();
         }
 
         AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Subscription, pathSuffix); }

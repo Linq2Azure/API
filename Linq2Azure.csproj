@@ -92,6 +92,7 @@
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="DatabaseServer.cs" />
+    <Compile Include="FirewallRule.cs" />
     <Compile Include="LatentSequence.cs" />
     <Compile Include="LINQPad\ICustomMemberProvider.cs" />
     <Compile Include="RoleInstance.cs" />
