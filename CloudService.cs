@@ -136,10 +136,10 @@ namespace Linq2Azure
             Subscription = null;
         }
 
-        AzureRestClient GetRestClient(string queryString = null)
+        AzureRestClient GetRestClient(string suffix = null)
         {
             string uri = "services/hostedServices/" + Name;
-            if (!string.IsNullOrEmpty(queryString)) uri += queryString;
+            if (!string.IsNullOrEmpty(suffix)) uri += suffix;
             return Subscription.GetRestClient(uri);
         }
 
@@ -160,6 +160,15 @@ namespace Linq2Azure
             return results.Element(XmlNamespaces.Base + "Deployments")
                 .Elements(XmlNamespaces.Base + "Deployment")
                 .Select(x => new Deployment(x, this))
+                .ToArray();
+        }
+
+        public async Task<ServiceCertificate[]> GetCertificatesAsync()
+        {
+            var client = GetRestClient("/certificates");
+            var results = await client.GetXmlAsync();
+            return results.Elements(XmlNamespaces.Base + "Certificate")
+                .Select(x => new ServiceCertificate(x, this))
                 .ToArray();
         }
     }

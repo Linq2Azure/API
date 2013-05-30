@@ -96,13 +96,13 @@ namespace Linq2Azure
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
-        public Task Start()
+        public Task StartAsync()
         {
             Contract.Requires(Parent != null);
             return UpdateDeploymentStatus("Running");
         }
 
-        public Task Stop()
+        public Task StopAsync()
         {
             Contract.Requires(Parent != null);
             return UpdateDeploymentStatus("Suspended");
@@ -132,7 +132,6 @@ namespace Linq2Azure
         {
             Contract.Requires(Parent != null);
             XElement xe = await GetRestClient().GetXmlAsync();
-            Debug.WriteLine(xe.ToString());
             return xe.Element(XmlNamespaces.Base + "RoleInstanceList")
                 .Elements(XmlNamespaces.Base + "RoleInstance")
                 .Select(r => new RoleInstance(r))

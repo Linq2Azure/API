@@ -30,6 +30,7 @@ namespace IntegrationTests
         {
             await TestCreate();
             await TestSwapDeployments();
+            await TestStartStop();
         }
 
         public async Task TestCreate()
@@ -52,6 +53,17 @@ namespace IntegrationTests
             Debug.WriteLine("TestCreate: Staging Refresh");
             await Staging.Refresh();
             Assert.AreEqual(_retrievedStaging.Url, Staging.Url);
+        }
+
+        public async Task TestStartStop()
+        {
+            Debug.WriteLine("TestStartStop: Starting Deployment");
+            await Production.StartAsync();
+            string powerState = (await Production.GetRoleInstancesAsync()).First().PowerState;
+            Assert.IsTrue (powerState == "Started" || powerState == "Starting");
+            await Production.StopAsync();
+            powerState = (await Production.GetRoleInstancesAsync()).First().PowerState;
+            Assert.IsTrue(powerState == "Stopped" || powerState == "Stopping");
         }
 
         public async Task TestSwapDeployments()

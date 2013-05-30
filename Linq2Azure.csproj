@@ -92,6 +92,7 @@
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudService.cs" />
     <Compile Include="RoleInstance.cs" />
+    <Compile Include="ServiceCertificate.cs" />
     <Compile Include="XmlNamespaces.cs" />
     <Compile Include="Deployment.cs" />
     <Compile Include="Extensions.cs" />
