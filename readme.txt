@@ -1,4 +1,5 @@
 ﻿REST docs:
+http://msdn.microsoft.com/en-us/library/windowsazure/ee460799.aspx
 
 Windows Azure:
 http://msdn.microsoft.com/en-us/library/windowsazure/ee460812.aspx

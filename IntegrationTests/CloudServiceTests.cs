@@ -14,7 +14,7 @@ namespace IntegrationTests
         public const string TestLocation = "West US";
         public readonly Subscription Subscription = TestConstants.Subscription;
         public readonly CloudService CloudService;
-        public bool IsDisposed { get; private set; }
+        //public bool IsDisposed { get; private set; }
 
         public CloudServiceTests()
         {
@@ -25,8 +25,10 @@ namespace IntegrationTests
         }
 
         [TestMethod]
-        public async Task CanCreateAndRefresh()
+        public async Task CanCreateAndRefreshCloudService()
         {
+            Assert.IsNotNull(CloudService.Subscription);
+
             CloudService cs1 = CloudService;
             var cs2 = (await Subscription.CloudServices.AsTask()).SingleOrDefault(s => s.Label == cs1.Label && s.Name == cs1.Name);
             Assert.IsNotNull(cs2, "Creation failed");
@@ -46,16 +48,18 @@ namespace IntegrationTests
 
         public virtual void Dispose()
         {
-            if (IsDisposed) return;
-            Debug.WriteLine("Deleting test CloudService");
-            CloudService.DeleteAsync().Wait();
-            Debug.WriteLine("Deleted test CloudService");
-            IsDisposed = true;
-            if (GetType() == typeof(CloudServiceTests))
+            if (CloudService.Subscription != null)
             {
-                var cs = Subscription.CloudServices.AsArray().FirstOrDefault(s => s.Name == CloudService.Name);
-                Assert.IsNull(cs, "Deletion failed");
+                Debug.WriteLine("Deleting test CloudService");
+                CloudService.DeleteAsync().Wait();
+                if (GetType() == typeof (CloudServiceTests)) VerifyDeletion();
             }
+        }
+
+        void VerifyDeletion()
+        {
+            var cs = Subscription.CloudServices.AsArray().FirstOrDefault(s => s.Name == CloudService.Name);
+            Assert.IsNull(cs, "Deletion failed");
         }
     }
 }

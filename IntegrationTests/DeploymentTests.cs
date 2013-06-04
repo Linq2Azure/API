@@ -9,10 +9,12 @@ using System.Threading.Tasks;
 namespace IntegrationTests
 {
     [TestClass]
-    public class DeploymentTests : CloudServiceTests
+    public class DeploymentTests 
     {
+        public readonly CloudServiceTests Parent = new CloudServiceTests();
         public readonly Deployment Production, Staging;
         Deployment _retrievedProduction, _retrievedStaging;
+        public CloudService CloudService { get { return Parent.CloudService; } }
 
         public DeploymentTests()
         {
@@ -26,14 +28,14 @@ namespace IntegrationTests
         }
 
         [TestMethod]
-        public async Task TestAll()
+        public async Task CanUseDeployment()
         {
-            await TestCreate();
-            await TestSwapDeployments();
-            await TestStartStop();
+            await CanCreate();
+            await CanSwapDeployments();
+            await CanStartStop();
         }
 
-        public async Task TestCreate()
+        public async Task CanCreate()
         {
             Debug.WriteLine("TestCreate: Retrieving Deployments");
             await RetrieveDeployments();
@@ -55,7 +57,7 @@ namespace IntegrationTests
             Assert.AreEqual(_retrievedStaging.Url, Staging.Url);
         }
 
-        public async Task TestStartStop()
+        public async Task CanStartStop()
         {
             Debug.WriteLine("TestStartStop: Starting Deployment");
             await Production.StartAsync();
@@ -66,7 +68,7 @@ namespace IntegrationTests
             Assert.IsTrue(powerState == "Stopped" || powerState == "Stopping");
         }
 
-        public async Task TestSwapDeployments()
+        public async Task CanSwapDeployments()
         {
             Debug.WriteLine("TestSwapDeployments: Swapping Deployments(1)");
             await CloudService.SwapDeploymentsAsync();
@@ -92,14 +94,30 @@ namespace IntegrationTests
             _retrievedStaging = deployments.Single(d => d.Slot == DeploymentSlot.Staging);
         }
 
-        public override void Dispose()
+        public virtual void Dispose()
         {
-            if (IsDisposed) return;
-            Debug.WriteLine("Deleting test deployments");
-            Production.DeleteAsync().Wait();
-            Staging.DeleteAsync().Wait();
-            Debug.WriteLine("Deleted test deployments");
-            base.Dispose();
+            bool verifyDeletion = Production.Parent != null || Staging.Parent != null;
+
+            if (Production.Parent != null)
+            {
+                Debug.WriteLine("Deleting test production deployment");
+                Production.DeleteAsync().Wait();
+            }
+            if (Staging.Parent != null)
+            {
+                Debug.WriteLine("Deleting test staging deployment");
+                Staging.DeleteAsync().Wait();
+            }
+
+            if (verifyDeletion && GetType() == typeof (DeploymentTests)) VerifyDeletion();
+
+            Parent.Dispose();
+        }
+
+        void VerifyDeletion()
+        {
+            Debug.WriteLine("Verifying deployment deletion");
+            Assert.AreEqual(0, CloudService.Deployments.AsArray().Length);
         }
     }
 }
