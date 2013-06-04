@@ -12,7 +12,7 @@ using System.Xml.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Reactive.Linq;
 using System.Threading;
-using Linq2Azure.CloudServies;
+using Linq2Azure.CloudServices;
 using Linq2Azure.SqlDatabases;
 using Linq2Azure.TrafficManagement;
 using System.Diagnostics;
@@ -26,20 +26,20 @@ namespace Linq2Azure
 
         public IEnumerable<TraceListener> LogDestinations { get; set; }
 
-        public static Subscription FromPublisherSettingsPath(string publishingSettingsPath)
-        {
-            Contract.Requires(!string.IsNullOrWhiteSpace(publishingSettingsPath));
+        //public static Subscription FromPublishSettingsPath(string publishSettingsPath)
+        //{
+        //    Contract.Requires(!string.IsNullOrWhiteSpace(publishSettingsPath));
 
-            return (
-                from c in XDocument.Load(publishingSettingsPath).Root.Elements("PublishProfile")
-                from s in c.Elements("Subscription")
-                select new Subscription (
-                    subscriptionID: Guid.Parse((string)s.Attribute("Id")),
-                    subscriptionName: (string)s.Attribute("Name"),
-                    managementCertificate: new X509Certificate2(Convert.FromBase64String((string)c.Attribute("ManagementCertificate")))
-                    )
-                ).Single();
-        }
+        //    return (
+        //        from c in XDocument.Load(publishSettingsPath).Root.Elements("PublishProfile")
+        //        from s in c.Elements("Subscription")
+        //        select new Subscription (
+        //            id: Guid.Parse((string)s.Attribute("Id")),
+        //            name: (string)s.Attribute("Name"),
+        //            managementCertificate: new X509Certificate2(Convert.FromBase64String((string)c.Attribute("ManagementCertificate")))
+        //            )
+        //        ).Single();
+        //}
 
         public Guid ID { get; private set; }
         public string Name { get; private set; }
@@ -48,14 +48,36 @@ namespace Linq2Azure
         public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
         public LatentSequence<TrafficManagerProfile> TrafficManagerProfiles { get; private set; }
         
-        readonly HttpClient _coreHttpClient, _databaseHttpClient;
+        HttpClient _coreHttpClient, _databaseHttpClient;
 
-        public Subscription(Guid subscriptionID, string subscriptionName, X509Certificate2 managementCertificate)
+        public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
-            ID = subscriptionID;
-            Name = subscriptionName;
+            Contract.Requires(!string.IsNullOrWhiteSpace(name));
+            Contract.Requires(managementCertificate != null);
+
+            ID = id;
+            Name = name;
             ManagementCertificate = managementCertificate;
 
+            Init();
+        }
+
+        public Subscription(string publishSettingsPath)
+        {
+            Contract.Requires(!string.IsNullOrWhiteSpace(publishSettingsPath));
+
+            var pp = XDocument.Load(publishSettingsPath).Root.Element("PublishProfile");
+            var sub = pp.Element("Subscription");
+
+            ID = Guid.Parse((string)sub.Attribute("Id"));
+            Name = (string)sub.Attribute("Name");
+            ManagementCertificate = new X509Certificate2(Convert.FromBase64String((string)pp.Attribute("ManagementCertificate")));
+
+            Init();
+        }
+
+        void Init()
+        {
             _coreHttpClient = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
             _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
 

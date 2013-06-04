@@ -12,7 +12,7 @@ using System.Xml.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Reactive.Linq;
 
-namespace Linq2Azure.CloudServies
+namespace Linq2Azure.CloudServices
 {
     public class Deployment
     {

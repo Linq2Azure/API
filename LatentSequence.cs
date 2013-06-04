@@ -21,6 +21,11 @@ namespace Linq2Azure
 
         public T[] AsArray() { return AsTask().Result; }
 
+        public IEnumerable<T> AsEnumerable()
+        {
+            foreach (var item in AsArray()) yield return item;
+        }
+
         public IObservable<T> AsObservable()
         {
             return Observable.Defer(() => AsTask().ToObservable()).SelectMany(x => x);

@@ -5,7 +5,7 @@ using System.Reactive.Linq;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Linq2Azure.CloudServies;
+using Linq2Azure.CloudServices;
 
 namespace IntegrationTests
 {

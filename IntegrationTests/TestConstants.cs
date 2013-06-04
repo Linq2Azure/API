@@ -13,7 +13,7 @@ namespace IntegrationTests
     {
         public const string ManagementCertificatePath = @"c:\temp\Linq2Azure Development-5-27-2013-credentials.publishsettings";
 
-        public static readonly Subscription Subscription = Subscription.FromPublisherSettingsPath(TestConstants.ManagementCertificatePath);
+        public static readonly Subscription Subscription = new Subscription(TestConstants.ManagementCertificatePath);
 
         public static readonly Uri TestDeploymentPackageUri = new Uri (@"http://linq2azuredev.blob.core.windows.net/testdata/TestDeployment.cspkg");
 

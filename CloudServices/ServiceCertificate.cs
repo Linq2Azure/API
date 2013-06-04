@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Linq2Azure.CloudServies
+namespace Linq2Azure.CloudServices
 {
     public class ServiceCertificate
     {
