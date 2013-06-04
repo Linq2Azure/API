@@ -4,6 +4,7 @@ using Linq2Azure;
 using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Linq;
+using Linq2Azure.SqlDatabases;
 
 namespace IntegrationTests
 {

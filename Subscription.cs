@@ -12,6 +12,8 @@ using System.Xml.Linq;
 using System.Reactive.Threading.Tasks;
 using System.Reactive.Linq;
 using System.Threading;
+using Linq2Azure.CloudServies;
+using Linq2Azure.SqlDatabases;
 
 namespace Linq2Azure
 {

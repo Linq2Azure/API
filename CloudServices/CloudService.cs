@@ -14,7 +14,7 @@ using System.Xml;
 using System.Xml.Linq;
 using System.Reactive.Threading.Tasks;
 
-namespace Linq2Azure
+namespace Linq2Azure.CloudServies
 {
     public class CloudService
     {

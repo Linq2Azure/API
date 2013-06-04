@@ -1,4 +1,5 @@
 ﻿using Linq2Azure;
+using Linq2Azure.SqlDatabases;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
