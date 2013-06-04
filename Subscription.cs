@@ -14,6 +14,8 @@ using System.Reactive.Linq;
 using System.Threading;
 using Linq2Azure.CloudServies;
 using Linq2Azure.SqlDatabases;
+using Linq2Azure.TrafficManagement;
+using System.Diagnostics;
 
 namespace Linq2Azure
 {
@@ -21,6 +23,8 @@ namespace Linq2Azure
     {
         public static readonly string CoreUri = "https://management.core.windows.net/";
         public static readonly string DatabaseUri = "https://management.database.windows.net:8443/";
+
+        public IEnumerable<TraceListener> LogDestinations { get; set; }
 
         public static Subscription FromPublisherSettingsPath(string publishingSettingsPath)
         {
@@ -42,6 +46,7 @@ namespace Linq2Azure
         public X509Certificate2 ManagementCertificate { get; private set; }
         public LatentSequence<CloudService> CloudServices { get; private set; }
         public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
+        public LatentSequence<TrafficManagerProfile> TrafficManagerProfiles { get; private set; }
         
         readonly HttpClient _coreHttpClient, _databaseHttpClient;
 
@@ -51,11 +56,12 @@ namespace Linq2Azure
             Name = subscriptionName;
             ManagementCertificate = managementCertificate;
 
-            _coreHttpClient = AzureRestClient.CreateHttpClient(this, "2012-03-01");
-            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0");
+            _coreHttpClient = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
+            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
+            TrafficManagerProfiles = new LatentSequence<TrafficManagerProfile>(GetTrafficManagerProfilesAsync);
         }
 
         async Task<CloudService[]> GetCloudServicesAsync()
@@ -68,6 +74,12 @@ namespace Linq2Azure
         {
             XElement xe = await GetDatabaseRestClient("servers").GetXmlAsync();
             return xe.Elements(XmlNamespaces.SqlAzure + "Server").Select(x => new DatabaseServer(x, this)).ToArray();
+        }
+
+        async Task<TrafficManagerProfile[]> GetTrafficManagerProfilesAsync()
+        {
+            XElement xe = await GetCoreRestClient("services/WATM/profiles").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "Profile").Select(x => new TrafficManagerProfile(x, this)).ToArray();
         }
 
         internal AzureRestClient GetCoreRestClient(string servicePath)

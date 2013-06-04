@@ -87,6 +87,7 @@ namespace Linq2Azure.SqlDatabases
 
         AzureRestClient GetRestClient(Subscription subscription, string pathSuffix = null)
         {
+            if (subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
             string servicePath = "servers";
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
             return subscription.GetDatabaseRestClient(servicePath);

@@ -33,6 +33,10 @@ namespace IntegrationTests
             foreach (var s in await TestConstants.Subscription.DatabaseServers.AsTask()) 
                 if (s.AdministratorLogin == "testadmin")
                     await s.DropAsync();
+
+            foreach (var s in await TestConstants.Subscription.TrafficManagerProfiles.AsTask())
+                if (s.Name == "test-profile")
+                    await s.DeleteAsync();
         }
     }
 }

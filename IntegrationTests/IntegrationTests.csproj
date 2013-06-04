@@ -75,6 +75,7 @@
     <Compile Include="TestConstants.cs" />
     <Compile Include="DeploymentTests.cs" />
     <Compile Include="DatabaseServerTests.cs" />
+    <Compile Include="TrafficManagerTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Linq2Azure.csproj">

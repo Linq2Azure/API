@@ -97,6 +97,10 @@
     <Compile Include="LINQPad\ICustomMemberProvider.cs" />
     <Compile Include="CloudServices\RoleInstance.cs" />
     <Compile Include="CloudServices\ServiceCertificate.cs" />
+    <Compile Include="TrafficManagement\TrafficManagerDefinition.cs" />
+    <Compile Include="TrafficManagement\TrafficManagerMonitor.cs" />
+    <Compile Include="TrafficManagement\TrafficManagerPolicy.cs" />
+    <Compile Include="TrafficManagement\TrafficManagerProfile.cs" />
     <Compile Include="XmlHelper.cs" />
     <Compile Include="XmlNamespaces.cs" />
     <Compile Include="CloudServices\Deployment.cs" />

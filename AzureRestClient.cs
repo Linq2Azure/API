@@ -21,11 +21,11 @@ namespace Linq2Azure
 
         // We use the same HttpClient for all calls to the same subscription; this allows DNS and proxy details to be
         // cached across requests. Note that HttpClient allows parallel operations.
-        internal static HttpClient CreateHttpClient (Subscription subscription, string msVersion)
+        internal static HttpClient CreateHttpClient (Subscription subscription, string msVersion, Func<IEnumerable<TraceListener>> listenerFunc)
         {
             var handler = new WebRequestHandler();
             handler.ClientCertificates.Add(subscription.ManagementCertificate);
-            var logger = new LoggingHandler(handler);
+            var logger = new LoggingHandler(handler, listenerFunc);
             var client = new HttpClient(logger, true);
             client.DefaultRequestHeaders.Add("x-ms-version", msVersion);
             return client;
@@ -111,19 +111,30 @@ namespace Linq2Azure
         }
 
         // TODO - make this optional
-        class LoggingHandler : DelegatingHandler
+        internal class LoggingHandler : DelegatingHandler
         {
-            public LoggingHandler(HttpMessageHandler nextHandler)
+            Func<IEnumerable<TraceListener>> _listenerFunc;
+
+            public LoggingHandler(HttpMessageHandler nextHandler, Func<IEnumerable<TraceListener>> listenerFunc)
             {
                 InnerHandler = nextHandler;
+                _listenerFunc = listenerFunc;
             }
+
+            IEnumerable<TraceListener> Listeners 
+            {
+                get { return _listenerFunc() ?? new TraceListener[0]; }
+            }
+
+            void Write(string msg) { foreach (var l in Listeners) l.Write(msg); }
+            void WriteLine(string msg) { foreach (var l in Listeners) l.WriteLine(msg); }
 
             protected async override Task<HttpResponseMessage> SendAsync (HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                bool operation = request.RequestUri.AbsolutePath.Contains("/operations/");                
-                if (!operation) Debug.Write(request.Method + ": " + request.RequestUri);                
-                var response = await base.SendAsync(request, cancellationToken);                
-                if (operation) Debug.Write('.'); else Debug.WriteLine(" " + response.StatusCode);                
+                bool operation = request.RequestUri.AbsolutePath.Contains("/operations/");
+                if (!operation) Write(request.Method + ": " + request.RequestUri);                
+                var response = await base.SendAsync(request, cancellationToken);
+                if (operation) Write("."); else WriteLine(" " + response.StatusCode);                
                 return response;
             }
         }

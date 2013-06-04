@@ -142,6 +142,7 @@ namespace Linq2Azure.CloudServies
 
         AzureRestClient GetRestClient(string pathSuffix = null)
         {
+            if (Subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
             string servicePath = "services/hostedServices/" + Name;
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
             return Subscription.GetCoreRestClient(servicePath);
