@@ -100,7 +100,6 @@
     <Compile Include="SqlDatabases\DatabaseServer.cs" />
     <Compile Include="SqlDatabases\FirewallRule.cs" />
     <Compile Include="LatentSequence.cs" />
-    <Compile Include="LINQPad\ICustomMemberProvider.cs" />
     <Compile Include="CloudServices\RoleInstance.cs" />
     <Compile Include="CloudServices\ServiceCertificate.cs" />
     <Compile Include="TrafficManagement\TrafficManagerDefinition.cs" />

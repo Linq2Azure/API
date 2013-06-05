@@ -77,7 +77,7 @@ namespace Linq2Azure.CloudServices
             ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements().ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
         }
 
-        public async Task CreateAsync(Subscription subscription)
+        internal async Task CreateAsync(Subscription subscription)
         {
             Contract.Requires(Subscription == null);
             Contract.Requires(subscription != null);
@@ -104,6 +104,16 @@ namespace Linq2Azure.CloudServices
             var hc = subscription.GetCoreRestClient("services/hostedservices");
             await hc.PostAsync(content);
             Subscription = subscription;
+        }
+
+        public Task PublishDeploymentAsync(Deployment deployment, Uri packageUrl, Deployment.CreationOptions options = null)
+        {
+            return deployment.CreateAsync(this, packageUrl, options);
+        }
+
+        public Task AddServiceCertificateAsync(ServiceCertificate certificate)
+        {
+            return certificate.AddAsync(this);
         }
 
         public async Task RefreshAsync()

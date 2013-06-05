@@ -22,7 +22,7 @@ namespace IntegrationTests
         {
             Debug.WriteLine ("Creating firewall rule");
             var rule = new FirewallRule("TestRule1", "0.0.0.0", "255.255.255.255");
-            await rule.CreateAsync(DatabaseServer);
+            await DatabaseServer.AddFirewallRule (rule);
 
             Debug.WriteLine("Retrieving firewall rule");
             var retrievedRule = (await DatabaseServer.FirewallRules.AsTask()).SingleOrDefault(r => r.Name == "TestRule1");

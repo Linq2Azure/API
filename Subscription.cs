@@ -26,21 +26,6 @@ namespace Linq2Azure
 
         public IEnumerable<TraceListener> LogDestinations { get; set; }
 
-        //public static Subscription FromPublishSettingsPath(string publishSettingsPath)
-        //{
-        //    Contract.Requires(!string.IsNullOrWhiteSpace(publishSettingsPath));
-
-        //    return (
-        //        from c in XDocument.Load(publishSettingsPath).Root.Elements("PublishProfile")
-        //        from s in c.Elements("Subscription")
-        //        select new Subscription (
-        //            id: Guid.Parse((string)s.Attribute("Id")),
-        //            name: (string)s.Attribute("Name"),
-        //            managementCertificate: new X509Certificate2(Convert.FromBase64String((string)c.Attribute("ManagementCertificate")))
-        //            )
-        //        ).Single();
-        //}
-
         public Guid ID { get; private set; }
         public string Name { get; private set; }
         public X509Certificate2 ManagementCertificate { get; private set; }
@@ -85,6 +70,10 @@ namespace Linq2Azure
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
             TrafficManagerProfiles = new LatentSequence<TrafficManagerProfile>(GetTrafficManagerProfilesAsync);
         }
+
+        public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
+        public Task CreateDatabaseServerAsync(DatabaseServer server, string adminPassword) { return server.CreateAsync(this, adminPassword); }
+        public Task CreateTrafficManagerProfileAsync(TrafficManagerProfile profile) { return profile.CreateAsync(this); }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {

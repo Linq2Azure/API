@@ -19,6 +19,12 @@ namespace Linq2Azure.LINQPadDriver
 			_driverData = cxInfo.DriverData;
 		}
 
+        public string DisplayName
+        {
+            get { return _cxInfo.DisplayName; }
+            set { _cxInfo.DisplayName = value; }
+        }
+
 		public bool Persist
 		{
 			get { return _cxInfo.Persist; }

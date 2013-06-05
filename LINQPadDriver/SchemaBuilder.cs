@@ -12,6 +12,8 @@ namespace Linq2Azure.LINQPadDriver
 {
     static class SchemaBuilder
     {
+        public static readonly string Linq2AzureNamespace = typeof(Subscription).Namespace;
+
         internal static List<ExplorerItem> GetSchemaAndBuildAssembly(Linq2AzureProperties props, AssemblyName name,
             ref string nameSpace, ref string typeName)
         {
@@ -39,39 +41,44 @@ namespace Linq2Azure.LINQPadDriver
 
         internal static List<ExplorerItem> GetSchema(Type t, int level)
         {
-            return t.GetProperties()
+            var propItems = t.GetProperties()
                 .Where(p => p.Name != "Parent" && p.Name != "Subscription")
-                .Select(p => ToExplorerItem(p, level))
-                .OrderBy(p => GetIconDisplayOrder (p.Icon))
-                .ThenBy(p => p.Text)
+                .Select(p => ToExplorerItem(p, level));
+
+            var methodItems = t.GetMethods()
+                .Where(m => m.ReturnType != null && typeof(Task).IsAssignableFrom (m.ReturnType))
+                .Select(m => ToExplorerItem(m, level));
+
+            return propItems.Concat (methodItems)
+                .OrderBy(ei => GetIconDisplayOrder(ei.Icon)).ThenBy(ei => ei.Text)
                 .ToList();
         }
 
         static ExplorerItem ToExplorerItem(PropertyInfo p, int level)
         {
             Type t = p.PropertyType;
-            if (t.IsEnum || !t.Namespace.StartsWith("Linq2Azure") || typeof(IFormattable).IsAssignableFrom(t))
-                return new ExplorerItem(p.Name, ExplorerItemKind.Property, ExplorerIcon.Column) 
-                {
-                    ToolTipText = GetTypeName(t),
-                    DragText = p.Name
-                };
+
+            if (t.IsEnum || t.IsPrimitive || typeof(IFormattable).IsAssignableFrom(t))
+                return ToSimpleExplorerItem(p);
 
             Type elementType = GetLatentSequenceElementType(t);
             bool isLatentSequence = elementType != null;
             if (elementType == null) elementType = GetEnumerableElementType(t);
-            bool isSequence = elementType != null;
+
+            if (elementType != null && !elementType.Namespace.StartsWith(Linq2AzureNamespace) ||
+                elementType == null && !t.Namespace.StartsWith(Linq2AzureNamespace))
+                return ToSimpleExplorerItem(p);
 
             var item = new ExplorerItem(
                 p.Name,
                 ExplorerItemKind.QueryableObject,
                 elementType == null ? ExplorerIcon.OneToOne : level == 0 ? ExplorerIcon.Table : ExplorerIcon.OneToMany)
             {
-                ToolTipText = GetTypeName(t),
-                IsEnumerable = isSequence
+                ToolTipText = FormatTypeName(t),
+                IsEnumerable = elementType != null
             };
 
-            item.DragText = item.Text + (isLatentSequence ? ".AsObservable()" : "");
+            item.DragText = item.Text + (isLatentSequence ? ".AsEnumerable()" : "");
 
             if (level < 10)
                 item.Children = GetSchema(elementType ?? t, level + 1);
@@ -79,20 +86,44 @@ namespace Linq2Azure.LINQPadDriver
             return item;
         }
 
-        static string GetTypeName(Type t, int level = 0)
+        static ExplorerItem ToSimpleExplorerItem(PropertyInfo p)
+        {
+            return new ExplorerItem(p.Name, ExplorerItemKind.Property, ExplorerIcon.Column)
+            {
+                ToolTipText = FormatTypeName(p.PropertyType),
+                DragText = p.Name
+            };
+        }
+
+        static ExplorerItem ToExplorerItem(MethodInfo m, int level)
+        {
+            var item = new ExplorerItem(m.Name, ExplorerItemKind.Property, ExplorerIcon.ScalarFunction)
+            {
+                ToolTipText = FormatTypeName(m.ReturnType),
+                DragText = m.Name + "()"
+            };
+
+            item.Children = m.GetParameters()
+                .Select(p => new ExplorerItem(FormatTypeName (p.ParameterType) + " " + p.Name, ExplorerItemKind.Parameter, ExplorerIcon.Parameter))
+                .ToList();
+
+            return item;
+        }
+
+        static string FormatTypeName(Type t, int level = 0)
         {
             if (level > 3) return "";
 
             if (t.IsArray) 
-                return GetTypeName (t.GetElementType(), level + 1) + "[".PadRight(t.GetArrayRank(), ',') + "]";
+                return FormatTypeName (t.GetElementType(), level + 1) + "[".PadRight(t.GetArrayRank(), ',') + "]";
 
             if (t.IsGenericTypeDefinition && t.GetGenericTypeDefinition() == typeof(Nullable<>))
-                return GetTypeName(t.GetGenericArguments()[0], level + 1) + "?";
+                return FormatTypeName(t.GetGenericArguments()[0], level + 1) + "?";
 
             if (t.IsGenericType)
                 return t.Name.Split ('`').First() +
                     "<" + 
-                    string.Join(",", t.GetGenericArguments().Select(a => GetTypeName (a, level + 1))) +
+                    string.Join(",", t.GetGenericArguments().Select(a => FormatTypeName (a, level + 1))) +
                     ">";
 
             return t.Name;
@@ -106,7 +137,8 @@ namespace Linq2Azure.LINQPadDriver
                 case ExplorerIcon.OneToOne: return 1;
                 case ExplorerIcon.OneToMany: return 2;
                 case ExplorerIcon.Table: return 3;
-                default: return 1;
+                case ExplorerIcon.ScalarFunction: return 4;
+                default: return 10;
             }
         }
 

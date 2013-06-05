@@ -41,7 +41,7 @@ namespace Linq2Azure.TrafficManagement
             Subscription = subscription;
         }
 
-        public async Task CreateAsync(Subscription subscription)
+        internal async Task CreateAsync(Subscription subscription)
         {
             Contract.Requires(Subscription == null);
             Contract.Requires(subscription != null);
@@ -58,6 +58,11 @@ namespace Linq2Azure.TrafficManagement
             await hc.PostAsync(content);
 
             Subscription = subscription;
+        }
+
+        public Task AddDefinition(TrafficManagerDefinition definition)
+        {
+            return definition.CreateAsync(this);
         }
 
         public Task EnableProfileAsync(int definitionVersionNumber)

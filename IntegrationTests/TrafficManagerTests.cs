@@ -19,7 +19,7 @@ namespace IntegrationTests
         {
             Debug.WriteLine("Creating traffic manager profile");
             Profile = new TrafficManagerProfile("Test-" + Guid.NewGuid().ToString("N"), Parent.CloudService.Name + ".trafficmanager.net");
-            Profile.CreateAsync(Subscription).Wait();
+            Subscription.CreateTrafficManagerProfileAsync (Profile).Wait();
         }
 
         async Task<TrafficManagerProfile[]> GetProfilesAsync()
@@ -48,7 +48,7 @@ namespace IntegrationTests
             var defn = new TrafficManagerDefinition(3600, new[] { monitor }, policy);
 
             Debug.WriteLine("Creating traffic manager definition");
-            await defn.CreateAsync (Profile);
+            await Profile.AddDefinition (defn);
 
             Debug.WriteLine("Retrieving traffic manager definition");
             var allDefns = await Profile.Definitions.AsTask();

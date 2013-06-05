@@ -37,7 +37,7 @@ namespace Linq2Azure.CloudServices
             Parent = parent;
         }
 
-        public async Task AddAsync(CloudService parent)
+        internal async Task AddAsync(CloudService parent)
         {
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "CertificateFile",

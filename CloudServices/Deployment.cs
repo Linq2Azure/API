@@ -57,7 +57,7 @@ namespace Linq2Azure.CloudServices
             Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.WindowsAzure + "Configuration").Value.FromBase64String()));
         }
 
-        public async Task CreateAsync(CloudService parent, Uri packageUrl, CreationOptions options = null)
+        internal async Task CreateAsync(CloudService parent, Uri packageUrl, CreationOptions options = null)
         {
             Contract.Requires(parent != null);
             Contract.Requires(packageUrl != null);

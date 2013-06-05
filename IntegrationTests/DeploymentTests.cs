@@ -21,11 +21,11 @@ namespace IntegrationTests
         {
             Debug.WriteLine("DeploymentTests ctor - creating production test deployment");
             Production = new Deployment("Test-Deployment1", DeploymentSlot.Production, new ServiceConfiguration(TestConstants.TestServiceConfig));
-            Production.CreateAsync(CloudService, TestConstants.TestDeploymentPackageUri).Wait();
+            CloudService.PublishDeploymentAsync (Production, TestConstants.TestDeploymentPackageUri).Wait();
 
             Debug.WriteLine("DeploymentTests ctor - creating staging test deployment");
             Staging = new Deployment("Test-Deployment2", DeploymentSlot.Staging, new ServiceConfiguration(TestConstants.TestServiceConfig));
-            Staging.CreateAsync(CloudService, TestConstants.TestDeploymentPackageUri).Wait();
+            CloudService.PublishDeploymentAsync (Staging, TestConstants.TestDeploymentPackageUri).Wait();
         }
 
         [TestMethod]

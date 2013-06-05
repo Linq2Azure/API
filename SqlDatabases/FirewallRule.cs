@@ -32,7 +32,7 @@ namespace Linq2Azure.SqlDatabases
             xml.HydrateObject(XmlNamespaces.SqlAzure, this);
         }
 
-        public async Task CreateAsync(DatabaseServer server)
+        internal async Task CreateAsync(DatabaseServer server)
         {
             Contract.Requires(Parent == null);
             Contract.Requires(server != null);

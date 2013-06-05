@@ -55,6 +55,7 @@
     <Compile Include="ConnectionDialog.xaml.cs">
       <DependentUpon>ConnectionDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CustomMemberProvider.cs" />
     <Compile Include="Linq2AzureDriver.cs" />
     <Compile Include="Linq2AzureProperties.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

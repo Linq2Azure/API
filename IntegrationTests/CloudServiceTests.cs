@@ -22,7 +22,7 @@ namespace IntegrationTests
             CloudService = new CloudService("Test-" + Guid.NewGuid().ToString("N"), CloudServiceTests.TestLocation);
             CloudService.Description = "Test Description";
             Debug.WriteLine("CloudServiceTests ctor - creating test service");
-            CloudService.CreateAsync(TestConstants.Subscription).Wait();
+            TestConstants.Subscription.CreateCloudServiceAsync (CloudService).Wait();
         }
 
         [TestMethod]

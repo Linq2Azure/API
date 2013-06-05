@@ -36,7 +36,7 @@ namespace Linq2Azure.SqlDatabases
             Location = location;
         }
 
-        public async Task CreateAsync(Subscription subscription, string adminPassword)
+        internal async Task CreateAsync(Subscription subscription, string adminPassword)
         {
             Contract.Requires(Subscription == null);
             Contract.Requires(subscription != null);
@@ -59,6 +59,11 @@ namespace Linq2Azure.SqlDatabases
             Name = result.Value;
 
             Subscription = subscription;
+        }
+
+        public Task AddFirewallRule(FirewallRule rule)
+        {
+            return rule.CreateAsync(this);
         }
 
         public async Task UpdateAdminPassword(string newAdminPassword)

@@ -40,7 +40,7 @@ namespace Linq2Azure.TrafficManagement
             Parent = parent;
         }
 
-        public async Task CreateAsync(TrafficManagerProfile parent)
+        internal async Task CreateAsync(TrafficManagerProfile parent)
         {
             Contract.Requires(Parent == null);
             Contract.Requires(parent != null);

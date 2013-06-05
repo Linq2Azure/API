@@ -19,7 +19,7 @@ namespace IntegrationTests
         public DatabaseServerTests()
         {
             Debug.WriteLine("Creating database server...");
-            DatabaseServer.CreateAsync(Subscription, Password).Wait();
+            Subscription.CreateDatabaseServerAsync (DatabaseServer, Password).Wait();
         }
 
         [TestMethod]

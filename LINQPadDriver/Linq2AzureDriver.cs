@@ -62,5 +62,13 @@ namespace Linq2Azure.LINQPadDriver
         {
             return SchemaBuilder.GetSchemaAndBuildAssembly(new Linq2AzureProperties(cxInfo), assemblyToBuild, ref nameSpace, ref typeName);
         }
+
+        public override LINQPad.ICustomMemberProvider GetCustomDisplayMemberProvider(object objectToWrite)
+        {
+            if (objectToWrite != null && CustomMemberProvider.IsInteresting(objectToWrite.GetType()))
+                return new CustomMemberProvider(objectToWrite);
+
+            return null;
+        }
     }
 }
