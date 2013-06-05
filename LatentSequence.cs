@@ -8,13 +8,10 @@ using System.Reactive.Threading.Tasks;
 
 namespace Linq2Azure
 {
-    //public interface ILatentSequence
-    //{
-    //    Type ElementType { get; }
-    //    Task AsTask { get; }
-    //}
-
-    public class LatentSequence<T> //: ILatentSequence
+    /// <summary>
+    /// Represents a sequence whose elements become available all at once, some time in the future.
+    /// </summary>
+    public class LatentSequence<T>
     {
         readonly Func<Task<T[]>> _taskGenerator;
 
@@ -23,21 +20,24 @@ namespace Linq2Azure
             _taskGenerator = taskGenerator;
         }
 
+        /// <summary>Starts fetching data. The task completes when all elements have been fetched.</summary>
         public Task<T[]> AsTask() { return _taskGenerator(); }
 
+        /// <summary>Fetches all elements, blocking until all data is available. Equivalent to calling AsTask().Result.</summary>
         public T[] AsArray() { return AsTask().Result; }
 
+        /// <summary>Fetches all elements upon enumeration, blocking until all data is available. Equivalent to calling AsArray()
+        /// except that the request is not kicked off until the sequence is actually enumerated.</summary>
         public IEnumerable<T> AsEnumerable()
         {
-            foreach (var item in AsArray()) yield return item;
+            return AsArray().Select(e => e);
         }
 
+        /// <summary>Upon subscription, starts fetching data and then yields all elements when they become available. This 
+        /// is useful in parallelizing queries with Reactive Extensions.</summary>
         public IObservable<T> AsObservable()
         {
             return Observable.Defer(() => AsTask().ToObservable()).SelectMany(x => x);
         }
-
-        //Type ILatentSequence.ElementType { get { return typeof(T); } }
-        //Task ILatentSequence.AsTask { get { return AsTask(); } }
     }
 }

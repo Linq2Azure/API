@@ -13,7 +13,6 @@ namespace Linq2Azure.TrafficManagement
         public string Name { get; private set; }
         public string DomainName { get; private set; }
         public bool Enabled { get; private set; }
-        //public int EnabledVersion { get; private set; }
         public Subscription Subscription { get; private set; }
         public LatentSequence<TrafficManagerDefinition> Definitions { get; private set; }
 
@@ -37,7 +36,6 @@ namespace Linq2Azure.TrafficManagement
             var ns = XmlNamespaces.WindowsAzure;
             xml.HydrateObject(ns, this);
             Enabled = (string)xml.Element(ns + "Status") != "Disabled";
-            //EnabledVersion = (int)xml.Element(ns + "StatusDetails").Element("EnabledVersion");
             Subscription = subscription;
         }
 
@@ -103,7 +101,6 @@ namespace Linq2Azure.TrafficManagement
         async Task<TrafficManagerDefinition[]> GetDefinitionsAsync()        
         {
             XElement xe = await GetRestClient("/" + Name + "/definitions").GetXmlAsync();
-            //Console.WriteLine(xe);
             return xe.Elements(XmlNamespaces.WindowsAzure + "Definition").Select(x => new TrafficManagerDefinition(x, this)).ToArray();
         }
 

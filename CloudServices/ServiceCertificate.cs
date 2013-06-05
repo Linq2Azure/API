@@ -42,10 +42,8 @@ namespace Linq2Azure.CloudServices
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "CertificateFile",
                 new XElement(ns + "Data", Convert.ToBase64String(Certificate.Export(X509ContentType.Pfx))),
-                //new XElement(ns + "Data", Convert.ToBase64String(File.ReadAllBytes (@"c:\temp\centralserver.sprint.cer"))),
-                new XElement(ns + "CertificateFormat", "pfx")
-                ,new XElement(ns + "Password")
-                );
+                new XElement(ns + "CertificateFormat", "pfx"),
+                new XElement(ns + "Password"));
 
             HttpResponseMessage response = await GetRestClient(parent).PostAsync(content);
             await parent.Subscription.WaitForOperationCompletionAsync(response);

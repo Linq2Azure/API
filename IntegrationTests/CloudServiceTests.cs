@@ -15,7 +15,6 @@ namespace IntegrationTests
         public const string TestLocation = "West US";
         public readonly Subscription Subscription = TestConstants.Subscription;
         public readonly CloudService CloudService;
-        //public bool IsDisposed { get; private set; }
 
         public CloudServiceTests()
         {

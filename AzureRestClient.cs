@@ -110,7 +110,6 @@ namespace Linq2Azure
                 throw new AzureRestException(responseMessage, code, message, debugInfo);
         }
 
-        // TODO - make this optional
         internal class LoggingHandler : DelegatingHandler
         {
             Func<IEnumerable<TraceListener>> _listenerFunc;
