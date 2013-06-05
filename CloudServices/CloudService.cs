@@ -38,6 +38,9 @@ namespace Linq2Azure.CloudServices
             Certificates = new LatentSequence<ServiceCertificate>(GetCertificatesAsync);
         }
 
+        /// <summary>
+        /// When creating a cloud service, you must specify either a location or affinity group.
+        /// </summary>
         public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false) : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
@@ -70,11 +73,16 @@ namespace Linq2Azure.CloudServices
             Name = (string)element.Element(ns + "ServiceName");
 
             var properties = element.Element(ns + "HostedServiceProperties");
+            
             properties.HydrateObject(ns, this);
+            
             if (!string.IsNullOrEmpty (Label)) Label = Label.FromBase64String();
+            
             DateCreated = (DateTime)properties.Element(ns + "DateCreated");
             DateLastModified = (DateTime)properties.Element(ns + "DateLastModified");
-            ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements().ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
+
+            ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements()
+                .ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
         }
 
         internal async Task CreateAsync(Subscription subscription)

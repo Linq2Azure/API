@@ -13,6 +13,10 @@ using System.Xml.Linq;
 
 namespace Linq2Azure
 {
+    /// <summary>
+    /// Performs REST-like options on the Azure HTTP management endpoint, taking care of authentication, error
+    /// handling and other functions common to all requests. This also handles optional request logging.
+    /// </summary>
     class AzureRestClient
     {
         public readonly Subscription Subscription;

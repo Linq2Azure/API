@@ -8,6 +8,10 @@ using System.Xml.Linq;
 
 namespace Linq2Azure.SqlDatabases
 {
+    /// <summary>
+    /// Allows management of SQL Azure servers. After creating a DatabaseServer and adding firewall rules, you can
+    /// create databases by establishing an ADO.NET connection using the same credentials.
+    /// </summary>
     public class DatabaseServer
     {
         public string Name { get; private set; }

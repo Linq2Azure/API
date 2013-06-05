@@ -10,8 +10,12 @@ namespace Linq2Azure.TrafficManagement
 {
     public class TrafficManagerMonitor
     {
+        /// <summary>Right now, the Azure management server doesn't anything other than the default value here.</summary>
         public int IntervalInSeconds { get; set; }
+
+        /// <summary>Right now, the Azure management server doesn't anything other than the default value here.</summary>
         public int TimeoutInSeconds { get; set; }
+
         public int ToleratedNumberOfFailures { get; set; }
         public MonitorProtocol Protocol { get; set; }
         public int Port { get; set; }

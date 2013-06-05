@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Linq2Azure
 {
-    public static class Extensions
+    internal static class Extensions
     {
         public static string FromBase64String(this string s)
         {

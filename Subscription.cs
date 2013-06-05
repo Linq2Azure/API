@@ -19,6 +19,9 @@ using System.Diagnostics;
 
 namespace Linq2Azure
 {
+    /// <summary>
+    /// This is the "root" type in the LinqToAzure API, from which all queries and operations are made.
+    /// </summary>
     public class Subscription
     {
         public static readonly string CoreUri = "https://management.core.windows.net/";
@@ -103,17 +106,10 @@ namespace Linq2Azure
             return new AzureRestClient(this, _databaseHttpClient, DatabaseUri, servicePath);
         }
 
-        async Task<string> GetOperationResultAsync(string requestId)
-        {
-            var client = GetCoreRestClient("operations/" + requestId);
-            var result = await client.GetXmlAsync();
-
-            var error = result.Element("Error");
-            if (error != null) AzureRestClient.Throw(null, error);
-
-            return (string) result.Element(XmlNamespaces.WindowsAzure + "Status");
-        }
-
+        /// <summary>
+        /// Implements http://msdn.microsoft.com/en-us/library/windowsazure/ee460783.aspx
+        /// </summary>
+        /// <param name="operationResponse">The response message from the operation for which we're awaiting completion.</param>
         internal async Task WaitForOperationCompletionAsync(HttpResponseMessage operationResponse)
         {
             var requestID = operationResponse.Headers.Single(h => h.Key == "x-ms-request-id").Value.Single();
@@ -130,6 +126,17 @@ namespace Linq2Azure
                 await Task.Delay(delay);
                 if (delay < 5000) delay += 1000;
             }
+        }
+
+        async Task<string> GetOperationResultAsync(string requestId)
+        {
+            var client = GetCoreRestClient("operations/" + requestId);
+            var result = await client.GetXmlAsync();
+
+            var error = result.Element("Error");
+            if (error != null) AzureRestClient.Throw(null, error);
+
+            return (string)result.Element(XmlNamespaces.WindowsAzure + "Status");
         }
     }
 }

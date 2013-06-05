@@ -87,6 +87,9 @@ namespace Linq2Azure.CloudServices
             PopulateFromXml(xe);
         }
 
+        /// <summary>
+        /// Submits any changes to the Configuration property.
+        /// </summary>
         public async Task UpdateConfigurationAsync()
         {
             Contract.Requires(Parent != null);

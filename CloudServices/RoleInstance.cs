@@ -7,6 +7,9 @@ using System.Xml.Linq;
 
 namespace Linq2Azure.CloudServices
 {
+    /// <summary>
+    /// Read-only view of RoleInstance information.
+    /// </summary>
     public class RoleInstance
     {
         public string RoleName { get; private set; }

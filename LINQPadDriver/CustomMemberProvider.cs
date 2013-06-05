@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Linq2Azure.LINQPadDriver
 {
+    /// <summary>
+    /// This tells LINQPad not to render properties that we don't want to see when dumping.
+    /// </summary>
     class CustomMemberProvider : LINQPad.ICustomMemberProvider
     {
         public static bool IsInteresting(Type t)

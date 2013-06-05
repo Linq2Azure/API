@@ -9,7 +9,8 @@ using System.Reactive.Threading.Tasks;
 namespace Linq2Azure
 {
     /// <summary>
-    /// Represents a sequence whose elements become available all at once, some time in the future.
+    /// Represents a sequence whose elements become available some time in the future. This is used for collections
+    /// that require a request over the Internet to populate.
     /// </summary>
     public class LatentSequence<T>
     {

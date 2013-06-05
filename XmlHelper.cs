@@ -10,6 +10,10 @@ namespace Linq2Azure
 {
     static class XmlHelper
     {
+        /// <summary>
+        /// Populates an object from an XElement, based on properties whose names match XML elements.
+        /// This handles properties with string, int and enum types and ignores all other properties.
+        /// </summary>
         public static void HydrateObject(this XElement element, XNamespace ns, object target)
         {
             foreach (var prop in target.GetType().GetProperties())
