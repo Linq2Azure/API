@@ -15,8 +15,9 @@ namespace Linq2Azure.LINQPadDriver
     {
         public static bool IsInteresting(Type t)
         {
-            if (t.IsEnum || !t.Namespace.StartsWith (SchemaBuilder.Linq2AzureNamespace)) return false;
-            if (t.GetProperty ("Subscription") == null && t.GetProperty ("Parent") == null) return false;
+            if (t == null || t.Namespace == null) return false;
+            if (t.IsEnum || !t.Namespace.StartsWith(SchemaBuilder.Linq2AzureNamespace)) return false;
+            if (t.GetProperty("Subscription") == null && t.GetProperty("Parent") == null) return false;
             return true;
         }
 
@@ -43,8 +44,14 @@ namespace Linq2Azure.LINQPadDriver
 
         public IEnumerable<object> GetValues()
         {
-            return _propsToWrite.Select(p => p.GetValue(_objectToWrite, null));
+            return _propsToWrite.Select(p => TransformValue(p.GetValue(_objectToWrite, null)));
+        }
+
+        object TransformValue(object value)
+        {
+            if (value == null) return null;
+            if (SchemaBuilder.GetLatentSequenceElementType(value.GetType()) == null) return value;
+            return value.GetType().GetMethod("AsObservable").Invoke(value, null);
         }
     }
-
 }

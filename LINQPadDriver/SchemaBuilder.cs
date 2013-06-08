@@ -78,7 +78,7 @@ namespace Linq2Azure.LINQPadDriver
                 IsEnumerable = elementType != null
             };
 
-            item.DragText = item.Text + (isLatentSequence ? ".AsEnumerable()" : "");
+            item.DragText = item.Text + (isLatentSequence ? ".AsObservable()" : "");
 
             if (level < 10)
                 item.Children = GetSchema(elementType ?? t, level + 1);
@@ -142,7 +142,7 @@ namespace Linq2Azure.LINQPadDriver
             }
         }
 
-        static Type GetLatentSequenceElementType(Type t)
+        public static Type GetLatentSequenceElementType(Type t)
         {
             if (t.IsInterface) return null;
             while (t != null && t != typeof(object))
