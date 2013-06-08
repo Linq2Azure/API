@@ -7,7 +7,7 @@
     Title="Linq2Azure Connection"
     Background="{x:Static SystemColors.ControlBrush}"
     SizeToContent="Height"
-    Width="450" 
+    Width="480" 
     WindowStartupLocation="CenterScreen">
     <StackPanel Margin="7">
 
@@ -18,9 +18,12 @@
             <Label Padding="0,0,0,1">Path to .publishsettings file:</Label>
         </DockPanel>
 
-        <TextBox Name="txtPublishSettingsPath" Margin="0,1,0.2,8" Text="{Binding PublishSettingsPath}"/>
+        <TextBox Name="txtPublishSettingsPath" Margin="0,1,0.2,10" Text="{Binding PublishSettingsPath}"/>
 
-        <Label Content="Friendly name for this connection (optional):" Padding="0,0,0,2"/>
+		<Label Content="Concurrent connection limit:" Padding="0,0,0,2" />
+		<TextBox Name="txtConnectionLimit" Margin="0,0,0,10" Width="150" HorizontalAlignment="Left" Text="{Binding ConnectionLimit}" />
+
+		<Label Content="Friendly name for this connection (optional):" Padding="0,0,0,2"/>
         <TextBox Name="txtFriendlyName" Margin="0,0,0,15"  Text="{Binding DisplayName}" />
 
         <CheckBox IsChecked="{Binding Persist}">Remember this connection</CheckBox>

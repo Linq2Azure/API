@@ -1,4 +1,5 @@
-﻿using LINQPad.Extensibility.DataContext;
+﻿using System.Net;
+using LINQPad.Extensibility.DataContext;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace Linq2Azure.LINQPadDriver
         public override IEnumerable<string> GetAssembliesToAdd(IConnectionInfo cxInfo)
         {
             // We need the following assembly for compiliation and autocompletion:
-            return new[] { "Linq2Azure.dll" };
+            return new[] { "Linq2Azure.dll", "System.Reactive.Core.dll", "System.Reactive.Interfaces.dll", "System.Reactive.Linq.dll" };
         }
 
         public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo)
@@ -32,7 +33,14 @@ namespace Linq2Azure.LINQPadDriver
                 "Linq2Azure",
                 "Linq2Azure.CloudServices",
                 "Linq2Azure.SqlDatabases",
-                "Linq2Azure.TrafficManagement"
+                "Linq2Azure.TrafficManagement",
+				"System.Reactive",
+				"System.Reactive.Linq",
+                "System.Reactive.Joins",
+                "System.Reactive.Concurrency",
+                "System.Reactive.Disposables",
+                "System.Reactive.Subjects",
+                "System.Reactive.Threading.Tasks"
             };
         }
 
@@ -44,6 +52,11 @@ namespace Linq2Azure.LINQPadDriver
         public override object[] GetContextConstructorArguments(IConnectionInfo cxInfo)
         {
             return new object[] { new Linq2AzureProperties(cxInfo).PublishSettingsPath };
+        }
+
+        public override void InitializeContext(IConnectionInfo cxInfo, object context, QueryExecutionManager executionManager)
+        {
+            ServicePointManager.DefaultConnectionLimit = new Linq2AzureProperties(cxInfo).ConnectionLimit;
         }
 
         public override bool AreRepositoriesEquivalent(IConnectionInfo c1, IConnectionInfo c2)

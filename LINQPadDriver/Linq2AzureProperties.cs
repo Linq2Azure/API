@@ -36,5 +36,11 @@ namespace Linq2Azure.LINQPadDriver
             get { return (string)_driverData.Element("PublishSettingsPath") ?? ""; }
             set { _driverData.SetElementValue("PublishSettingsPath", value); }
 		}
+
+        public int ConnectionLimit
+        {
+            get { return (int?)_driverData.Element("ConnectionLimit") ?? 20; }
+            set { _driverData.SetElementValue("ConnectionLimit", value); }
+        }
     }
 }
