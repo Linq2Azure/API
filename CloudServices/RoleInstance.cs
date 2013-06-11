@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -25,9 +27,27 @@ namespace Linq2Azure.CloudServices
         public string HostName { get; private set; }
         public string RemoteAccessCertificateThumbprint { get; private set; }
 
-        public RoleInstance(XElement element)
+        public Deployment Parent { get; private set; }
+
+        internal RoleInstance(XElement element, Deployment parent)
         {
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
+            Parent = parent;
+        }
+
+        public async Task RebootAsync()
+        {
+            Contract.Requires(Parent != null);
+
+            HttpResponseMessage response = await GetRestClient("?comp=reboot").PostAsync();
+            await Parent.Parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        AzureRestClient GetRestClient(string pathSuffix = null)
+        {
+            string servicePath = "/roleinstances/" + InstanceName;
+            if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
+            return Parent.GetRestClient(servicePath);
         }
     }
 }

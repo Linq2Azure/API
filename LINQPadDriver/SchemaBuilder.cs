@@ -75,7 +75,7 @@ namespace Linq2Azure.LINQPadDriver
                 elementType == null ? ExplorerIcon.OneToOne : level == 0 ? ExplorerIcon.Table : ExplorerIcon.OneToMany)
             {
                 ToolTipText = FormatTypeName(t),
-                IsEnumerable = elementType != null
+                IsEnumerable = elementType != null && level == 0
             };
 
             item.DragText = item.Text + (isLatentSequence ? ".AsObservable()" : "");

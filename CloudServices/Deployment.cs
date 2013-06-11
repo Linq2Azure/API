@@ -138,11 +138,11 @@ namespace Linq2Azure.CloudServices
             XElement xe = await GetRestClient().GetXmlAsync();
             return xe.Element(XmlNamespaces.WindowsAzure + "RoleInstanceList")
                 .Elements(XmlNamespaces.WindowsAzure + "RoleInstance")
-                .Select(r => new RoleInstance(r))
+                .Select(r => new RoleInstance(r, this))
                 .ToArray();
         }
 
-        AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Parent, pathSuffix); }
+        internal AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Parent, pathSuffix); }
 
         AzureRestClient GetRestClient(CloudService cloudService, string pathSuffix = null)
         {
