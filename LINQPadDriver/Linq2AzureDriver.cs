@@ -22,7 +22,7 @@ namespace Linq2Azure.LINQPadDriver
         public override IEnumerable<string> GetAssembliesToAdd(IConnectionInfo cxInfo)
         {
             // We need the following assembly for compiliation and autocompletion:
-            return new[] { "Linq2Azure.dll", "System.Reactive.Core.dll", "System.Reactive.Interfaces.dll", "System.Reactive.Linq.dll" };
+            return new[] { "System.Runtime.dll", "Linq2Azure.dll", "System.Reactive.Core.dll", "System.Reactive.Interfaces.dll", "System.Reactive.Linq.dll" };
         }
 
         public override IEnumerable<string> GetNamespacesToAdd(IConnectionInfo cxInfo)
