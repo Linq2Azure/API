@@ -8,5 +8,5 @@ when you do this otherwise devdeploy.bat might fail due to a file being in use.
 
 To deploy the LINQPad driver:
 
-1. Zip up everything in the bin folder
+1. Zip up everything (EXCEPT LINQPad.exe) in the bin folder
 2. Change the extension from .zip to .lpx.
