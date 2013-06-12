@@ -28,12 +28,31 @@ namespace IntegrationTests
             CloudService.PublishDeploymentAsync (Staging, TestConstants.TestDeploymentPackageUri).Wait();
         }
 
+
+
         [TestMethod]
         public async Task CanUseDeployment()
         {
             await CanCreate();
             await CanSwapDeployments();
             await CanStartStop();
+            await CanUpdateConfiguraion();
+            await CanDelete();
+        }
+
+        private async Task CanDelete()
+        {
+            await _retrievedProduction.DeleteAsync();
+            await _retrievedStaging.DeleteAsync();
+        }
+
+        private async Task CanUpdateConfiguraion()
+        {
+            await RetrieveDeployments();
+
+            var roleConfig = _retrievedProduction.Configuration.ConfigurationItems.Single();
+            roleConfig.InstanceCount = 2;
+            await _retrievedProduction.UpdateConfigurationAsync();
         }
 
         public async Task CanCreate()

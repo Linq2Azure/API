@@ -78,7 +78,7 @@ namespace Linq2Azure.CloudServices
 
         public XElement ToXml()
         {
-            return new XElement("Certificate",
+            return new XElement(XmlNamespaces.ServiceConfig +"Certificate",
                 new XAttribute("name", Name),
                 new XAttribute("thumbprint", Thumbprint),
                 new XAttribute("thumbprintAlgorithm", ThumbprintAlgorithm));

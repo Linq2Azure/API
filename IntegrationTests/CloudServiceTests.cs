@@ -6,6 +6,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Linq2Azure.CloudServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace IntegrationTests
 {
@@ -22,6 +23,9 @@ namespace IntegrationTests
             CloudService.Description = "Test Description";
             Debug.WriteLine("CloudServiceTests ctor - creating test service");
             TestConstants.Subscription.CreateCloudServiceAsync (CloudService).Wait();
+            var cert = new X509Certificate2(@"..\..\CertKey.pfx", "1234", X509KeyStorageFlags.Exportable);
+            var serviceCertificate = new ServiceCertificate(cert);
+            CloudService.AddServiceCertificateAsync(serviceCertificate).Wait();
         }
 
         [TestMethod]

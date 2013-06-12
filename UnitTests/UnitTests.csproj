@@ -56,6 +56,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\IntegrationTests\IntegrationTests.csproj">
+      <Project>{16e307a2-365e-4946-bc5a-9d68a16ebe64}</Project>
+      <Name>IntegrationTests</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Linq2Azure.csproj">
       <Project>{a0f88280-078f-4e05-9a63-5d09da1936ab}</Project>
       <Name>Linq2Azure</Name>
