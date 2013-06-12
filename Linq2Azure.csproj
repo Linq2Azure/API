@@ -117,6 +117,9 @@
     <Compile Include="Subscription.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="license.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="readme.txt" />
     <Content Include="Requirements.txt" />
   </ItemGroup>
