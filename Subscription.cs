@@ -22,7 +22,7 @@ namespace Linq2Azure
     /// <summary>
     /// This is the "root" type in the LinqToAzure API, from which all queries and operations are made.
     /// </summary>
-    public class Subscription
+    public class Subscription : IDisposable
     {
         public static readonly string CoreUri = "https://management.core.windows.net/";
         public static readonly string DatabaseUri = "https://management.database.windows.net:8443/";
@@ -35,7 +35,7 @@ namespace Linq2Azure
         public LatentSequence<CloudService> CloudServices { get; private set; }
         public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
         public LatentSequence<TrafficManagerProfile> TrafficManagerProfiles { get; private set; }
-        
+
         HttpClient _coreHttpClient, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
@@ -137,6 +137,12 @@ namespace Linq2Azure
             if (error != null) AzureRestClient.Throw(null, error);
 
             return (string)result.Element(XmlNamespaces.WindowsAzure + "Status");
+        }
+
+        public void Dispose()
+        {
+            if (_coreHttpClient != null) _coreHttpClient.Dispose();
+            if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
     }
 }
