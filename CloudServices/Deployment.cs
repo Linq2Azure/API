@@ -30,7 +30,18 @@ namespace Linq2Azure.CloudServices
             RoleInstances = new LatentSequence<RoleInstance>(GetRoleInstancesAsync);
         }
 
-        public Deployment(string deploymentName, DeploymentSlot deploymentSlot, ServiceConfiguration serviceConfig) : this()
+        public Deployment(string deploymentName, DeploymentSlot deploymentSlot, string serviceConfig)
+            : this(deploymentName, deploymentSlot, new ServiceConfiguration(serviceConfig))
+        {
+        }
+
+        public Deployment(string deploymentName, DeploymentSlot deploymentSlot, XElement serviceConfig)
+            : this(deploymentName, deploymentSlot, new ServiceConfiguration(serviceConfig))
+        {
+        }
+
+        public Deployment(string deploymentName, DeploymentSlot deploymentSlot, ServiceConfiguration serviceConfig)
+            : this()
         {
             Contract.Requires(deploymentName != null);
             Contract.Requires(serviceConfig != null);
@@ -40,7 +51,8 @@ namespace Linq2Azure.CloudServices
             Configuration = serviceConfig;
         }
 
-        internal Deployment(XElement element, CloudService parent) : this()
+        internal Deployment(XElement element, CloudService parent)
+            : this()
         {
             Contract.Requires(element != null);
             Contract.Requires(parent != null);
@@ -53,7 +65,7 @@ namespace Linq2Azure.CloudServices
         {
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
             Slot = (DeploymentSlot)Enum.Parse(typeof(DeploymentSlot), (string)element.Element(XmlNamespaces.WindowsAzure + "DeploymentSlot"), true);
-            if (!string.IsNullOrEmpty (Label)) Label = Label.FromBase64String();
+            if (!string.IsNullOrEmpty(Label)) Label = Label.FromBase64String();
             Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.WindowsAzure + "Configuration").Value.FromBase64String()));
         }
 
@@ -93,7 +105,7 @@ namespace Linq2Azure.CloudServices
         public async Task UpdateConfigurationAsync()
         {
             Contract.Requires(Parent != null);
-            
+
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "ChangeConfiguration",
                 new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));

@@ -24,7 +24,7 @@ namespace IntegrationTests
             CloudService.PublishDeploymentAsync (Production, TestConstants.TestDeploymentPackageUri).Wait();
 
             Debug.WriteLine("DeploymentTests ctor - creating staging test deployment");
-            Staging = new Deployment("Test-Deployment2", DeploymentSlot.Staging, new ServiceConfiguration(TestConstants.TestServiceConfig));
+            Staging = new Deployment("Test-Deployment2", DeploymentSlot.Staging, TestConstants.TestServiceConfigString);
             CloudService.PublishDeploymentAsync (Staging, TestConstants.TestDeploymentPackageUri).Wait();
         }
 

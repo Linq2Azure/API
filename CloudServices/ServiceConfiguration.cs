@@ -20,6 +20,8 @@ namespace Linq2Azure.CloudServices
             OsVersion = "*";
         }
 
+        public ServiceConfiguration(string configData) : this(XElement.Parse(configData)) { }
+
         public ServiceConfiguration(XElement configData)
         {
             ServiceName = (string)configData.Attribute("serviceName");
@@ -78,7 +80,7 @@ namespace Linq2Azure.CloudServices
 
         public XElement ToXml()
         {
-            return new XElement(XmlNamespaces.ServiceConfig +"Certificate",
+            return new XElement(XmlNamespaces.ServiceConfig + "Certificate",
                 new XAttribute("name", Name),
                 new XAttribute("thumbprint", Thumbprint),
                 new XAttribute("thumbprintAlgorithm", ThumbprintAlgorithm));
