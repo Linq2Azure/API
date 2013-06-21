@@ -63,19 +63,7 @@ namespace Linq2Azure.TrafficManagement
             return definition.CreateAsync(this);
         }
 
-        public Task EnableProfileAsync(int definitionVersionNumber)
-        {
-            Contract.Requires(Subscription != null);
-            return UpdateProfileAsync(true, definitionVersionNumber);
-        }
-
-        public Task DisableProfileAsync()
-        {
-            Contract.Requires(Subscription != null);
-            return UpdateProfileAsync(false, 1);
-        }
-
-        async Task UpdateProfileAsync(bool enabled, int definitionVersionNumber)
+        async public Task UpdateAsync(bool enabled, string definitionVersion)
         {
             Contract.Requires(Subscription != null);
 
@@ -83,7 +71,7 @@ namespace Linq2Azure.TrafficManagement
             var content = new XElement(ns + "Profile",
                 new XElement(ns + "Status", enabled ? "Enabled" : "Disabled"),
                 new XElement(ns + "StatusDetails",
-                    new XElement(ns + "EnabledVersion", definitionVersionNumber))
+                    new XElement(ns + "EnabledVersion", definitionVersion))
                 );
 
             var hc = GetRestClient("/" + Name);

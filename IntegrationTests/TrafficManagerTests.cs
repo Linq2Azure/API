@@ -67,7 +67,7 @@ namespace IntegrationTests
             Assert.AreEqual(policy.EndPoints[0].DomainName, defn2.Policy.EndPoints[0].DomainName);
 
             Debug.WriteLine("Enabling profile");
-            await Profile.EnableProfileAsync(1);
+            await Profile.UpdateAsync(true, "1");
             Assert.AreEqual(true, (await Subscription.TrafficManagerProfiles.AsTask())[0].Enabled);
         }
 

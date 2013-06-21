@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -13,6 +11,7 @@ namespace Linq2Azure.TrafficManagement
         public int DnsTtlInSeconds { get; set; }
         public bool Enabled { get; set; }
         public TrafficManagerProfile Parent { get; private set; }
+        public string Version { get; private set; }
         public List<TrafficManagerMonitor> Monitors { get; set; }
         public TrafficManagerPolicy Policy { get; set; }
 
@@ -33,6 +32,7 @@ namespace Linq2Azure.TrafficManagement
         internal TrafficManagerDefinition(XElement xml, TrafficManagerProfile parent)
         {
             var ns = XmlNamespaces.WindowsAzure;
+            Version = (string)xml.Element(ns + "Version");
             DnsTtlInSeconds = (int)xml.Element(ns + "DnsOptions").Element(ns + "TimeToLiveInSeconds");
             Enabled = (string)xml.Element(ns + "Status") != "Disabled";
             Monitors = xml.Element(ns + "Monitors").Elements(ns + "Monitor").Select(xe => new TrafficManagerMonitor(xe)).ToList();
