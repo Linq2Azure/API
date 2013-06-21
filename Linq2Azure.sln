@@ -16,10 +16,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{92F8CF
 		.nuget\NuGet.targets = .nuget\NuGet.targets
 	EndProjectSection
 EndProject
-Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "TestDeployment", "..\WindowsAzure1\TestDeployment.ccproj", "{1B401DD2-0D01-42F9-A1ED-4FA4E08B36C0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestWebRole", "TestWebRole\TestWebRole.csproj", "{359AF7B6-E3C2-4F48-A0A4-DDDB7D844C04}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,14 +38,6 @@ Global
 		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{404DB523-9C4D-41E6-86C2-E792359BEFFC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1B401DD2-0D01-42F9-A1ED-4FA4E08B36C0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1B401DD2-0D01-42F9-A1ED-4FA4E08B36C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1B401DD2-0D01-42F9-A1ED-4FA4E08B36C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1B401DD2-0D01-42F9-A1ED-4FA4E08B36C0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{359AF7B6-E3C2-4F48-A0A4-DDDB7D844C04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{359AF7B6-E3C2-4F48-A0A4-DDDB7D844C04}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{359AF7B6-E3C2-4F48-A0A4-DDDB7D844C04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{359AF7B6-E3C2-4F48-A0A4-DDDB7D844C04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
