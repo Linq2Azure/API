@@ -35,7 +35,7 @@ namespace IntegrationTests
                     await s.DropAsync();
 
             foreach (var s in await TestConstants.Subscription.TrafficManagerProfiles.AsTask())
-                if (s.Name == "test-profile")
+                if (s.Name.StartsWith(("Test-")))
                     await s.DeleteAsync();
         }
     }
