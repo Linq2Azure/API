@@ -68,7 +68,8 @@ namespace IntegrationTests
 
             Debug.WriteLine("Enabling profile");
             await Profile.UpdateAsync(true, "1");
-            Assert.AreEqual(true, (await Subscription.TrafficManagerProfiles.AsTask())[0].Enabled);
+            var result = Subscription.TrafficManagerProfiles.AsEnumerable().Single(x => x.Name == Profile.Name);
+            Assert.AreEqual(true, result.Enabled);
         }
 
         public void Dispose()
