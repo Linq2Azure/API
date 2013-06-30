@@ -12,5 +12,6 @@ namespace Linq2Azure
         public static readonly XNamespace WindowsAzure = "http://schemas.microsoft.com/windowsazure";
         public static readonly XNamespace SqlAzure = "http://schemas.microsoft.com/sqlazure/2010/12/";
         public static readonly XNamespace ServiceConfig = "http://schemas.microsoft.com/ServiceHosting/2008/10/ServiceConfiguration";
+        public static readonly XNamespace SchemaInstance = "http://www.w3.org/2001/XMLSchema-instance";
     }
 }

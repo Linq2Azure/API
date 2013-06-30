@@ -1,16 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Reactive.Linq;
 
 namespace Linq2Azure.CloudServices
 {
@@ -23,6 +17,7 @@ namespace Linq2Azure.CloudServices
         public string Label { get; set; }
         public ServiceConfiguration Configuration { get; set; }
         public LatentSequence<RoleInstance> RoleInstances { get; private set; }
+        public IEnumerable<Role> Roles { get; private set; } 
         public CloudService Parent { get; private set; }
 
         Deployment()
@@ -67,6 +62,7 @@ namespace Linq2Azure.CloudServices
             Slot = (DeploymentSlot)Enum.Parse(typeof(DeploymentSlot), (string)element.Element(XmlNamespaces.WindowsAzure + "DeploymentSlot"), true);
             if (!string.IsNullOrEmpty(Label)) Label = Label.FromBase64String();
             Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.WindowsAzure + "Configuration").Value.FromBase64String()));
+            Roles = element.Element(XmlNamespaces.WindowsAzure + "RoleList").Elements(XmlNamespaces.WindowsAzure + "Role").Select(e => new Role(e));
         }
 
         internal async Task CreateAsync(CloudService parent, Uri packageUrl, CreationOptions options = null)
