@@ -51,7 +51,8 @@ namespace Linq2Azure.TrafficManagement
                 new XElement (ns + "Monitors", Monitors.Select (m => m.ToXml())),
                 Policy.ToXml());
 
-            await GetRestClient(parent).PostAsync(content);
+            var response = await GetRestClient(parent).PostWithXmlResponseAsync(content);
+            Version = (string)response.Element(ns + "Version");
             Parent = parent;
         }
 

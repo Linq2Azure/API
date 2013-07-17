@@ -47,9 +47,13 @@ namespace Linq2Azure
         public async Task<XElement> GetXmlAsync()
         {
             var response = await _httpClient.GetAsync(Uri);
-            if ((int)response.StatusCode >= 300) await AzureRestClient.ThrowAsync(response);
-            string result = await response.Content.ReadAsStringAsync();
-            return XElement.Parse(await _httpClient.GetStringAsync(Uri));
+            return await AsXmlResponse(response);
+        }
+
+        public async Task<XElement> PostWithXmlResponseAsync(XElement xml)
+        {
+            var response = await SendAsync(xml, HttpMethod.Post);
+            return await AsXmlResponse(response);
         }
 
         public Task<HttpResponseMessage> PostAsync(XElement xml) { return SendAsync(xml, HttpMethod.Post); }
@@ -76,8 +80,15 @@ namespace Linq2Azure
             return response;
         }
 
+        static async Task<XElement> AsXmlResponse(HttpResponseMessage response)
+        {
+            if ((int)response.StatusCode >= 300) await ThrowAsync(response);
+            var result = await response.Content.ReadAsStringAsync();
+            return XElement.Parse(result);
+        }
+
         static async Task ThrowAsync(HttpResponseMessage response, object debugInfo = null)
-        {            
+        {
             string responseString = null;
             try { responseString = await response.Content.ReadAsStringAsync(); }
             catch { }
@@ -96,7 +107,7 @@ namespace Linq2Azure
             if (errorElement != null)
             {
                 var ns = XmlNamespaces.WindowsAzure;
-                code = (string)errorElement.Elements().FirstOrDefault (e => e.Name.LocalName == "Code");
+                code = (string)errorElement.Elements().FirstOrDefault(e => e.Name.LocalName == "Code");
                 message = (string)errorElement.Elements().FirstOrDefault(e => e.Name.LocalName == "Message");
             }
 
