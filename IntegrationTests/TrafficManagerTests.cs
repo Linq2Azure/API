@@ -58,6 +58,7 @@ namespace IntegrationTests
             Assert.AreEqual(defn.DnsTtlInSeconds, defn2.DnsTtlInSeconds);
             
             Assert.AreEqual(1, defn2.Monitors.Count);
+            Assert.AreEqual(defn.Version, defn2.Version);
             Assert.AreEqual(monitor.IntervalInSeconds, defn2.Monitors[0].IntervalInSeconds);
             Assert.AreEqual(monitor.TimeoutInSeconds, defn2.Monitors[0].TimeoutInSeconds);
             Assert.AreEqual(monitor.Protocol, defn2.Monitors[0].Protocol);
