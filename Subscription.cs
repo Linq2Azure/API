@@ -35,6 +35,7 @@ namespace Linq2Azure
         public LatentSequence<CloudService> CloudServices { get; private set; }
         public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
         public LatentSequence<TrafficManagerProfile> TrafficManagerProfiles { get; private set; }
+        public LatentSequence<Role> VirtualMachineInstances { get; private set; }
 
         HttpClient _coreHttpClient, _databaseHttpClient;
 
@@ -72,6 +73,7 @@ namespace Linq2Azure
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
             TrafficManagerProfiles = new LatentSequence<TrafficManagerProfile>(GetTrafficManagerProfilesAsync);
+            VirtualMachineInstances = new LatentSequence<Role>(GetVirtualMachineInstancesAsync);
         }
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
@@ -94,6 +96,20 @@ namespace Linq2Azure
         {
             XElement xe = await GetCoreRestClient("services/WATM/profiles").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "Profile").Select(x => new TrafficManagerProfile(x, this)).ToArray();
+        }
+
+        Task<Role[]> GetVirtualMachineInstancesAsync()
+        {
+            return
+                CloudServices.AsObservable()
+                             .SelectMany(
+                                 cs =>
+                                 cs.Deployments.AsObservable()
+                                   .Where(d => d.Slot == DeploymentSlot.Production)
+                                   .SelectMany(d => d.Roles)
+                                   .Where(r => r.IsVirtualMachine))
+                             .ToArray()
+                             .ToTask();
         }
 
         internal AzureRestClient GetCoreRestClient(string servicePath)
