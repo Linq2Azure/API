@@ -1,7 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Linq2Azure;
-using System.Reactive.Linq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -10,7 +7,7 @@ using Linq2Azure.CloudServices;
 namespace IntegrationTests
 {
     [TestClass]
-    public class DeploymentTests 
+    public class DeploymentTests
     {
         public readonly CloudServiceTests Parent = new CloudServiceTests();
         public readonly Deployment Production, Staging;
@@ -21,15 +18,13 @@ namespace IntegrationTests
         {
             Debug.WriteLine("DeploymentTests ctor - creating production test deployment");
             Production = new Deployment("Test-Deployment1", DeploymentSlot.Production, new ServiceConfiguration(TestConstants.TestServiceConfig));
-            CloudService.PublishDeploymentAsync (Production, TestConstants.TestDeploymentPackageUri).Wait();
+            CloudService.PublishDeploymentAsync(Production, TestConstants.TestDeploymentPackageUri).Wait();
 
             Debug.WriteLine("DeploymentTests ctor - creating staging test deployment");
             Staging = new Deployment("Test-Deployment2", DeploymentSlot.Staging, TestConstants.TestServiceConfigString);
-            CloudService.PublishDeploymentAsync (Staging, TestConstants.TestDeploymentPackageUri).Wait();
+            CloudService.PublishDeploymentAsync(Staging, TestConstants.TestDeploymentPackageUri).Wait();
         }
-
-
-
+        
         [TestMethod]
         public async Task CanUseDeployment()
         {
@@ -37,6 +32,7 @@ namespace IntegrationTests
             await CanSwapDeployments();
             await CanStartStop();
             await CanUpdateConfiguraion();
+            await CanUpdateDeployment();
             await CanDelete();
         }
 
@@ -44,6 +40,19 @@ namespace IntegrationTests
         {
             await _retrievedProduction.DeleteAsync();
             await _retrievedStaging.DeleteAsync();
+        }
+
+        private async Task CanUpdateDeployment()
+        {
+            await RetrieveDeployments();
+            var label = string.Format("{0}2", _retrievedProduction.Label);
+            _retrievedProduction.Label = label;
+            await _retrievedProduction.UpdateSlotAsync(TestConstants.TestDeploymentPackageUri);
+
+            await RetrieveDeployments();
+
+            Assert.IsNotNull(_retrievedProduction);
+            Assert.AreEqual(_retrievedProduction.Label, label);
         }
 
         private async Task CanUpdateConfiguraion()
@@ -59,10 +68,10 @@ namespace IntegrationTests
         {
             Debug.WriteLine("TestCreate: Retrieving Deployments");
             await RetrieveDeployments();
-            
+
             Assert.IsNotNull(_retrievedProduction);
             Assert.AreEqual(_retrievedProduction.Label, Production.Label);
-            Assert.AreEqual(_retrievedProduction.Slot, DeploymentSlot.Production);            
+            Assert.AreEqual(_retrievedProduction.Slot, DeploymentSlot.Production);
 
             Assert.IsNotNull(_retrievedStaging);
             Assert.AreEqual(_retrievedStaging.Label, Staging.Label);
@@ -82,7 +91,7 @@ namespace IntegrationTests
             Debug.WriteLine("TestStartStop: Starting Deployment");
             await Production.StartAsync();
             string powerState = (await Production.RoleInstances.AsTask()).First().PowerState;
-            Assert.IsTrue (powerState == "Started" || powerState == "Starting");
+            Assert.IsTrue(powerState == "Started" || powerState == "Starting");
             await Production.StopAsync();
             powerState = (await Production.RoleInstances.AsTask()).First().PowerState;
             Assert.IsTrue(powerState == "Stopped" || powerState == "Stopping");
@@ -129,7 +138,7 @@ namespace IntegrationTests
                 Staging.DeleteAsync().Wait();
             }
 
-            if (verifyDeletion && GetType() == typeof (DeploymentTests)) VerifyDeletion();
+            if (verifyDeletion && GetType() == typeof(DeploymentTests)) VerifyDeletion();
 
             Parent.Dispose();
         }

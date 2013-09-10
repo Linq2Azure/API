@@ -137,6 +137,30 @@ namespace Linq2Azure.CloudServices
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
+        /// <summary>
+        /// Upgrades the given deployment with the package contents.
+        /// </summary>
+        public async Task UpdateSlotAsync(Uri packageUrl, string roleToUpgrade = null)
+        {
+            Contract.Requires(Parent != null);
+            Contract.Requires(packageUrl != null);
+            Contract.Requires(!string.IsNullOrWhiteSpace(Label));
+            Contract.Requires(Configuration != null);
+            Contract.Requires(roleToUpgrade != null);
+
+            var ns = XmlNamespaces.WindowsAzure;
+            var content = new XElement(ns + "UpgradeDeployment",
+                new XElement(ns + "Mode", "Auto"),
+                new XElement(ns + "PackageUrl", packageUrl.ToString()),
+                new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()),
+                new XElement(ns + "Label", Label.ToBase64String()),
+                new XElement(ns + "RoleToUpgrade", roleToUpgrade),
+                new XElement(ns + "Force", false));
+            // With the deployments endpoint, you need a forward slash separating the URI from the query string!
+            HttpResponseMessage response = await GetRestClient(Parent, "/?comp=upgrade").PostAsync(content);
+            await Parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
         public async Task DeleteAsync()
         {
             Contract.Requires(Parent != null);
@@ -168,6 +192,8 @@ namespace Linq2Azure.CloudServices
             public bool StartDeployment { get; set; }
             public bool TreatWarningsAsError { get; set; }
         }
+
+        
     }
 
     public enum DeploymentSlot { Production, Staging }
