@@ -131,8 +131,11 @@ namespace Linq2Azure
         async Task<string> GetOperationResultAsync(string requestId)
         {
             var client = GetCoreRestClient("operations/" + requestId);
-            var result = await client.GetXmlAsync();
+            return ParseResult(await client.GetXmlAsync());
+        }
 
+        internal static string ParseResult(XElement result)
+        {
             var error = result.Element("Error");
             if (error != null) AzureRestClient.Throw(null, error);
 
