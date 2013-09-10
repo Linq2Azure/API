@@ -136,7 +136,7 @@ namespace Linq2Azure
 
         internal static string ParseResult(XElement result)
         {
-            var error = result.Element("Error");
+            var error = result.Element(XmlNamespaces.WindowsAzure + "Error");
             if (error != null) AzureRestClient.Throw(null, error);
 
             return (string)result.Element(XmlNamespaces.WindowsAzure + "Status");
