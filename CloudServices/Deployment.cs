@@ -146,8 +146,7 @@ namespace Linq2Azure.CloudServices
             Contract.Requires(packageUrl != null);
             Contract.Requires(!string.IsNullOrWhiteSpace(Label));
             Contract.Requires(Configuration != null);
-            Contract.Requires(roleToUpgrade != null);
-
+            
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "UpgradeDeployment",
                 new XElement(ns + "Mode", "Auto"),
