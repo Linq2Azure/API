@@ -47,7 +47,7 @@ namespace IntegrationTests
             await RetrieveDeployments();
             var label = string.Format("{0}2", _retrievedProduction.Label);
             _retrievedProduction.Label = label;
-            await _retrievedProduction.UpdateSlotAsync(TestConstants.TestDeploymentPackageUri);
+            await _retrievedProduction.UpgradeAsync(TestConstants.TestDeploymentPackageUri);
 
             await RetrieveDeployments();
 

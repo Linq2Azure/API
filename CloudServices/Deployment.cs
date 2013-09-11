@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Reactive.Linq;
 
 namespace Linq2Azure.CloudServices
 {
@@ -140,7 +133,7 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// Upgrades the given deployment with the package contents.
         /// </summary>
-        public async Task UpdateSlotAsync(Uri packageUrl, string roleToUpgrade = null)
+        public async Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null)
         {
             Contract.Requires(Parent != null);
             Contract.Requires(packageUrl != null);
@@ -191,8 +184,6 @@ namespace Linq2Azure.CloudServices
             public bool StartDeployment { get; set; }
             public bool TreatWarningsAsError { get; set; }
         }
-
-        
     }
 
     public enum DeploymentSlot { Production, Staging }
