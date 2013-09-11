@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Reactive.Threading.Tasks;
-using System.Reactive.Linq;
 
 namespace Linq2Azure.CloudServices
 {
@@ -134,6 +127,29 @@ namespace Linq2Azure.CloudServices
 
             // With the deployments endpoint, you need a forward slash separating the URI from the query string!
             HttpResponseMessage response = await GetRestClient("/?comp=status").PostAsync(content);
+            await Parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        /// <summary>
+        /// Upgrades the given deployment with the package contents.
+        /// </summary>
+        public async Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null)
+        {
+            Contract.Requires(Parent != null);
+            Contract.Requires(packageUrl != null);
+            Contract.Requires(!string.IsNullOrWhiteSpace(Label));
+            Contract.Requires(Configuration != null);
+            
+            var ns = XmlNamespaces.WindowsAzure;
+            var content = new XElement(ns + "UpgradeDeployment",
+                new XElement(ns + "Mode", "Auto"),
+                new XElement(ns + "PackageUrl", packageUrl.ToString()),
+                new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()),
+                new XElement(ns + "Label", Label.ToBase64String()),
+                new XElement(ns + "RoleToUpgrade", roleToUpgrade),
+                new XElement(ns + "Force", false));
+            // With the deployments endpoint, you need a forward slash separating the URI from the query string!
+            HttpResponseMessage response = await GetRestClient(Parent, "/?comp=upgrade").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
