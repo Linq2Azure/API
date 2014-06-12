@@ -38,5 +38,45 @@ namespace UnitTests
             var parsed = Subscription.ParseResult(result);
             Assert.AreEqual("TheStatus", parsed);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.Exception))]
+        public void CanInitialize()
+        {
+            string content = 
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+        <PublishData>
+          <PublishProfile
+            SchemaVersion=""2.0""
+            PublishMethod=""AzureServiceManagementAPI"">
+            <Subscription
+              ServiceManagementUrl=""https://management.core.windows.net""
+              Id="""+System.Guid.Empty+@"""
+              Name=""MSDN""/>
+          </PublishProfile>
+        </PublishData>";
+
+            string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string filename = "/SubscriptionAttempt.xml";
+            string filepath = System.IO.Path.Combine(path, filename);
+
+            System.IO.File.WriteAllText(filepath, content, System.Text.Encoding.UTF8);
+
+            //var result = XElement.Parse(content);
+            try
+            {
+                var attempt = new Subscription(filepath);
+            }
+            finally
+            {
+                if (System.IO.File.Exists(filepath))
+                {
+                    System.IO.File.Delete(filepath);
+                }
+            }
+        }
+
+
+
     }
 }
