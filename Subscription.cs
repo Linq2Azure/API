@@ -60,7 +60,7 @@ namespace Linq2Azure
             }
             if (managementCertificateAttempt == null)
             {
-                throw new Exception("Cannot find ManagementCertificate attribute neither in PublishProfile node, nor in Subscription in file " + publishSettingsPath);
+                throw new System.Configuration.ConfigurationException("Cannot find ManagementCertificate attribute neither in PublishProfile node, nor in Subscription in file " + publishSettingsPath);
             }
             ManagementCertificate = new X509Certificate2(Convert.FromBase64String(managementCertificateAttempt));
 

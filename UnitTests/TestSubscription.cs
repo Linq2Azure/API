@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using System.IO;
 using Linq2Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -40,7 +41,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.Exception))]
+        [ExpectedException(typeof(System.Configuration.ConfigurationException))]
         public void CanInitialize()
         {
             string content = 
@@ -56,22 +57,21 @@ namespace UnitTests
           </PublishProfile>
         </PublishData>";
 
-            string path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             string filename = "/SubscriptionAttempt.xml";
-            string filepath = System.IO.Path.Combine(path, filename);
+            string filepath = Path.Combine(path, filename);
 
             System.IO.File.WriteAllText(filepath, content, System.Text.Encoding.UTF8);
 
-            //var result = XElement.Parse(content);
             try
             {
                 var attempt = new Subscription(filepath);
             }
             finally
             {
-                if (System.IO.File.Exists(filepath))
+                if (File.Exists(filepath))
                 {
-                    System.IO.File.Delete(filepath);
+                    File.Delete(filepath);
                 }
             }
         }
