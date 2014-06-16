@@ -53,7 +53,16 @@ namespace Linq2Azure
 
             ID = Guid.Parse((string)sub.Attribute("Id"));
             Name = (string)sub.Attribute("Name");
-            ManagementCertificate = new X509Certificate2(Convert.FromBase64String((string)pp.Attribute("ManagementCertificate")));
+            string managementCertificateAttempt = (string)pp.Attribute("ManagementCertificate");
+            if (managementCertificateAttempt == null)
+            {
+                managementCertificateAttempt = (string)sub.Attribute("ManagementCertificate");
+            }
+            if (managementCertificateAttempt == null)
+            {
+                throw new System.Configuration.ConfigurationException("Cannot find ManagementCertificate attribute neither in PublishProfile node, nor in Subscription in file " + publishSettingsPath);
+            }
+            ManagementCertificate = new X509Certificate2(Convert.FromBase64String(managementCertificateAttempt));
 
             Init();
         }

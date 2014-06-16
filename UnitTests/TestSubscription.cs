@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using System.IO;
 using Linq2Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -38,5 +39,44 @@ namespace UnitTests
             var parsed = Subscription.ParseResult(result);
             Assert.AreEqual("TheStatus", parsed);
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.Configuration.ConfigurationException))]
+        public void CanInitialize()
+        {
+            string content = 
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+        <PublishData>
+          <PublishProfile
+            SchemaVersion=""2.0""
+            PublishMethod=""AzureServiceManagementAPI"">
+            <Subscription
+              ServiceManagementUrl=""https://management.core.windows.net""
+              Id="""+System.Guid.Empty+@"""
+              Name=""MSDN""/>
+          </PublishProfile>
+        </PublishData>";
+
+            string path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            string filename = "/SubscriptionAttempt.xml";
+            string filepath = Path.Combine(path, filename);
+
+            System.IO.File.WriteAllText(filepath, content, System.Text.Encoding.UTF8);
+
+            try
+            {
+                var attempt = new Subscription(filepath);
+            }
+            finally
+            {
+                if (File.Exists(filepath))
+                {
+                    File.Delete(filepath);
+                }
+            }
+        }
+
+
+
     }
 }
