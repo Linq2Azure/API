@@ -58,7 +58,7 @@ namespace UnitTests
         </PublishData>";
 
             string path = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            string filename = "/SubscriptionAttempt.xml";
+            string filename = "SubscriptionAttempt.xml";
             string filepath = Path.Combine(path, filename);
 
             System.IO.File.WriteAllText(filepath, content, System.Text.Encoding.UTF8);
