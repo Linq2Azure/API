@@ -19,10 +19,12 @@ namespace Linq2Azure.SqlDatabases
         public string Location { get; private set; }
         public Subscription Subscription { get; private set; }
         public LatentSequence<FirewallRule> FirewallRules { get; private set; }
+        public LatentSequence<Database> Databases { get; private set; }
 
         DatabaseServer()
         {
             FirewallRules = new LatentSequence<FirewallRule>(GetFirewallRulesAsync);
+            Databases = new LatentSequence<Database>(GetDatabasesAsync);
         }
 
         internal DatabaseServer(XElement xml, Subscription subscription) : this()
@@ -63,6 +65,12 @@ namespace Linq2Azure.SqlDatabases
             Name = result.Value;
 
             Subscription = subscription;
+        }
+
+        async Task<Database[]> GetDatabasesAsync()
+        {
+            var xe = await Subscription.GetCoreRestClient("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceResource").Select(x => new Database(x, this)).ToArray();
         }
 
         public Task AddFirewallRule(FirewallRule rule)

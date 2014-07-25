@@ -104,6 +104,7 @@
     <Compile Include="AzureRestClient.cs" />
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudServices\CloudService.cs" />
+    <Compile Include="SqlDatabases\Database.cs" />
     <Compile Include="SqlDatabases\DatabaseServer.cs" />
     <Compile Include="SqlDatabases\FirewallRule.cs" />
     <Compile Include="LatentSequence.cs" />

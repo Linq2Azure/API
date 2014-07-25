@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace Linq2Azure
@@ -22,11 +17,35 @@ namespace Linq2Azure
                 if (child != null)
                 {
                     object value;
-                    
                     if (prop.PropertyType == typeof(string))
                         value = child.Value;
+                    else if (prop.PropertyType == typeof(Uri))
+                        value = string.IsNullOrWhiteSpace(child.Value) ? null : new Uri(child.Value);
                     else if (prop.PropertyType == typeof(int))
-                        value = (int)child;
+                        value = (int) child;
+                    else if (prop.PropertyType == typeof(int?))
+                        value = string.IsNullOrWhiteSpace(child.Value) ? (int?) null : (int) child;
+                    else if (prop.PropertyType == typeof(long))
+                        value = (long) child;
+                    else if (prop.PropertyType == typeof(long?))
+                        value = string.IsNullOrWhiteSpace(child.Value) ? (long?) null : (long) child;
+                    else if (prop.PropertyType == typeof(decimal?))
+                        value = string.IsNullOrWhiteSpace(child.Value) ? (decimal?) null : (decimal) child;
+                    else if (prop.PropertyType == typeof(decimal))
+                        value = (decimal) child;
+                    else if (prop.PropertyType == typeof(bool))
+                        value = (bool) child;
+                    else if (prop.PropertyType == typeof(Guid))
+                        value = new Guid(child.Value);
+                    else if (prop.PropertyType == typeof(DateTimeOffset))
+                        value = DateTimeOffset.Parse(child.Value);
+                    else if (prop.PropertyType == typeof(DateTimeOffset?))
+                    {
+                        DateTimeOffset temp;
+                        value = !DateTimeOffset.TryParse(child.Value, out temp)
+                            ? temp
+                            : (DateTimeOffset?) null;
+                    }
                     else if (prop.PropertyType.IsEnum)
                         value = Enum.Parse(prop.PropertyType, child.Value, true);
                     else
