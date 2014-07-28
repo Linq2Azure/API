@@ -41,6 +41,7 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// When creating a cloud service, you must specify either a location or affinity group.
         /// </summary>
+        [Obsolete("This constructor has been replaced by the overload that takes IDeploymentAssociation. Take the location or affinity group string and call AsLocation or AsAffinityGroup to create the appropriate IDeploymentAssociation instance", false)]
         public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false) : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
@@ -52,6 +53,22 @@ namespace Linq2Azure.CloudServices
                 AffinityGroup = locationOrAffinityGroup;
             else
                 Location = locationOrAffinityGroup;
+
+            ExtendedProperties = new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// When creating a cloud service, you must specify either a location or affinity group.
+        /// </summary>
+        public CloudService(string serviceName, IDeploymentAssociation deploymentAssociation)
+            : this()
+        {
+            Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
+            Contract.Requires(deploymentAssociation != null);
+
+            Name = Label = serviceName;
+
+            deploymentAssociation.AssignValue(location => Location = location, affinityGroup => AffinityGroup = affinityGroup);
 
             ExtendedProperties = new Dictionary<string, string>();
         }

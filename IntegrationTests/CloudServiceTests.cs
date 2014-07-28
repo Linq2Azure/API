@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Linq2Azure;
-using System.Reactive.Linq;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ namespace IntegrationTests
 
         public CloudServiceTests()
         {
-            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), CloudServiceTests.TestLocation);
+            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), TestLocation.AsLocation());
             CloudService.Description = "Test Description";
             Debug.WriteLine("CloudServiceTests ctor - creating test service");
             TestConstants.Subscription.CreateCloudServiceAsync (CloudService).Wait();
