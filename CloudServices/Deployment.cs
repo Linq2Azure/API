@@ -133,7 +133,18 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// Upgrades the given deployment with the package contents.
         /// </summary>
-        public async Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null)
+        public Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null)
+        {
+            return UpgradeAsync(packageUrl, DeploymentType.Standard, roleToUpgrade);
+        }
+
+        /// <summary>
+        /// Upgrades the given deployment with the package contents.
+        /// </summary>
+        public async Task UpgradeAsync(
+            Uri packageUrl,
+            DeploymentType deploymentType,
+            string roleToUpgrade = null)
         {
             Contract.Requires(Parent != null);
             Contract.Requires(packageUrl != null);
@@ -147,7 +158,7 @@ namespace Linq2Azure.CloudServices
                 new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()),
                 new XElement(ns + "Label", Label.ToBase64String()),
                 new XElement(ns + "RoleToUpgrade", roleToUpgrade),
-                new XElement(ns + "Force", false));
+                new XElement(ns + "Force", deploymentType == DeploymentType.Forced));
             // With the deployments endpoint, you need a forward slash separating the URI from the query string!
             HttpResponseMessage response = await GetRestClient(Parent, "/?comp=upgrade").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
