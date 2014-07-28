@@ -34,6 +34,7 @@ namespace Linq2Azure.LINQPadDriver
                 "Linq2Azure.CloudServices",
                 "Linq2Azure.SqlDatabases",
                 "Linq2Azure.TrafficManagement",
+                "Linq2Azure.StorageAccounts",
 				"System.Reactive",
 				"System.Reactive.Linq",
                 "System.Reactive.Joins",
