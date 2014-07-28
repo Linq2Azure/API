@@ -133,10 +133,18 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// Upgrades the given deployment with the package contents.
         /// </summary>
+        public Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null)
+        {
+            return UpgradeAsync(packageUrl, DeploymentType.Standard, roleToUpgrade);
+        }
+
+        /// <summary>
+        /// Upgrades the given deployment with the package contents.
+        /// </summary>
         public async Task UpgradeAsync(
             Uri packageUrl,
-            string roleToUpgrade = null,
-            DeploymentType deploymentType = DeploymentType.Standard)
+            DeploymentType deploymentType,
+            string roleToUpgrade = null)
         {
             Contract.Requires(Parent != null);
             Contract.Requires(packageUrl != null);
