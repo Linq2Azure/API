@@ -115,7 +115,10 @@
     <Compile Include="LatentSequence.cs" />
     <Compile Include="CloudServices\RoleInstance.cs" />
     <Compile Include="CloudServices\ServiceCertificate.cs" />
+    <Compile Include="StorageAccounts\KeyType.cs" />
     <Compile Include="StorageAccounts\StorageAccount.cs" />
+    <Compile Include="StorageAccounts\StorageAccountGeoReplication.cs" />
+    <Compile Include="StorageAccounts\StorageAccountKey.cs" />
     <Compile Include="TrafficManagement\TrafficManagerDefinition.cs" />
     <Compile Include="TrafficManagement\TrafficManagerMonitor.cs" />
     <Compile Include="TrafficManagement\TrafficManagerPolicy.cs" />

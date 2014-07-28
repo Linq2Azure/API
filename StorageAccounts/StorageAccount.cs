@@ -7,19 +7,19 @@ using System.Xml.Linq;
 
 namespace Linq2Azure.StorageAccounts
 {
-    public enum StorageAccountGeoReplication
-    {
-        Disabled = 0,
-        Enabled = 1,
-        ReadAccessEnabled = 2
-    }
     public class StorageAccount
     {
+        private StorageAccount()
+        {
+            Keys = new LatentSequence<StorageAccountKey>(GetStorageAccountKeysAsync);
+        }
+
         public StorageAccount(
-            string serviceName,
-            string description,
-            IDeploymentAssociation deploymentAssociation,
-            StorageAccountGeoReplication geoReplication)
+                string serviceName,
+                string description,
+                IDeploymentAssociation deploymentAssociation,
+                StorageAccountGeoReplication geoReplication)
+            : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
             Contract.Requires(!string.IsNullOrWhiteSpace(description));
@@ -36,6 +36,7 @@ namespace Linq2Azure.StorageAccounts
         }
 
         internal StorageAccount(XElement xml, Subscription subscription)
+            : this()
         {
             var azureNamespace = XmlNamespaces.WindowsAzure;
 
@@ -60,16 +61,6 @@ namespace Linq2Azure.StorageAccounts
             SecondaryEndpoints = GetEndpoints(storageServicePropertiesElement, azureNamespace, "SecondaryEndpoints");
         }
 
-        private static IEnumerable<Uri> GetEndpoints(XContainer storageServicePropertiesElement, XNamespace azureNamespace, string endpointElement)
-        {
-            var endpointsElement = storageServicePropertiesElement.Element(azureNamespace + endpointElement);
-            return endpointsElement != null
-                ? endpointsElement.Elements()
-                    .Select(e => new Uri(e.Value))
-                    .ToList()
-                : Enumerable.Empty<Uri>();
-        }
-
         public Subscription Subscription { get; private set; }
         public Uri Url { get; private set; }
         public string ServiceName { get; private set; }
@@ -87,6 +78,7 @@ namespace Linq2Azure.StorageAccounts
         public IDictionary<string, string> ExtendedProperties { get; set; }
         public IEnumerable<Uri> Endpoints { get; set; }
         public IEnumerable<Uri> SecondaryEndpoints { get; set; }
+        public LatentSequence<StorageAccountKey> Keys { get; private set; }
 
         public StorageAccountGeoReplication StorageAccountGeoReplication
         {
@@ -110,6 +102,29 @@ namespace Linq2Azure.StorageAccounts
             await GetRestClient().DeleteAsync();
 
             Subscription = null;
+        }
+
+        async Task<StorageAccountKey[]> GetStorageAccountKeysAsync()
+        {
+            var xe = await GetRestClient("/keys").GetXmlAsync();
+
+            var storageServiceKeysElement = xe.Element(XmlNamespaces.WindowsAzure + "StorageServiceKeys");
+            if (storageServiceKeysElement == null)
+            {
+                return new StorageAccountKey[] {};
+            }
+
+            return new[]
+            {
+                new StorageAccountKey(KeyType.Primary, GetKeyValue(storageServiceKeysElement, "Primary")), 
+                new StorageAccountKey(KeyType.Secondary, GetKeyValue(storageServiceKeysElement, "Secondary"))
+            };
+        }
+
+        private static string GetKeyValue(XContainer storageServiceKeysElement, string keyName)
+        {
+            var keyElement = storageServiceKeysElement.Element(XmlNamespaces.WindowsAzure + keyName);
+            return keyElement != null ? keyElement.Value : null;
         }
 
         private AzureRestClient GetRestClient(string pathSuffix = null)
@@ -156,6 +171,16 @@ namespace Linq2Azure.StorageAccounts
             var hc = subscription.GetCoreRestClient20131101("services/storageservices");
             await hc.PostAsync(content);
             Subscription = subscription;
+        }
+
+        private static IEnumerable<Uri> GetEndpoints(XContainer storageServicePropertiesElement, XNamespace azureNamespace, string endpointElement)
+        {
+            var endpointsElement = storageServicePropertiesElement.Element(azureNamespace + endpointElement);
+            return endpointsElement != null
+                ? endpointsElement.Elements()
+                    .Select(e => new Uri(e.Value))
+                    .ToList()
+                : Enumerable.Empty<Uri>();
         }
     }
 }
