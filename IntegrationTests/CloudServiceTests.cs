@@ -18,7 +18,7 @@ namespace IntegrationTests
 
         public CloudServiceTests()
         {
-            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), TestLocation, DeploymentAssociation.Location)
+            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), TestLocation, LocationType.Region)
             {
                 Description = "Test Description"
             };

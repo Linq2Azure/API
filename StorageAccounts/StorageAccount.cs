@@ -20,7 +20,7 @@ namespace Linq2Azure.StorageAccounts
                 string serviceName,
                 string description,
                 string locationOrAffinityGroup,
-                DeploymentAssociation deploymentAssociation,
+                LocationType locationType,
                 StorageAccountGeoReplication geoReplication)
             : this()
         {
@@ -30,7 +30,7 @@ namespace Linq2Azure.StorageAccounts
 
             ServiceName = Label = serviceName;
             Description = description;
-            if (deploymentAssociation == DeploymentAssociation.Location)
+            if (locationType == LocationType.Region)
             {
                 Location = locationOrAffinityGroup;
             }

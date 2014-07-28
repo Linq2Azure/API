@@ -20,7 +20,7 @@ namespace IntegrationTests
             "l2aintegrationtest" + new Random().Next(0, 100000),
             "Integration Test",
             "West US",
-            DeploymentAssociation.Location,
+            LocationType.Region,
             StorageAccountGeoReplication.ReadAccessEnabled);
 
         public StorageAccountTests()

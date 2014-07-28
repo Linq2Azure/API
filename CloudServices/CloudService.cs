@@ -16,11 +16,6 @@ using System.Reactive.Threading.Tasks;
 
 namespace Linq2Azure.CloudServices
 {
-    public enum DeploymentAssociation
-    {
-        Location = 0,
-        AffinityGroup = 1
-    }
     public class CloudService
     {
         public string Name { get; set; }
@@ -46,12 +41,12 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// When creating a cloud service, you must specify either a location or affinity group.
         /// </summary>
-        [Obsolete("This constructor has been replaced by the overload that takes DeploymentAssociation.", false)]
+        [Obsolete("This constructor has been replaced by the overload that takes LocationType.", false)]
         public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false)
-            : this(serviceName, locationOrAffinityGroup, isAffinityGroup ? DeploymentAssociation.AffinityGroup : DeploymentAssociation.Location)
+            : this(serviceName, locationOrAffinityGroup, isAffinityGroup ? LocationType.AffinityGroup : LocationType.Region)
         {}
 
-        public CloudService(string serviceName, string locationOrAffinityGroup, DeploymentAssociation deploymentAssociation)
+        public CloudService(string serviceName, string locationOrAffinityGroup, LocationType locationType)
             : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
@@ -59,7 +54,7 @@ namespace Linq2Azure.CloudServices
 
             Name = Label = serviceName;
 
-            if (deploymentAssociation == DeploymentAssociation.AffinityGroup)
+            if (locationType == LocationType.AffinityGroup)
                 AffinityGroup = locationOrAffinityGroup;
             else
                 Location = locationOrAffinityGroup;
