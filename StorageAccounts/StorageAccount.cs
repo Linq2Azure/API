@@ -31,6 +31,8 @@ namespace Linq2Azure.StorageAccounts
             GeoReplicationEnabled = geoReplication != StorageAccountGeoReplication.Disabled;
             SecondaryReadEnabled = geoReplication == StorageAccountGeoReplication.ReadAccessEnabled;
             ExtendedProperties = new Dictionary<string, string>();
+            Endpoints = new List<Uri>();
+            SecondaryEndpoints = new List<Uri>();
         }
 
         internal StorageAccount(XElement xml, Subscription subscription)
@@ -53,6 +55,19 @@ namespace Linq2Azure.StorageAccounts
                         x => (string) x.Element(azureNamespace + "Name"),
                         x => (string) x.Element(azureNamespace + "Value"));
             }
+
+            Endpoints = GetEndpoints(storageServicePropertiesElement, azureNamespace, "Endpoints");
+            SecondaryEndpoints = GetEndpoints(storageServicePropertiesElement, azureNamespace, "SecondaryEndpoints");
+        }
+
+        private static IEnumerable<Uri> GetEndpoints(XContainer storageServicePropertiesElement, XNamespace azureNamespace, string endpointElement)
+        {
+            var endpointsElement = storageServicePropertiesElement.Element(azureNamespace + endpointElement);
+            return endpointsElement != null
+                ? endpointsElement.Elements()
+                    .Select(e => new Uri(e.Value))
+                    .ToList()
+                : Enumerable.Empty<Uri>();
         }
 
         public Subscription Subscription { get; private set; }
@@ -63,8 +78,15 @@ namespace Linq2Azure.StorageAccounts
         public string AffinityGroup { get; private set; }
         public string Location { get; private set; }
         public bool GeoReplicationEnabled { get; private set; }
+        public string GeoPrimaryRegion { get; private set; }
+        public string StatusOfPrimary { get; private set; }
+        public string GeoSecondaryRegion { get; private set; }
+        public string StatusOfSecondary { get; private set; }
+        public DateTimeOffset CreationTime { get; private set; }
         public bool SecondaryReadEnabled { get; private set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
+        public IEnumerable<Uri> Endpoints { get; set; }
+        public IEnumerable<Uri> SecondaryEndpoints { get; set; }
 
         public StorageAccountGeoReplication StorageAccountGeoReplication
         {
