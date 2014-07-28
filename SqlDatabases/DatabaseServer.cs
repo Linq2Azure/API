@@ -54,7 +54,7 @@ namespace Linq2Azure.SqlDatabases
             var content = new XElement(ns + "Server",
                 new XElement(ns + "AdministratorLogin", AdministratorLogin),
                 new XElement(ns + "AdministratorLoginPassword", adminPassword),
-                new XElement(ns + "affinityGroup", Location)
+                new XElement(ns + "Location", Location)
                 );
 
             var hc = GetRestClient(subscription);
