@@ -116,8 +116,8 @@ namespace Linq2Azure.StorageAccounts
 
             return new[]
             {
-                new StorageAccountKey(KeyType.Primary, GetKeyValue(storageServiceKeysElement, "Primary")), 
-                new StorageAccountKey(KeyType.Secondary, GetKeyValue(storageServiceKeysElement, "Secondary"))
+                new StorageAccountKey(KeyType.Primary, GetKeyValue(storageServiceKeysElement, "Primary"), this), 
+                new StorageAccountKey(KeyType.Secondary, GetKeyValue(storageServiceKeysElement, "Secondary"), this)
             };
         }
 
@@ -127,7 +127,7 @@ namespace Linq2Azure.StorageAccounts
             return keyElement != null ? keyElement.Value : null;
         }
 
-        private AzureRestClient GetRestClient(string pathSuffix = null)
+        internal AzureRestClient GetRestClient(string pathSuffix = null)
         {
             if (Subscription == null)
             {
