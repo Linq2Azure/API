@@ -43,6 +43,22 @@ namespace Linq2Azure.CloudServices
             await Parent.Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
+        public async Task ReimageAsync()
+        {
+            Contract.Requires(Parent != null);
+
+            HttpResponseMessage response = await GetRestClient("?comp=reimage").PostAsync();
+            await Parent.Parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        public async Task RebuildAsync()
+        {
+            Contract.Requires(Parent != null);
+
+            HttpResponseMessage response = await GetRestClient("?comp=rebuild&resources=allLocalDrives").PostAsync();
+            await Parent.Parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
         AzureRestClient GetRestClient(string pathSuffix = null)
         {
             string servicePath = "/roleinstances/" + InstanceName;
