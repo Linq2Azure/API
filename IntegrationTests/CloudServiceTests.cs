@@ -19,7 +19,7 @@ namespace IntegrationTests
 
         public CloudServiceTests()
         {
-            CloudService = new CloudService("Test-" + Guid.NewGuid().ToString("N"), CloudServiceTests.TestLocation);
+            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), CloudServiceTests.TestLocation);
             CloudService.Description = "Test Description";
             Debug.WriteLine("CloudServiceTests ctor - creating test service");
             TestConstants.Subscription.CreateCloudServiceAsync (CloudService).Wait();

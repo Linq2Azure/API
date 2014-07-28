@@ -18,7 +18,7 @@ namespace IntegrationTests
         public TrafficManagerTests()
         {
             Debug.WriteLine("Creating traffic manager profile");
-            Profile = new TrafficManagerProfile("Test-" + Guid.NewGuid().ToString("N"), Parent.CloudService.Name + ".trafficmanager.net");
+            Profile = new TrafficManagerProfile("test-" + Guid.NewGuid().ToString("N"), Parent.CloudService.Name + ".trafficmanager.net");
             Subscription.CreateTrafficManagerProfileAsync (Profile).Wait();
         }
 
