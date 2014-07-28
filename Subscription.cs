@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using Linq2Azure.CloudServices;
 using Linq2Azure.SqlDatabases;
+using Linq2Azure.StorageAccounts;
 using Linq2Azure.TrafficManagement;
+
 using System.Diagnostics;
 
 namespace Linq2Azure
@@ -29,8 +33,9 @@ namespace Linq2Azure
         public LatentSequence<CloudService> CloudServices { get; private set; }
         public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
         public LatentSequence<TrafficManagerProfile> TrafficManagerProfiles { get; private set; }
+        public LatentSequence<StorageAccount> StorageAccounts { get; private set; }
 
-        HttpClient _coreHttpClient, _databaseHttpClient;
+        HttpClient _coreHttpClient20120301, _coreHttpClient20131101, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
@@ -53,14 +58,11 @@ namespace Linq2Azure
 
             ID = Guid.Parse((string)sub.Attribute("Id"));
             Name = (string)sub.Attribute("Name");
-            string managementCertificateAttempt = (string)pp.Attribute("ManagementCertificate");
+            var managementCertificateAttempt = (string)pp.Attribute("ManagementCertificate")
+                ?? (string)sub.Attribute("ManagementCertificate");
             if (managementCertificateAttempt == null)
             {
-                managementCertificateAttempt = (string)sub.Attribute("ManagementCertificate");
-            }
-            if (managementCertificateAttempt == null)
-            {
-                throw new System.Configuration.ConfigurationException("Cannot find ManagementCertificate attribute neither in PublishProfile node, nor in Subscription in file " + publishSettingsPath);
+                throw new ConfigurationErrorsException("Cannot find ManagementCertificate attribute neither in PublishProfile node, nor in Subscription in file " + publishSettingsPath);
             }
             ManagementCertificate = new X509Certificate2(Convert.FromBase64String(managementCertificateAttempt));
 
@@ -69,21 +71,24 @@ namespace Linq2Azure
 
         void Init()
         {
-            _coreHttpClient = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
+            _coreHttpClient20120301 = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
+            _coreHttpClient20131101 = AzureRestClient.CreateHttpClient(this, "2013-11-01", () => LogDestinations);
             _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
             TrafficManagerProfiles = new LatentSequence<TrafficManagerProfile>(GetTrafficManagerProfilesAsync);
+            StorageAccounts = new LatentSequence<StorageAccount>(GetStorageAccountsAsync);
         }
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
         public Task CreateDatabaseServerAsync(DatabaseServer server, string adminPassword) { return server.CreateAsync(this, adminPassword); }
         public Task CreateTrafficManagerProfileAsync(TrafficManagerProfile profile) { return profile.CreateAsync(this); }
+        public Task CreateStorageAccountAsync(StorageAccount storageAccount) { return storageAccount.CreateAsync(this); }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
-            var xe = await GetCoreRestClient("services/hostedServices").GetXmlAsync();
+            var xe = await GetCoreRestClient20120301("services/hostedServices").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "HostedService").Select(x => new CloudService(x, this)).ToArray();
         }
 
@@ -95,13 +100,24 @@ namespace Linq2Azure
 
         async Task<TrafficManagerProfile[]> GetTrafficManagerProfilesAsync()
         {
-            var xe = await GetCoreRestClient("services/WATM/profiles").GetXmlAsync();
+            var xe = await GetCoreRestClient20120301("services/WATM/profiles").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "Profile").Select(x => new TrafficManagerProfile(x, this)).ToArray();
         }
 
-        internal AzureRestClient GetCoreRestClient(string servicePath)
+        async Task<StorageAccount[]> GetStorageAccountsAsync()
         {
-            return new AzureRestClient(this, _coreHttpClient, CoreUri, servicePath);
+            var xe = await GetCoreRestClient20131101("services/storageservices").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "StorageService").Select(x => new StorageAccount(x, this)).ToArray();
+        }
+
+        internal AzureRestClient GetCoreRestClient20120301(string servicePath)
+        {
+            return new AzureRestClient(this, _coreHttpClient20120301, CoreUri, servicePath);
+        }
+
+        internal AzureRestClient GetCoreRestClient20131101(string servicePath)
+        {
+            return new AzureRestClient(this, _coreHttpClient20131101, CoreUri, servicePath);
         }
 
         internal AzureRestClient GetDatabaseRestClient(string servicePath)
@@ -134,7 +150,7 @@ namespace Linq2Azure
 
         async Task<string> GetOperationResultAsync(string requestId)
         {
-            var client = GetCoreRestClient("operations/" + requestId);
+            var client = GetCoreRestClient20120301("operations/" + requestId);
             return ParseResult(await client.GetXmlAsync());
         }
 
@@ -148,7 +164,7 @@ namespace Linq2Azure
 
         public void Dispose()
         {
-            if (_coreHttpClient != null) _coreHttpClient.Dispose();
+            if (_coreHttpClient20120301 != null) _coreHttpClient20120301.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
     }

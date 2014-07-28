@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Configuration;
+using System.Xml.Linq;
 using System.IO;
 using Linq2Azure;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -41,7 +42,7 @@ namespace UnitTests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(System.Configuration.ConfigurationException))]
+        [ExpectedException(typeof(ConfigurationErrorsException))]
         public void CanInitialize()
         {
             string content = 

@@ -41,14 +41,20 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// When creating a cloud service, you must specify either a location or affinity group.
         /// </summary>
-        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false) : this()
+        [Obsolete("This constructor has been replaced by the overload that takes LocationType.", false)]
+        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false)
+            : this(serviceName, locationOrAffinityGroup, isAffinityGroup ? LocationType.AffinityGroup : LocationType.Region)
+        {}
+
+        public CloudService(string serviceName, string locationOrAffinityGroup, LocationType locationType)
+            : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
             Contract.Requires(!string.IsNullOrWhiteSpace(locationOrAffinityGroup));
 
             Name = Label = serviceName;
 
-            if (isAffinityGroup)
+            if (locationType == LocationType.AffinityGroup)
                 AffinityGroup = locationOrAffinityGroup;
             else
                 Location = locationOrAffinityGroup;
@@ -109,7 +115,7 @@ namespace Linq2Azure.CloudServices
                             new XElement(ns + "Value", kv.Value))))
                             );
 
-            var hc = subscription.GetCoreRestClient("services/hostedservices");
+            var hc = subscription.GetCoreRestClient20120301("services/hostedservices");
             await hc.PostAsync(content);
             Subscription = subscription;
         }
@@ -163,7 +169,7 @@ namespace Linq2Azure.CloudServices
             if (Subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
             string servicePath = "services/hostedServices/" + Name;
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return Subscription.GetCoreRestClient(servicePath);
+            return Subscription.GetCoreRestClient20120301(servicePath);
         }
 
         async Task<Deployment[]> GetDeploymentsAsync()

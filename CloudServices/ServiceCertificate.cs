@@ -63,7 +63,7 @@ namespace Linq2Azure.CloudServices
         {
             string servicePath = "services/hostedServices/" + parent.Name + "/certificates";
             if (pathSuffix != null) servicePath += pathSuffix;
-            return parent.Subscription.GetCoreRestClient(servicePath);
+            return parent.Subscription.GetCoreRestClient20120301(servicePath);
         }
 
     }

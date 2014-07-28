@@ -69,7 +69,7 @@ namespace Linq2Azure.SqlDatabases
 
         async Task<Database[]> GetDatabasesAsync()
         {
-            var xe = await Subscription.GetCoreRestClient("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
+            var xe = await Subscription.GetCoreRestClient20120301("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceResource").Select(x => new Database(x, this)).ToArray();
         }
 
