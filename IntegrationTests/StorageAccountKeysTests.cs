@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace IntegrationTests
 {
     [TestClass]
-    public class StorageAccountTests : IDisposable
+    public class StorageAccountKeysTests : IDisposable
     {
         public readonly Subscription Subscription = TestConstants.Subscription;
 
@@ -21,24 +21,29 @@ namespace IntegrationTests
             "West US".AsLocation(),
             StorageAccountGeoReplication.ReadAccessEnabled);
 
-        public StorageAccountTests()
+        public StorageAccountKeysTests()
         {
             Debug.WriteLine("Creating storage account...");
             Subscription.CreateStorageAccountAsync(StorageAccount).Wait();
         }
 
         [TestMethod]
-        public async Task CanUseDatabaseServer()
+        public async Task CanUpdateStorageAccountKeys()
         {
-            await CanCreateDatabaseServer();
-        }
+            var secondaryKey = StorageAccount.Keys
+                .AsArray()
+                .Single(k => k.KeyType == KeyType.Secondary);
 
-        async Task CanCreateDatabaseServer()
-        {
-            Assert.IsNotNull(StorageAccount.ServiceName);
-            Assert.IsNotNull(StorageAccount.Subscription);
-            Debug.WriteLine("Retrieving storage account...");
-            Assert.IsNotNull((await Subscription.StorageAccounts.AsTask()).SingleOrDefault(d => d.ServiceName == StorageAccount.ServiceName));
+            var originalKeyValue = secondaryKey.Key;
+
+            await secondaryKey.RegenerateKey();
+
+            var updatedKeyValue = StorageAccount.Keys
+                .AsArray()
+                .Single(k => k.KeyType == KeyType.Secondary)
+                .Key;
+
+            Assert.AreNotEqual(originalKeyValue, updatedKeyValue);
         }
 
         public void Dispose()
