@@ -18,8 +18,10 @@ namespace IntegrationTests
 
         public CloudServiceTests()
         {
-            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), TestLocation.AsLocation());
-            CloudService.Description = "Test Description";
+            CloudService = new CloudService("test-" + Guid.NewGuid().ToString("N"), TestLocation, DeploymentAssociation.Location)
+            {
+                Description = "Test Description"
+            };
             Debug.WriteLine("CloudServiceTests ctor - creating test service");
             TestConstants.Subscription.CreateCloudServiceAsync (CloudService).Wait();
             var cert = new X509Certificate2(@"..\..\CertKey.pfx", "1234", X509KeyStorageFlags.Exportable);

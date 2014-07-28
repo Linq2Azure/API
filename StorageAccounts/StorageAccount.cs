@@ -5,6 +5,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using Linq2Azure.CloudServices;
+
 namespace Linq2Azure.StorageAccounts
 {
     public class StorageAccount
@@ -17,17 +19,25 @@ namespace Linq2Azure.StorageAccounts
         public StorageAccount(
                 string serviceName,
                 string description,
-                IDeploymentAssociation deploymentAssociation,
+                string locationOrAffinityGroup,
+                DeploymentAssociation deploymentAssociation,
                 StorageAccountGeoReplication geoReplication)
             : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
             Contract.Requires(!string.IsNullOrWhiteSpace(description));
-            Contract.Requires(deploymentAssociation != null);
+            Contract.Requires(!string.IsNullOrWhiteSpace(locationOrAffinityGroup));
 
             ServiceName = Label = serviceName;
             Description = description;
-            deploymentAssociation.AssignValue(location => Location = location, affinityGroup => AffinityGroup = affinityGroup);
+            if (deploymentAssociation == DeploymentAssociation.Location)
+            {
+                Location = locationOrAffinityGroup;
+            }
+            else
+            {
+                AffinityGroup = locationOrAffinityGroup;
+            }
             GeoReplicationEnabled = geoReplication != StorageAccountGeoReplication.Disabled;
             SecondaryReadEnabled = geoReplication == StorageAccountGeoReplication.ReadAccessEnabled;
             ExtendedProperties = new Dictionary<string, string>();

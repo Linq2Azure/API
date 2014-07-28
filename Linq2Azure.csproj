@@ -102,13 +102,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AffinityGroupDeploymentAssociation.cs" />
     <Compile Include="AzureRestClient.cs" />
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudServices\CloudService.cs" />
-    <Compile Include="DeploymentAssociationExtensions.cs" />
-    <Compile Include="IDeploymentAssociation.cs" />
-    <Compile Include="LocationDeploymentAssociation.cs" />
     <Compile Include="SqlDatabases\Database.cs" />
     <Compile Include="SqlDatabases\DatabaseServer.cs" />
     <Compile Include="SqlDatabases\FirewallRule.cs" />

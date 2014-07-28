@@ -16,6 +16,11 @@ using System.Reactive.Threading.Tasks;
 
 namespace Linq2Azure.CloudServices
 {
+    public enum DeploymentAssociation
+    {
+        Location = 0,
+        AffinityGroup = 1
+    }
     public class CloudService
     {
         public string Name { get; set; }
@@ -41,34 +46,23 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// When creating a cloud service, you must specify either a location or affinity group.
         /// </summary>
-        [Obsolete("This constructor has been replaced by the overload that takes IDeploymentAssociation. Take the location or affinity group string and call AsLocation or AsAffinityGroup to create the appropriate IDeploymentAssociation instance", false)]
-        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false) : this()
+        [Obsolete("This constructor has been replaced by the overload that takes DeploymentAssociation.", false)]
+        public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false)
+            : this(serviceName, locationOrAffinityGroup, isAffinityGroup ? DeploymentAssociation.AffinityGroup : DeploymentAssociation.Location)
+        {}
+
+        public CloudService(string serviceName, string locationOrAffinityGroup, DeploymentAssociation deploymentAssociation)
+            : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
             Contract.Requires(!string.IsNullOrWhiteSpace(locationOrAffinityGroup));
 
             Name = Label = serviceName;
 
-            if (isAffinityGroup)
+            if (deploymentAssociation == DeploymentAssociation.AffinityGroup)
                 AffinityGroup = locationOrAffinityGroup;
             else
                 Location = locationOrAffinityGroup;
-
-            ExtendedProperties = new Dictionary<string, string>();
-        }
-
-        /// <summary>
-        /// When creating a cloud service, you must specify either a location or affinity group.
-        /// </summary>
-        public CloudService(string serviceName, IDeploymentAssociation deploymentAssociation)
-            : this()
-        {
-            Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
-            Contract.Requires(deploymentAssociation != null);
-
-            Name = Label = serviceName;
-
-            deploymentAssociation.AssignValue(location => Location = location, affinityGroup => AffinityGroup = affinityGroup);
 
             ExtendedProperties = new Dictionary<string, string>();
         }

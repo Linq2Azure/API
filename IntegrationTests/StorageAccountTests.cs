@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Linq2Azure;
+using Linq2Azure.CloudServices;
 using Linq2Azure.StorageAccounts;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,7 +19,8 @@ namespace IntegrationTests
         public readonly StorageAccount StorageAccount = new StorageAccount(
             "l2aintegrationtest" + new Random().Next(0, 100000),
             "Integration Test",
-            "West US".AsLocation(),
+            "West US",
+            DeploymentAssociation.Location,
             StorageAccountGeoReplication.ReadAccessEnabled);
 
         public StorageAccountTests()
