@@ -187,7 +187,7 @@ namespace Linq2Azure.CloudServices
         {
             string servicePath = "services/hostedservices/" + cloudService.Name + "/deploymentslots/" + Slot.ToString().ToLowerInvariant();
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return cloudService.Subscription.GetCoreRestClient20120301(servicePath);
+            return cloudService.Subscription.GetCoreRestClient20131101(servicePath);
         }
 
         public class CreationOptions
