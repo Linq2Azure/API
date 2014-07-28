@@ -54,7 +54,7 @@ namespace Linq2Azure.SqlDatabases
             var content = new XElement(ns + "Server",
                 new XElement(ns + "AdministratorLogin", AdministratorLogin),
                 new XElement(ns + "AdministratorLoginPassword", adminPassword),
-                new XElement(ns + "Location", Location)
+                new XElement(ns + "affinityGroup", Location)
                 );
 
             var hc = GetRestClient(subscription);
@@ -69,7 +69,7 @@ namespace Linq2Azure.SqlDatabases
 
         async Task<Database[]> GetDatabasesAsync()
         {
-            var xe = await Subscription.GetCoreRestClient("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
+            var xe = await Subscription.GetCoreRestClient20120301("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceResource").Select(x => new Database(x, this)).ToArray();
         }
 

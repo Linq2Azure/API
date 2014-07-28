@@ -99,7 +99,7 @@ namespace Linq2Azure.TrafficManagement
             if (subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
             string servicePath = "services/WATM/profiles";
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return subscription.GetCoreRestClient(servicePath);
+            return subscription.GetCoreRestClient20120301(servicePath);
         }
     }
 }

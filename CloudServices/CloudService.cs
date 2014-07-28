@@ -109,7 +109,7 @@ namespace Linq2Azure.CloudServices
                             new XElement(ns + "Value", kv.Value))))
                             );
 
-            var hc = subscription.GetCoreRestClient("services/hostedservices");
+            var hc = subscription.GetCoreRestClient20120301("services/hostedservices");
             await hc.PostAsync(content);
             Subscription = subscription;
         }
@@ -163,7 +163,7 @@ namespace Linq2Azure.CloudServices
             if (Subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
             string servicePath = "services/hostedServices/" + Name;
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return Subscription.GetCoreRestClient(servicePath);
+            return Subscription.GetCoreRestClient20120301(servicePath);
         }
 
         async Task<Deployment[]> GetDeploymentsAsync()
