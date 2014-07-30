@@ -40,7 +40,7 @@ namespace IntegrationTests
         async Task CanUpdateDatabaseServerPassword()
         {
             Debug.WriteLine("Updating password...");
-            await DatabaseServer.UpdateAdminPassword(Password + "foo");
+            await DatabaseServer.UpdateAdminPasswordAsync(Password + "foo");
         }
 
         public void Dispose()

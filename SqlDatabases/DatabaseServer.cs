@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Text;
@@ -73,12 +74,29 @@ namespace Linq2Azure.SqlDatabases
             return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceResource").Select(x => new Database(x, this)).ToArray();
         }
 
+        [Obsolete("This method has been replaced by AddFirewallRuleAsync", false)]
         public Task AddFirewallRule(FirewallRule rule)
+        {
+            return AddFirewallRuleAsync(rule);
+        }
+
+        public Task AddFirewallRuleAsync(FirewallRule rule)
         {
             return rule.CreateAsync(this);
         }
 
-        public async Task UpdateAdminPassword(string newAdminPassword)
+        public Task AddWindowsAzureServicesFirewallRuleAsync()
+        {
+            return new FirewallRule("AllowAllWindowsAzureIps", "0.0.0.0", "0.0.0.0").CreateAsync(this);
+        }
+
+        [Obsolete("This method has been replaced by UpdateAdminPasswordAsync", false)]
+        public Task UpdateAdminPassword(string newAdminPassword)
+        {
+            return UpdateAdminPasswordAsync(newAdminPassword);
+        }
+
+        public async Task UpdateAdminPasswordAsync(string newAdminPassword)
         {
             Contract.Requires(Subscription != null);
 
