@@ -48,7 +48,7 @@ namespace IntegrationTests
             var defn = new TrafficManagerDefinition(3600, new[] { monitor }, policy);
 
             Debug.WriteLine("Creating traffic manager definition");
-            await Profile.AddDefinition (defn);
+            await Profile.AddDefinitionAsync(defn);
 
             Debug.WriteLine("Retrieving traffic manager definition");
             var allDefns = await Profile.Definitions.AsTask();

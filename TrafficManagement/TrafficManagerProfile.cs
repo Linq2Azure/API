@@ -58,9 +58,15 @@ namespace Linq2Azure.TrafficManagement
             Subscription = subscription;
         }
 
-        public Task AddDefinition(TrafficManagerDefinition definition)
+        public Task AddDefinitionAsync(TrafficManagerDefinition definition)
         {
             return definition.CreateAsync(this);
+        }
+
+        [Obsolete("This method has been replaced by AddDefinitionAsync", false)]
+        public Task AddDefinition(TrafficManagerDefinition definition)
+        {
+            return AddDefinitionAsync(definition);
         }
 
         async public Task UpdateAsync(bool enabled, string definitionVersion)

@@ -38,7 +38,7 @@ namespace IntegrationTests
 
             var originalKeyValue = secondaryKey.Key;
 
-            await secondaryKey.RegenerateKey();
+            await secondaryKey.RegenerateKeyAsync();
 
             var updatedKeyValue = StorageAccount.Keys
                 .AsArray()
