@@ -165,6 +165,7 @@ namespace Linq2Azure
         public void Dispose()
         {
             if (_coreHttpClient20120301 != null) _coreHttpClient20120301.Dispose();
+            if (_coreHttpClient20131101 != null) _coreHttpClient20131101.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
     }

@@ -21,6 +21,8 @@ namespace Linq2Azure
         public readonly Uri Uri;
         readonly HttpClient _httpClient;
 
+        private const string TimeoutErrorMessage = "HttpClient threw a TaskCanceledException, as we didn't provide a cancellation token, we're assuming this is a timeout.";
+
         // We use the same HttpClient for all calls to the same subscription; this allows DNS and proxy details to be
         // cached across requests. Note that HttpClient allows parallel operations.
         internal static HttpClient CreateHttpClient (Subscription subscription, string msVersion, Func<IEnumerable<TraceListener>> listenerFunc)
@@ -44,7 +46,7 @@ namespace Linq2Azure
 
         public async Task<XElement> GetXmlAsync()
         {
-            var response = await _httpClient.GetAsync(Uri);
+            var response = await WrapAsync(() => _httpClient.GetAsync(Uri));
             return await AsXmlResponse(response);
         }
 
@@ -64,8 +66,8 @@ namespace Linq2Azure
             var payload = new StringContent(xmlString);
             payload.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
 
-            HttpRequestMessage request = new HttpRequestMessage(method, Uri) { Content = payload };
-            var response = await _httpClient.SendAsync(request);
+            var request = new HttpRequestMessage(method, Uri) { Content = payload };
+            var response = await WrapAsync(() => _httpClient.SendAsync(request));
 
             if ((int)response.StatusCode >= 300) await ThrowAsync(response, xmlString);
             return response;
@@ -73,9 +75,30 @@ namespace Linq2Azure
 
         public async Task<HttpResponseMessage> DeleteAsync()
         {
-            var response = await _httpClient.DeleteAsync(Uri);
+            var response = await WrapAsync(() => _httpClient.DeleteAsync(Uri));
             if ((int)response.StatusCode >= 300) await ThrowAsync(response);
             return response;
+        }
+
+        static async Task<HttpResponseMessage> WrapAsync(Func<Task<HttpResponseMessage>> f)
+        {
+            try
+            {
+                return await f();
+            }
+            catch (TaskCanceledException tex)
+            {
+                throw new TimeoutException(TimeoutErrorMessage, tex);
+            }
+            catch (AggregateException aex)
+            {
+                var b = aex.GetBaseException();
+                if (b is TaskCanceledException)
+                {
+                    throw new TimeoutException(TimeoutErrorMessage, aex);
+                }
+                throw;
+            }
         }
 
         static async Task<XElement> AsXmlResponse(HttpResponseMessage response)
