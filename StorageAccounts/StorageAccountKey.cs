@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 
 namespace Linq2Azure.StorageAccounts
@@ -16,7 +17,7 @@ namespace Linq2Azure.StorageAccounts
         public string Key { get; private set; }
         public StorageAccount StorageAccount { get; private set; }
 
-        public async Task RegenerateKey()
+        public async Task RegenerateKeyAsync()
         {
             var client = StorageAccount.GetRestClient("/keys?action=regenerate");
 
@@ -26,6 +27,12 @@ namespace Linq2Azure.StorageAccounts
                 new XElement(ns + "KeyType", KeyType.ToString()));
 
             await client.PostAsync(content);
+        }
+
+        [Obsolete("This method has been replaced by RegenerateKeyAsync.", false)]
+        public Task RegenerateKey()
+        {
+            return RegenerateKeyAsync();
         }
     }
 }

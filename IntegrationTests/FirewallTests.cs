@@ -1,14 +1,12 @@
-﻿using Linq2Azure;
-using Linq2Azure.SqlDatabases;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
+using Linq2Azure.SqlDatabases;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace IntegrationTests
 {
     [TestClass]
@@ -22,7 +20,7 @@ namespace IntegrationTests
         {
             Debug.WriteLine ("Creating firewall rule");
             var rule = new FirewallRule("TestRule1", "0.0.0.0", "255.255.255.255");
-            await DatabaseServer.AddFirewallRule (rule);
+            await DatabaseServer.AddFirewallRuleAsync(rule);
 
             Debug.WriteLine("Retrieving firewall rule");
             var retrievedRule = (await DatabaseServer.FirewallRules.AsTask()).SingleOrDefault(r => r.Name == "TestRule1");
