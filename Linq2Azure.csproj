@@ -103,6 +103,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AffinityGroups\AffinityGroup.cs" />
     <Compile Include="AzureRestClient.cs" />
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudServices\CloudService.cs" />

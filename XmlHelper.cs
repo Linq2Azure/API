@@ -45,7 +45,7 @@ namespace Linq2Azure
                 else if (prop.PropertyType == typeof(DateTimeOffset?))
                 {
                     DateTimeOffset temp;
-                    value = !DateTimeOffset.TryParse(child.Value, out temp)
+                    value = DateTimeOffset.TryParse(child.Value, out temp)
                         ? temp
                         : (DateTimeOffset?) null;
                 }
