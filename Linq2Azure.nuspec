@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+    <metadata>
+        <id>Linq2Azure</id>
+        <version>1.1.0.0</version>
+        <title>Linq2Azure</title>
+        <authors>Eric Winkler,James Miles,Joe Albahari,Colin Scott,Rhys Campbell</authors>
+        <owners>Copyright (C) 2013-2014 Cash Converters International Pty. Ltd.</owners>
+        <licenseUrl>http://linq2azure.com/license/</licenseUrl>
+        <projectUrl>http://linq2azure.com</projectUrl>
+        <iconUrl>http://linq2azure.files.wordpress.com/2013/06/linq2azure-logo1.png</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>Linq2Azure is a “cloud management” API that gives .NET developers a familiar programming model for querying and managing their Windows Azure environment. Linq2Azure is statically typed and includes Code Contracts, meaning .NET developers can reliably automate the management of their cloud environments with maintainable programs.</description>
+        <summary>The ultimate cloud management API</summary>
+        <copyright>Copyright (C) 2013-2104 Cash Converters International Pty. Ltd.</copyright>
+        <language />
+        <tags>C# Linq Azure</tags>
+        <dependencies>
+            <group targetFramework=".NETFramework4.5">
+                <dependency id="Rx-Main" version="2.2.5" />
+                <dependency id="Rx-Core" version="2.2.5" />
+                <dependency id="Rx-Interfaces" version="2.2.5" />
+                <dependency id="Rx-PlatformServices" version="2.2.5" />
+            </group>
+        </dependencies>
+    </metadata>
+</package>
