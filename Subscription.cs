@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
+using Linq2Azure.AffinityGroups;
 using Linq2Azure.CloudServices;
 using Linq2Azure.SqlDatabases;
 using Linq2Azure.StorageAccounts;
@@ -34,8 +35,9 @@ namespace Linq2Azure
         public LatentSequence<DatabaseServer> DatabaseServers { get; private set; }
         public LatentSequence<TrafficManagerProfile> TrafficManagerProfiles { get; private set; }
         public LatentSequence<StorageAccount> StorageAccounts { get; private set; }
+        public LatentSequence<AffinityGroup> AffinityGroups { get; private set; }
 
-        HttpClient _coreHttpClient20120301, _coreHttpClient20131101, _databaseHttpClient;
+        HttpClient _coreHttpClient20120301, _coreHttpClient20131101, _coreHttpClient20140601, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
@@ -73,18 +75,21 @@ namespace Linq2Azure
         {
             _coreHttpClient20120301 = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
             _coreHttpClient20131101 = AzureRestClient.CreateHttpClient(this, "2013-11-01", () => LogDestinations);
+            _coreHttpClient20140601 = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
             _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
             TrafficManagerProfiles = new LatentSequence<TrafficManagerProfile>(GetTrafficManagerProfilesAsync);
             StorageAccounts = new LatentSequence<StorageAccount>(GetStorageAccountsAsync);
+            AffinityGroups = new LatentSequence<AffinityGroup>(GetAffinityGroupsAsync);
         }
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
         public Task CreateDatabaseServerAsync(DatabaseServer server, string adminPassword) { return server.CreateAsync(this, adminPassword); }
         public Task CreateTrafficManagerProfileAsync(TrafficManagerProfile profile) { return profile.CreateAsync(this); }
         public Task CreateStorageAccountAsync(StorageAccount storageAccount) { return storageAccount.CreateAsync(this); }
+        public Task CreateAffinityGroupAsync(AffinityGroup affinityGroup) { return affinityGroup.CreateAsync(this); }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
@@ -110,6 +115,12 @@ namespace Linq2Azure
             return xe.Elements(XmlNamespaces.WindowsAzure + "StorageService").Select(x => new StorageAccount(x, this)).ToArray();
         }
 
+        async Task<AffinityGroup[]> GetAffinityGroupsAsync()
+        {
+            var xe = await GetCoreRestClient20140601("affinitygroups").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "AffinityGroup").Select(x => new AffinityGroup(x, this)).ToArray();
+        }
+
         internal AzureRestClient GetCoreRestClient20120301(string servicePath)
         {
             return new AzureRestClient(this, _coreHttpClient20120301, CoreUri, servicePath);
@@ -118,6 +129,11 @@ namespace Linq2Azure
         internal AzureRestClient GetCoreRestClient20131101(string servicePath)
         {
             return new AzureRestClient(this, _coreHttpClient20131101, CoreUri, servicePath);
+        }
+
+        internal AzureRestClient GetCoreRestClient20140601(string servicePath)
+        {
+            return new AzureRestClient(this, _coreHttpClient20140601, CoreUri, servicePath);
         }
 
         internal AzureRestClient GetDatabaseRestClient(string servicePath)
@@ -166,6 +182,7 @@ namespace Linq2Azure
         {
             if (_coreHttpClient20120301 != null) _coreHttpClient20120301.Dispose();
             if (_coreHttpClient20131101 != null) _coreHttpClient20131101.Dispose();
+            if (_coreHttpClient20140601 != null) _coreHttpClient20140601.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
     }
