@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using Linq2Azure.AffinityGroups;
 using Linq2Azure.CloudServices;
 using Linq2Azure.Locations;
+using Linq2Azure.ReservedIps;
 using Linq2Azure.SqlDatabases;
 using Linq2Azure.StorageAccounts;
 using Linq2Azure.TrafficManagement;
@@ -38,6 +39,7 @@ namespace Linq2Azure
         public LatentSequence<StorageAccount> StorageAccounts { get; private set; }
         public LatentSequence<AffinityGroup> AffinityGroups { get; private set; }
         public LatentSequence<Location> Locations { get; private set; }
+        public LatentSequence<ReservedIp> ReservedIps { get; private set; }
 
         HttpClient _coreHttpClient20120301, _coreHttpClient20131101, _coreHttpClient20140601, _databaseHttpClient;
 
@@ -86,6 +88,7 @@ namespace Linq2Azure
             StorageAccounts = new LatentSequence<StorageAccount>(GetStorageAccountsAsync);
             AffinityGroups = new LatentSequence<AffinityGroup>(GetAffinityGroupsAsync);
             Locations = new LatentSequence<Location>(GetLocationsAsync);
+            ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
         }
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
@@ -93,6 +96,7 @@ namespace Linq2Azure
         public Task CreateTrafficManagerProfileAsync(TrafficManagerProfile profile) { return profile.CreateAsync(this); }
         public Task CreateStorageAccountAsync(StorageAccount storageAccount) { return storageAccount.CreateAsync(this); }
         public Task CreateAffinityGroupAsync(AffinityGroup affinityGroup) { return affinityGroup.CreateAsync(this); }
+        public Task CreateReservedIpAsync(ReservedIp reservedIp) { return reservedIp.CreateAsync(this); }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
@@ -128,6 +132,12 @@ namespace Linq2Azure
         {
             var xe = await GetCoreRestClient20140601("locations").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "Location").Select(x => new Location(x, this)).ToArray();
+        }
+
+        async Task<ReservedIp[]> GetReservedIpsAsync()
+        {
+            var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
         }
 
         internal AzureRestClient GetCoreRestClient20120301(string servicePath)

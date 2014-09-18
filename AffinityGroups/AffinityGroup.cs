@@ -105,12 +105,7 @@ namespace Linq2Azure.AffinityGroups
 
         private AzureRestClient GetRestClient(string pathSuffix = null)
         {
-            return GetRestClient(Subscription, pathSuffix);
-        }
-
-        private static AzureRestClient GetRestClient(Subscription subscription, string pathSuffix = null)
-        {
-            if (subscription == null)
+            if (Subscription == null)
             {
                 throw new InvalidOperationException("Subscription cannot be null for this operation.");
             }
@@ -119,7 +114,7 @@ namespace Linq2Azure.AffinityGroups
             {
                 servicePath += pathSuffix;
             }
-            return subscription.GetCoreRestClient20140601(servicePath);
+            return Subscription.GetCoreRestClient20140601(servicePath);
         }
 
         private static IEnumerable<string> GetCapabilities(XContainer xml, XNamespace azureNamespace)

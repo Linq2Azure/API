@@ -109,6 +109,7 @@
     <Compile Include="CloudServices\CloudService.cs" />
     <Compile Include="CloudServices\LocationType.cs" />
     <Compile Include="Locations\Location.cs" />
+    <Compile Include="ReservedIps\ReservedIp.cs" />
     <Compile Include="SqlDatabases\Database.cs" />
     <Compile Include="CloudServices\DeploymentType.cs" />
     <Compile Include="SqlDatabases\DatabaseServer.cs" />
