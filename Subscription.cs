@@ -41,7 +41,7 @@ namespace Linq2Azure
         public LatentSequence<Location> Locations { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
 
-        HttpClient _coreHttpClient20131101, _coreHttpClient20140601, _databaseHttpClient;
+        HttpClient _coreHttpClient20140601, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
@@ -77,7 +77,6 @@ namespace Linq2Azure
 
         void Init()
         {
-            _coreHttpClient20131101 = AzureRestClient.CreateHttpClient(this, "2013-11-01", () => LogDestinations);
             _coreHttpClient20140601 = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
             _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
 
@@ -117,7 +116,7 @@ namespace Linq2Azure
 
         async Task<StorageAccount[]> GetStorageAccountsAsync()
         {
-            var xe = await GetCoreRestClient20131101("services/storageservices").GetXmlAsync();
+            var xe = await GetCoreRestClient20140601("services/storageservices").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "StorageService").Select(x => new StorageAccount(x, this)).ToArray();
         }
 
@@ -137,11 +136,6 @@ namespace Linq2Azure
         {
             var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
-        }
-
-        internal AzureRestClient GetCoreRestClient20131101(string servicePath)
-        {
-            return new AzureRestClient(this, _coreHttpClient20131101, CoreUri, servicePath);
         }
 
         internal AzureRestClient GetCoreRestClient20140601(string servicePath)
@@ -193,7 +187,6 @@ namespace Linq2Azure
 
         public void Dispose()
         {
-            if (_coreHttpClient20131101 != null) _coreHttpClient20131101.Dispose();
             if (_coreHttpClient20140601 != null) _coreHttpClient20140601.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }

@@ -76,6 +76,7 @@ namespace Linq2Azure.StorageAccounts
         public string ServiceName { get; private set; }
         public string Description { get; private set; }
         public string Label { get; private set; }
+        public string Status { get; private set; }
         public string AffinityGroup { get; private set; }
         public string Location { get; private set; }
         public bool GeoReplicationEnabled { get; private set; }
@@ -83,6 +84,7 @@ namespace Linq2Azure.StorageAccounts
         public string StatusOfPrimary { get; private set; }
         public string GeoSecondaryRegion { get; private set; }
         public string StatusOfSecondary { get; private set; }
+        public string AccountType { get; private set; }
         public DateTimeOffset CreationTime { get; private set; }
         public bool SecondaryReadEnabled { get; private set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
@@ -178,7 +180,7 @@ namespace Linq2Azure.StorageAccounts
                             new XElement(azureNamespace + "Value", kv.Value)))),
                 new XElement(azureNamespace + "SecondaryReadEnabled", SecondaryReadEnabled ? "true" : "false"));
 
-            var hc = subscription.GetCoreRestClient20131101("services/storageservices");
+            var hc = subscription.GetCoreRestClient20140601("services/storageservices");
             await hc.PostAsync(content);
             Subscription = subscription;
         }

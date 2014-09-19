@@ -104,7 +104,7 @@ namespace Linq2Azure.CloudServices
                 new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));
 
             // With the deployments endpoint, you need a forward slash separating the URI from the query string!
-            HttpResponseMessage response = await GetRestClient(Parent, "/?comp=config").PostAsync(content);
+            var response = await GetRestClient(Parent, "/?comp=config").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
@@ -126,7 +126,7 @@ namespace Linq2Azure.CloudServices
             var content = new XElement(ns + "UpdateDeploymentStatus", new XElement(ns + "Status", status));
 
             // With the deployments endpoint, you need a forward slash separating the URI from the query string!
-            HttpResponseMessage response = await GetRestClient("/?comp=status").PostAsync(content);
+            var response = await GetRestClient("/?comp=status").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
         }
 
@@ -174,7 +174,7 @@ namespace Linq2Azure.CloudServices
         async Task<RoleInstance[]> GetRoleInstancesAsync()
         {
             Contract.Requires(Parent != null);
-            XElement xe = await GetRestClient().GetXmlAsync();
+            var xe = await GetRestClient().GetXmlAsync();
             return xe.Element(XmlNamespaces.WindowsAzure + "RoleInstanceList")
                 .Elements(XmlNamespaces.WindowsAzure + "RoleInstance")
                 .Select(r => new RoleInstance(r, this))
@@ -185,9 +185,9 @@ namespace Linq2Azure.CloudServices
 
         AzureRestClient GetRestClient(CloudService cloudService, string pathSuffix = null)
         {
-            string servicePath = "services/hostedservices/" + cloudService.Name + "/deploymentslots/" + Slot.ToString().ToLowerInvariant();
+            var servicePath = "services/hostedservices/" + cloudService.Name + "/deploymentslots/" + Slot.ToString().ToLowerInvariant();
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return cloudService.Subscription.GetCoreRestClient20131101(servicePath);
+            return cloudService.Subscription.GetCoreRestClient20140601(servicePath);
         }
 
         public class CreationOptions
