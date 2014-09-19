@@ -80,7 +80,7 @@ namespace Linq2Azure.CloudServices
                 new XElement(ns + "TreatWarningsAsError", options.TreatWarningsAsError)
                 );
 
-            HttpResponseMessage response = await GetRestClient(parent).PostAsync(content);
+            var response = await GetRestClient(parent).PostAsync(content);
             await parent.Subscription.WaitForOperationCompletionAsync(response);
             Parent = parent;
         }

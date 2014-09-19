@@ -148,7 +148,7 @@ namespace Linq2Azure.StorageAccounts
             {
                 servicePath += pathSuffix;
             }
-            return Subscription.GetCoreRestClient20120301(servicePath);
+            return Subscription.GetCoreRestClient20140601(servicePath);
         }
 
         internal async Task CreateAsync(Subscription subscription)

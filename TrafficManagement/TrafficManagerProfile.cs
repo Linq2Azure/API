@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -16,7 +14,7 @@ namespace Linq2Azure.TrafficManagement
         public Subscription Subscription { get; private set; }
         public LatentSequence<TrafficManagerDefinition> Definitions { get; private set; }
 
-        TrafficManagerProfile()
+        private TrafficManagerProfile()
         {
             Definitions = new LatentSequence<TrafficManagerDefinition>(GetDefinitionsAsync);
             Enabled = true;
@@ -35,7 +33,7 @@ namespace Linq2Azure.TrafficManagement
         {
             var ns = XmlNamespaces.WindowsAzure;
             xml.HydrateObject(ns, this);
-            Enabled = (string)xml.Element(ns + "Status") != "Disabled";
+            Enabled = (string) xml.Element(ns + "Status") != "Disabled";
             Subscription = subscription;
         }
 
@@ -69,7 +67,7 @@ namespace Linq2Azure.TrafficManagement
             return AddDefinitionAsync(definition);
         }
 
-        async public Task UpdateAsync(bool enabled, string definitionVersion)
+        public async Task UpdateAsync(bool enabled, string definitionVersion)
         {
             Contract.Requires(Subscription != null);
 
@@ -92,20 +90,29 @@ namespace Linq2Azure.TrafficManagement
             Subscription = null;
         }
 
-        async Task<TrafficManagerDefinition[]> GetDefinitionsAsync()        
+        private async Task<TrafficManagerDefinition[]> GetDefinitionsAsync()
         {
-            XElement xe = await GetRestClient("/" + Name + "/definitions").GetXmlAsync();
+            var xe = await GetRestClient("/" + Name + "/definitions").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "Definition").Select(x => new TrafficManagerDefinition(x, this)).ToArray();
         }
 
-        internal AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Subscription, pathSuffix); }
+        internal AzureRestClient GetRestClient(string pathSuffix = null)
+        {
+            return GetRestClient(Subscription, pathSuffix);
+        }
 
         internal AzureRestClient GetRestClient(Subscription subscription, string pathSuffix = null)
         {
-            if (subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
-            string servicePath = "services/WATM/profiles";
-            if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return subscription.GetCoreRestClient20120301(servicePath);
+            if (subscription == null)
+            {
+                throw new InvalidOperationException("Subscription cannot be null for this operation.");
+            }
+            var servicePath = "services/WATM/profiles";
+            if (!string.IsNullOrEmpty(pathSuffix))
+            {
+                servicePath += pathSuffix;
+            }
+            return subscription.GetCoreRestClient20140601(servicePath);
         }
     }
 }

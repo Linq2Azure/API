@@ -21,12 +21,14 @@ namespace Linq2Azure.CloudServices
         public Uri Url { get; private set; }
         public DeploymentSet Deployments { get; private set; }
         public LatentSequence<ServiceCertificate> Certificates { get; private set; }
+        public IEnumerable<string> WebWorkerRoleSizes { get; private set; }
         public Subscription Subscription { get; private set; }
 
         CloudService()
         {
             Deployments = new DeploymentSet(GetDeploymentsAsync);
             Certificates = new LatentSequence<ServiceCertificate>(GetCertificatesAsync);
+            WebWorkerRoleSizes = new List<string>();
         }
 
         /// <summary>
@@ -80,6 +82,10 @@ namespace Linq2Azure.CloudServices
 
             ExtendedProperties = properties.Element(ns + "ExtendedProperties").Elements()
                 .ToDictionary(x => (string)x.Element(ns + "Name"), x => (string)x.Element(ns + "Value"));
+
+            var computeCapabilitiesElement = element.Element(ns + "ComputeCapabilities");
+
+            WebWorkerRoleSizes = GetRoleSizes(computeCapabilitiesElement, ns, "WebWorkerRoleSizes");
         }
 
         internal async Task CreateAsync(Subscription subscription)
@@ -106,7 +112,7 @@ namespace Linq2Azure.CloudServices
                             new XElement(ns + "Value", kv.Value))))
                             );
 
-            var hc = subscription.GetCoreRestClient20120301("services/hostedservices");
+            var hc = subscription.GetCoreRestClient20140601("services/hostedservices");
             await hc.PostAsync(content);
             Subscription = subscription;
         }
@@ -160,7 +166,7 @@ namespace Linq2Azure.CloudServices
             if (Subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
             string servicePath = "services/hostedServices/" + Name;
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return Subscription.GetCoreRestClient20120301(servicePath);
+            return Subscription.GetCoreRestClient20140601(servicePath);
         }
 
         async Task<Deployment[]> GetDeploymentsAsync()
@@ -180,6 +186,21 @@ namespace Linq2Azure.CloudServices
             return results.Elements(XmlNamespaces.WindowsAzure + "Certificate")
                 .Select(x => new ServiceCertificate(x, this))
                 .ToArray();
+        }
+
+        private static IEnumerable<string> GetRoleSizes(
+            XContainer computeCapabilitiesElement,
+            XNamespace azureNamespace,
+            string subElementName)
+        {
+            var capabilitiesElement = computeCapabilitiesElement.Element(azureNamespace + subElementName);
+            if (capabilitiesElement == null)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            return capabilitiesElement.Elements(azureNamespace + "RoleSize")
+                .Select(e => e.Value);
         }
     }
 

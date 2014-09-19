@@ -15,6 +15,9 @@ namespace Linq2Azure.SqlDatabases
         public string Name { get; private set; }
         public string AdministratorLogin { get; private set; }
         public string Location { get; private set; }
+        public string FullyQualifiedDomainName { get; private set; }
+        public string Version { get; private set; }
+        public string State { get; private set; }
         public Subscription Subscription { get; private set; }
         public LatentSequence<FirewallRule> FirewallRules { get; private set; }
         public LatentSequence<Database> Databases { get; private set; }
@@ -67,7 +70,7 @@ namespace Linq2Azure.SqlDatabases
 
         async Task<Database[]> GetDatabasesAsync()
         {
-            var xe = await Subscription.GetCoreRestClient20120301("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
+            var xe = await Subscription.GetCoreRestClient20140601("services/sqlservers/servers/" + Name + "/databases?contentview=generic").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceResource").Select(x => new Database(x, this)).ToArray();
         }
 
