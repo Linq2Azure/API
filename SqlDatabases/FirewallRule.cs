@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -11,6 +8,9 @@ namespace Linq2Azure.SqlDatabases
     public class FirewallRule
     {
         public string Name { get; private set; }
+        public string State { get; private set; }
+        public Uri SelfLink { get; private set; }
+        public Uri ParentLink { get; private set; }
         public string StartIpAddress { get; private set; }
         public string EndIpAddress { get; private set; }
         public DatabaseServer Parent { get; private set; }
@@ -29,7 +29,17 @@ namespace Linq2Azure.SqlDatabases
         internal FirewallRule(XElement xml, DatabaseServer parent)
         {
             Parent = parent;
-            xml.HydrateObject(XmlNamespaces.SqlAzure, this);
+            xml.HydrateObject(XmlNamespaces.WindowsAzure, this);
+            var startIpAddressElement = xml.Element(XmlNamespaces.WindowsAzure + "StartIPAddress");
+            if (startIpAddressElement != null)
+            {
+                StartIpAddress = startIpAddressElement.Value;
+            }
+            var endIpAddressElement = xml.Element(XmlNamespaces.WindowsAzure + "EndIPAddress");
+            if (endIpAddressElement != null)
+            {
+                EndIpAddress = endIpAddressElement.Value;
+            }
         }
 
         internal async Task CreateAsync(DatabaseServer server)
@@ -40,14 +50,15 @@ namespace Linq2Azure.SqlDatabases
             Contract.Requires(!string.IsNullOrWhiteSpace(StartIpAddress));
             Contract.Requires(!string.IsNullOrWhiteSpace(EndIpAddress));
 
-            var ns = XmlNamespaces.SqlAzure;
-            var content = new XElement(ns + "FirewallRule",
-                new XElement(ns + "StartIpAddress", StartIpAddress),
-                new XElement(ns + "EndIpAddress", EndIpAddress)
+            var ns = XmlNamespaces.WindowsAzure;
+            var content = new XElement(ns + "ServiceResource",
+                new XElement(ns + "Name", Name),
+                new XElement(ns + "StartIPAddress", StartIpAddress),
+                new XElement(ns + "EndIPAddress", EndIpAddress)
                 );
 
             var hc = GetRestClient(server);
-            await hc.PutAsync(content);
+            await hc.PostAsync(content);
 
             Parent = server;
         }
@@ -55,7 +66,7 @@ namespace Linq2Azure.SqlDatabases
         public async Task DeleteAsync()
         {
             Contract.Requires(Parent != null);
-            await GetRestClient().DeleteAsync();
+            await GetRestClient("/" + Name).DeleteAsync();
             Parent = null;
         }
 
@@ -63,10 +74,9 @@ namespace Linq2Azure.SqlDatabases
 
         AzureRestClient GetRestClient(DatabaseServer server, string pathSuffix = null)
         {
-            string servicePath = "servers/" + server.Name + "/firewallrules/" + Name;
+            string servicePath = "services/sqlservers/servers/" + server.Name + "/firewallrules";
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
             return server.Subscription.GetDatabaseRestClient(servicePath);
         }
-
     }
 }

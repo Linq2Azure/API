@@ -114,16 +114,16 @@ namespace Linq2Azure.SqlDatabases
 
         async Task<FirewallRule[]> GetFirewallRulesAsync()
         {
-            XElement xe = await GetRestClient("/" + Name + "/firewallrules").GetXmlAsync();
-            return xe.Elements(XmlNamespaces.SqlAzure + "FirewallRule").Select(x => new FirewallRule(x, this)).ToArray();
+            var xe = await GetRestClient("/" + Name + "/firewallrules").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceResource").Select(x => new FirewallRule(x, this)).ToArray();
         }
 
         AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Subscription, pathSuffix); }
 
-        AzureRestClient GetRestClient(Subscription subscription, string pathSuffix = null)
+        static AzureRestClient GetRestClient(Subscription subscription, string pathSuffix = null)
         {
             if (subscription == null) throw new InvalidOperationException("Subscription cannot be null for this operation.");
-            string servicePath = "servers";
+            var servicePath = "services/sqlservers/servers";
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
             return subscription.GetDatabaseRestClient(servicePath);
         }

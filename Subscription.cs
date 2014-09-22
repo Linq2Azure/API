@@ -26,7 +26,7 @@ namespace Linq2Azure
     public class Subscription : IDisposable
     {
         public static readonly string CoreUri = "https://management.core.windows.net/";
-        public static readonly string DatabaseUri = "https://management.database.windows.net:8443/";
+        public static readonly string DatabaseUri = "https://management.core.windows.net:8443/";
 
         public IEnumerable<TraceListener> LogDestinations { get; set; }
 
@@ -78,7 +78,7 @@ namespace Linq2Azure
         void Init()
         {
             _coreHttpClient20140601 = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
-            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
+            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
@@ -104,7 +104,7 @@ namespace Linq2Azure
 
         async Task<DatabaseServer[]> GetDatabaseServersAsync()
         {
-            var xe = await GetDatabaseRestClient("servers").GetXmlAsync();
+            var xe = await GetDatabaseRestClient("services/sqlservers/servers").GetXmlAsync();
             return xe.Elements(XmlNamespaces.SqlAzure + "Server").Select(x => new DatabaseServer(x, this)).ToArray();
         }
 
