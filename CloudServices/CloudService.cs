@@ -85,7 +85,10 @@ namespace Linq2Azure.CloudServices
 
             var computeCapabilitiesElement = element.Element(ns + "ComputeCapabilities");
 
-            WebWorkerRoleSizes = GetRoleSizes(computeCapabilitiesElement, ns, "WebWorkerRoleSizes");
+            if (computeCapabilitiesElement != null)
+            {
+                WebWorkerRoleSizes = GetRoleSizes(computeCapabilitiesElement, ns, "WebWorkerRoleSizes");
+            }
         }
 
         internal async Task CreateAsync(Subscription subscription)
