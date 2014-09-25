@@ -26,7 +26,7 @@ namespace Linq2Azure
     public class Subscription : IDisposable
     {
         public static readonly string CoreUri = "https://management.core.windows.net/";
-        public static readonly string DatabaseUri = "https://management.database.windows.net:8443/";
+        public static readonly string DatabaseUri = "https://management.core.windows.net:8443/";
 
         public IEnumerable<TraceListener> LogDestinations { get; set; }
 
@@ -41,7 +41,7 @@ namespace Linq2Azure
         public LatentSequence<Location> Locations { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
 
-        HttpClient _coreHttpClient20120301, _coreHttpClient20131101, _coreHttpClient20140601, _databaseHttpClient;
+        HttpClient _coreHttpClient20140601, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
@@ -77,10 +77,8 @@ namespace Linq2Azure
 
         void Init()
         {
-            _coreHttpClient20120301 = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
-            _coreHttpClient20131101 = AzureRestClient.CreateHttpClient(this, "2013-11-01", () => LogDestinations);
             _coreHttpClient20140601 = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
-            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "1.0", () => LogDestinations);
+            _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
             DatabaseServers = new LatentSequence<DatabaseServer>(GetDatabaseServersAsync);
@@ -100,25 +98,25 @@ namespace Linq2Azure
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
-            var xe = await GetCoreRestClient20120301("services/hostedServices").GetXmlAsync();
+            var xe = await GetCoreRestClient20140601("services/hostedServices").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "HostedService").Select(x => new CloudService(x, this)).ToArray();
         }
 
         async Task<DatabaseServer[]> GetDatabaseServersAsync()
         {
-            var xe = await GetDatabaseRestClient("servers").GetXmlAsync();
+            var xe = await GetDatabaseRestClient("services/sqlservers/servers").GetXmlAsync();
             return xe.Elements(XmlNamespaces.SqlAzure + "Server").Select(x => new DatabaseServer(x, this)).ToArray();
         }
 
         async Task<TrafficManagerProfile[]> GetTrafficManagerProfilesAsync()
         {
-            var xe = await GetCoreRestClient20120301("services/WATM/profiles").GetXmlAsync();
+            var xe = await GetCoreRestClient20140601("services/WATM/profiles").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "Profile").Select(x => new TrafficManagerProfile(x, this)).ToArray();
         }
 
         async Task<StorageAccount[]> GetStorageAccountsAsync()
         {
-            var xe = await GetCoreRestClient20131101("services/storageservices").GetXmlAsync();
+            var xe = await GetCoreRestClient20140601("services/storageservices").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "StorageService").Select(x => new StorageAccount(x, this)).ToArray();
         }
 
@@ -138,16 +136,6 @@ namespace Linq2Azure
         {
             var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
-        }
-
-        internal AzureRestClient GetCoreRestClient20120301(string servicePath)
-        {
-            return new AzureRestClient(this, _coreHttpClient20120301, CoreUri, servicePath);
-        }
-
-        internal AzureRestClient GetCoreRestClient20131101(string servicePath)
-        {
-            return new AzureRestClient(this, _coreHttpClient20131101, CoreUri, servicePath);
         }
 
         internal AzureRestClient GetCoreRestClient20140601(string servicePath)
@@ -185,7 +173,7 @@ namespace Linq2Azure
 
         async Task<string> GetOperationResultAsync(string requestId)
         {
-            var client = GetCoreRestClient20120301("operations/" + requestId);
+            var client = GetCoreRestClient20140601("operations/" + requestId);
             return ParseResult(await client.GetXmlAsync());
         }
 
@@ -199,8 +187,6 @@ namespace Linq2Azure
 
         public void Dispose()
         {
-            if (_coreHttpClient20120301 != null) _coreHttpClient20120301.Dispose();
-            if (_coreHttpClient20131101 != null) _coreHttpClient20131101.Dispose();
             if (_coreHttpClient20140601 != null) _coreHttpClient20140601.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }

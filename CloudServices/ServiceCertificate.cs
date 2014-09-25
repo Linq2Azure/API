@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -30,10 +26,10 @@ namespace Linq2Azure.CloudServices
         public ServiceCertificate(XElement element, CloudService parent)
         {
             var ns = XmlNamespaces.WindowsAzure;
-            Uri = new Uri((string)element.Element(ns + "CertificateUrl"));
-            Thumbprint = (string)element.Element(ns + "Thumbprint");
-            ThumbprintAlgorithm = (string)element.Element(ns + "ThumbprintAlgorithm");
-            Certificate = new X509Certificate2(Convert.FromBase64String((string)element.Element(ns + "Data")));
+            Uri = new Uri((string) element.Element(ns + "CertificateUrl"));
+            Thumbprint = (string) element.Element(ns + "Thumbprint");
+            ThumbprintAlgorithm = (string) element.Element(ns + "ThumbprintAlgorithm");
+            Certificate = new X509Certificate2(Convert.FromBase64String((string) element.Element(ns + "Data")));
             Parent = parent;
         }
 
@@ -57,14 +53,19 @@ namespace Linq2Azure.CloudServices
             Parent = null;
         }
 
-        AzureRestClient GetRestClient(string suffix = null) { return GetRestClient(Parent, suffix); }
-
-        AzureRestClient GetRestClient(CloudService parent, string pathSuffix = null)
+        private AzureRestClient GetRestClient(string suffix = null)
         {
-            string servicePath = "services/hostedServices/" + parent.Name + "/certificates";
-            if (pathSuffix != null) servicePath += pathSuffix;
-            return parent.Subscription.GetCoreRestClient20120301(servicePath);
+            return GetRestClient(Parent, suffix);
         }
 
+        private AzureRestClient GetRestClient(CloudService parent, string pathSuffix = null)
+        {
+            var servicePath = "services/hostedServices/" + parent.Name + "/certificates";
+            if (pathSuffix != null)
+            {
+                servicePath += pathSuffix;
+            }
+            return parent.Subscription.GetCoreRestClient20140601(servicePath);
+        }
     }
 }

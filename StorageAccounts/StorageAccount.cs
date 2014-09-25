@@ -9,6 +9,13 @@ using Linq2Azure.CloudServices;
 
 namespace Linq2Azure.StorageAccounts
 {
+    public enum StorageAccountType
+    {
+        Standard_LRS = 0,
+        Standard_ZRS = 1,
+        Standard_GRS = 2,
+        Standard_RAGRS = 3
+    }
     public class StorageAccount
     {
         private StorageAccount()
@@ -17,11 +24,11 @@ namespace Linq2Azure.StorageAccounts
         }
 
         public StorageAccount(
-                string serviceName,
-                string description,
-                string locationOrAffinityGroup,
-                LocationType locationType,
-                StorageAccountGeoReplication geoReplication)
+            string serviceName,
+            string description,
+            string locationOrAffinityGroup,
+            LocationType locationType,
+            StorageAccountType storageAccountType)
             : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(serviceName));
@@ -38,12 +45,24 @@ namespace Linq2Azure.StorageAccounts
             {
                 AffinityGroup = locationOrAffinityGroup;
             }
-            GeoReplicationEnabled = geoReplication != StorageAccountGeoReplication.Disabled;
-            SecondaryReadEnabled = geoReplication == StorageAccountGeoReplication.ReadAccessEnabled;
+            AccountType = storageAccountType.ToString();
+            GeoReplicationEnabled = storageAccountType == StorageAccountType.Standard_GRS || storageAccountType == StorageAccountType.Standard_RAGRS;
+            SecondaryReadEnabled = storageAccountType == StorageAccountType.Standard_ZRS || storageAccountType == StorageAccountType.Standard_RAGRS;
+
             ExtendedProperties = new Dictionary<string, string>();
             Endpoints = new List<Uri>();
             SecondaryEndpoints = new List<Uri>();
         }
+
+        [Obsolete("StorageAccountGeoReplication has been replaced with AccountType", false)]
+        public StorageAccount(
+                string serviceName,
+                string description,
+                string locationOrAffinityGroup,
+                LocationType locationType,
+                StorageAccountGeoReplication geoReplication)
+            : this(serviceName, description, locationOrAffinityGroup, locationType, DetermineStorageAccountType(geoReplication))
+        {}
 
         internal StorageAccount(XElement xml, Subscription subscription)
             : this()
@@ -76,20 +95,25 @@ namespace Linq2Azure.StorageAccounts
         public string ServiceName { get; private set; }
         public string Description { get; private set; }
         public string Label { get; private set; }
+        public string Status { get; private set; }
         public string AffinityGroup { get; private set; }
         public string Location { get; private set; }
+        [Obsolete("GeoReplicationEnabled has been replaced by AccountType", false)]
         public bool GeoReplicationEnabled { get; private set; }
         public string GeoPrimaryRegion { get; private set; }
         public string StatusOfPrimary { get; private set; }
         public string GeoSecondaryRegion { get; private set; }
         public string StatusOfSecondary { get; private set; }
+        public string AccountType { get; private set; }
         public DateTimeOffset CreationTime { get; private set; }
+        [Obsolete("SecondayRealEnabled has been replaced by AccountType", false)]
         public bool SecondaryReadEnabled { get; private set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
         public IEnumerable<Uri> Endpoints { get; set; }
         public IEnumerable<Uri> SecondaryEndpoints { get; set; }
         public LatentSequence<StorageAccountKey> Keys { get; private set; }
 
+        [Obsolete("StorageAccountGeoReplication has been replaced with AccountType", false)]
         public StorageAccountGeoReplication StorageAccountGeoReplication
         {
             get
@@ -148,7 +172,7 @@ namespace Linq2Azure.StorageAccounts
             {
                 servicePath += pathSuffix;
             }
-            return Subscription.GetCoreRestClient20120301(servicePath);
+            return Subscription.GetCoreRestClient20140601(servicePath);
         }
 
         internal async Task CreateAsync(Subscription subscription)
@@ -169,18 +193,32 @@ namespace Linq2Azure.StorageAccounts
                 new XElement(azureNamespace + "Label", Label.ToBase64String()),
                 string.IsNullOrWhiteSpace(Location) ? null : new XElement(azureNamespace + "Location", Location),
                 string.IsNullOrWhiteSpace(AffinityGroup) ? null : new XElement(azureNamespace + "AffinityGroup", AffinityGroup),
-                new XElement(azureNamespace + "GeoReplicationEnabled", GeoReplicationEnabled ? "true" : "false"),
                 ExtendedProperties == null || ExtendedProperties.Count == 0
                     ? new XElement(azureNamespace + "ExtendedProperties")
                     : new XElement(azureNamespace + "ExtendedProperties", ExtendedProperties.Select(kv =>
                         new XElement(azureNamespace + "ExtendedProperty",
                             new XElement(azureNamespace + "Name", kv.Key),
                             new XElement(azureNamespace + "Value", kv.Value)))),
-                new XElement(azureNamespace + "SecondaryReadEnabled", SecondaryReadEnabled ? "true" : "false"));
+                new XElement(azureNamespace + "AccountType", AccountType));
 
-            var hc = subscription.GetCoreRestClient20131101("services/storageservices");
+            var hc = subscription.GetCoreRestClient20140601("services/storageservices");
             await hc.PostAsync(content);
             Subscription = subscription;
+        }
+
+        private static StorageAccountType DetermineStorageAccountType(StorageAccountGeoReplication geoReplication)
+        {
+            switch (geoReplication)
+            {
+                case StorageAccountGeoReplication.Disabled:
+                    return StorageAccountType.Standard_LRS;
+                case StorageAccountGeoReplication.Enabled:
+                    return StorageAccountType.Standard_GRS;
+                case StorageAccountGeoReplication.ReadAccessEnabled:
+                    return StorageAccountType.Standard_RAGRS;
+                default:
+                    throw new ArgumentOutOfRangeException("geoReplication");
+            }
         }
 
         private static IEnumerable<Uri> GetEndpoints(XContainer storageServicePropertiesElement, XNamespace azureNamespace, string endpointElement)
