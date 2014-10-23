@@ -21,7 +21,7 @@ namespace IntegrationTests
             "Integration Test",
             "West US",
             LocationType.Region,
-            StorageAccountGeoReplication.ReadAccessEnabled);
+            StorageAccountType.Standard_RAGRS);
 
         public StorageAccountKeysTests()
         {

@@ -46,23 +46,11 @@ namespace Linq2Azure.StorageAccounts
                 AffinityGroup = locationOrAffinityGroup;
             }
             AccountType = storageAccountType.ToString();
-            GeoReplicationEnabled = storageAccountType == StorageAccountType.Standard_GRS || storageAccountType == StorageAccountType.Standard_RAGRS;
-            SecondaryReadEnabled = storageAccountType == StorageAccountType.Standard_ZRS || storageAccountType == StorageAccountType.Standard_RAGRS;
 
             ExtendedProperties = new Dictionary<string, string>();
             Endpoints = new List<Uri>();
             SecondaryEndpoints = new List<Uri>();
         }
-
-        [Obsolete("StorageAccountGeoReplication has been replaced with AccountType", false)]
-        public StorageAccount(
-                string serviceName,
-                string description,
-                string locationOrAffinityGroup,
-                LocationType locationType,
-                StorageAccountGeoReplication geoReplication)
-            : this(serviceName, description, locationOrAffinityGroup, locationType, DetermineStorageAccountType(geoReplication))
-        {}
 
         internal StorageAccount(XElement xml, Subscription subscription)
             : this()
@@ -98,36 +86,16 @@ namespace Linq2Azure.StorageAccounts
         public string Status { get; private set; }
         public string AffinityGroup { get; private set; }
         public string Location { get; private set; }
-        [Obsolete("GeoReplicationEnabled has been replaced by AccountType", false)]
-        public bool GeoReplicationEnabled { get; private set; }
         public string GeoPrimaryRegion { get; private set; }
         public string StatusOfPrimary { get; private set; }
         public string GeoSecondaryRegion { get; private set; }
         public string StatusOfSecondary { get; private set; }
         public string AccountType { get; private set; }
         public DateTimeOffset CreationTime { get; private set; }
-        [Obsolete("SecondayRealEnabled has been replaced by AccountType", false)]
-        public bool SecondaryReadEnabled { get; private set; }
         public IDictionary<string, string> ExtendedProperties { get; set; }
         public IEnumerable<Uri> Endpoints { get; set; }
         public IEnumerable<Uri> SecondaryEndpoints { get; set; }
         public LatentSequence<StorageAccountKey> Keys { get; private set; }
-
-        [Obsolete("StorageAccountGeoReplication has been replaced with AccountType", false)]
-        public StorageAccountGeoReplication StorageAccountGeoReplication
-        {
-            get
-            {
-                if (!GeoReplicationEnabled)
-                {
-                    return StorageAccountGeoReplication.Disabled;
-                }
-
-                return SecondaryReadEnabled
-                    ? StorageAccountGeoReplication.ReadAccessEnabled
-                    : StorageAccountGeoReplication.Enabled;
-            }
-        }
 
         public async Task DeleteAsync()
         {
@@ -204,21 +172,6 @@ namespace Linq2Azure.StorageAccounts
             var hc = subscription.GetCoreRestClient20140601("services/storageservices");
             await hc.PostAsync(content);
             Subscription = subscription;
-        }
-
-        private static StorageAccountType DetermineStorageAccountType(StorageAccountGeoReplication geoReplication)
-        {
-            switch (geoReplication)
-            {
-                case StorageAccountGeoReplication.Disabled:
-                    return StorageAccountType.Standard_LRS;
-                case StorageAccountGeoReplication.Enabled:
-                    return StorageAccountType.Standard_GRS;
-                case StorageAccountGeoReplication.ReadAccessEnabled:
-                    return StorageAccountType.Standard_RAGRS;
-                default:
-                    throw new ArgumentOutOfRangeException("geoReplication");
-            }
         }
 
         private static IEnumerable<Uri> GetEndpoints(XContainer storageServicePropertiesElement, XNamespace azureNamespace, string endpointElement)
