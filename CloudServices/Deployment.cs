@@ -133,7 +133,7 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// Upgrades the given deployment with the package contents.
         /// </summary>
-        public Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null)
+        public Task UpgradeAsync(Uri packageUrl, string roleToUpgrade = null, UpgradeMode model = UpgradeMode.Auto)
         {
             return UpgradeAsync(packageUrl, DeploymentType.Standard, roleToUpgrade);
         }
@@ -144,7 +144,8 @@ namespace Linq2Azure.CloudServices
         public async Task UpgradeAsync(
             Uri packageUrl,
             DeploymentType deploymentType,
-            string roleToUpgrade = null)
+            string roleToUpgrade = null,
+            UpgradeMode mode = UpgradeMode.Auto)
         {
             Contract.Requires(Parent != null);
             Contract.Requires(packageUrl != null);
@@ -153,7 +154,7 @@ namespace Linq2Azure.CloudServices
             
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "UpgradeDeployment",
-                new XElement(ns + "Mode", "Auto"),
+                new XElement(ns + "Mode", mode.ToString()),
                 new XElement(ns + "PackageUrl", packageUrl.ToString()),
                 new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()),
                 new XElement(ns + "Label", Label.ToBase64String()),
@@ -198,4 +199,5 @@ namespace Linq2Azure.CloudServices
     }
 
     public enum DeploymentSlot { Production, Staging }
+    public enum UpgradeMode { Auto, Simultaneous }
 }
