@@ -61,7 +61,7 @@ namespace IntegrationTests
         {
             await RetrieveDeployments();
 
-            var roleConfig = _retrievedProduction.Configuration.ConfigurationItems.Single();
+            var roleConfig = _retrievedProduction.Configuration.Roles.Single();
             roleConfig.InstanceCount = 2;
             await _retrievedProduction.UpdateConfigurationAsync();
         }
