@@ -27,11 +27,11 @@ namespace Linq2Azure.SqlDatabases
         public long MaxSizeBytes { get; private set; }
         public Guid ServiceObjectiveId { get; private set; }
         public Guid AssignedServiceObjectiveId { get; private set; }
-        public int ServiceObjectiveAssignmentState { get; private set; }
+        public int? ServiceObjectiveAssignmentState { get; private set; }
         public string ServiceObjectiveAssignmentStateDescription { get; private set; }
         public int ServiceObjectiveAssignmentErrorCode { get; private set; }
         public string ServiceObjectiveAssignmentErrorDescription { get; private set; }
-        public DateTimeOffset ServiceObjectiveAssignmentSuccessDate { get; private set; }
+        public DateTimeOffset? ServiceObjectiveAssignmentSuccessDate { get; private set; }
         public DateTimeOffset? RecoveryPeriodStartDate { get; private set; }
         public bool IsSuspended { get; private set; }
     }
