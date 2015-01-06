@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace Linq2Azure.CloudServices
         public RoleCertificateConfigurations Certificates { get; private set; }
     }
 
-    public class RoleConfigurationSettings
+    public class RoleConfigurationSettings : IEnumerable<RoleConfigurationSetting>
     {
         private readonly XElement _settingsElement;
 
@@ -114,9 +115,42 @@ namespace Linq2Azure.CloudServices
             }
             return element;
         }
+
+        public IEnumerator<RoleConfigurationSetting> GetEnumerator()
+        {
+            return _settingsElement.Elements()
+                .Select(e => new RoleConfigurationSetting(e))
+                .GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
     }
 
-    public class RoleCertificateConfigurations
+    public class RoleConfigurationSetting
+    {
+        private readonly XElement _settingElement;
+
+        public RoleConfigurationSetting(XElement settingElement)
+        {
+            _settingElement = settingElement;
+        }
+
+        public string Name
+        {
+            get { return _settingElement.Attribute("name").Value; }
+        }
+
+        public string Value
+        {
+            get { return _settingElement.Attribute("value").Value; }
+            set { _settingElement.SetAttributeValue("value", value); }
+        }
+    }
+
+    public class RoleCertificateConfigurations : IEnumerable<CertificateConfiguration>
     {
         private readonly XElement _certificatesConfigurationElement;
 
@@ -129,7 +163,7 @@ namespace Linq2Azure.CloudServices
         {
             get
             {
-                var element = _certificatesConfigurationElement.Elements()
+                var element = CertificatesConfigurationElements
                     .FirstOrDefault(e => e.Attribute("name").Value == key);
 
                 if (element == null)
@@ -143,6 +177,30 @@ namespace Linq2Azure.CloudServices
 
                 return new CertificateConfiguration(element);
             }
+        }
+
+        private IEnumerable<XElement> CertificatesConfigurationElements
+        {
+            get
+            {
+                if (_certificatesConfigurationElement == null)
+                {
+                    return Enumerable.Empty<XElement>();
+                }
+                return _certificatesConfigurationElement.Elements();
+            }
+        }
+
+        public IEnumerator<CertificateConfiguration> GetEnumerator()
+        {
+            return CertificatesConfigurationElements
+                .Select(e => new CertificateConfiguration(e))
+                .GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 
