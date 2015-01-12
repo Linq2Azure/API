@@ -107,6 +107,7 @@
     <Compile Include="AzureRestClient.cs" />
     <Compile Include="AzureRestException.cs" />
     <Compile Include="CloudServices\CloudService.cs" />
+    <Compile Include="CloudServices\ExtensionImage.cs" />
     <Compile Include="CloudServices\LocationType.cs" />
     <Compile Include="Locations\Location.cs" />
     <Compile Include="ReservedIps\ReservedIp.cs" />
