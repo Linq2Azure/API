@@ -39,7 +39,7 @@ namespace Linq2Azure
         public LatentSequence<StorageAccount> StorageAccounts { get; private set; }
         public LatentSequence<AffinityGroup> AffinityGroups { get; private set; }
         public LatentSequence<Location> Locations { get; private set; }
-        public LatentSequence<ExtensionImage> ExtensionImages { get; private set; }
+        public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
 
         HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
@@ -88,7 +88,7 @@ namespace Linq2Azure
             StorageAccounts = new LatentSequence<StorageAccount>(GetStorageAccountsAsync);
             AffinityGroups = new LatentSequence<AffinityGroup>(GetAffinityGroupsAsync);
             Locations = new LatentSequence<Location>(GetLocationsAsync);
-            ExtensionImages = new LatentSequence<ExtensionImage>(GetExtensionImagesAsync);
+            ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
         }
 
@@ -135,10 +135,10 @@ namespace Linq2Azure
             return xe.Elements(XmlNamespaces.WindowsAzure + "Location").Select(x => new Location(x, this)).ToArray();
         }
 
-        async Task<ExtensionImage[]> GetExtensionImagesAsync()
+        async Task<AvailableExtensionImage[]> GetExtensionImagesAsync()
         {
             var xe = await GetCoreRestClient20141001("services/extensions").GetXmlAsync();
-            return xe.Elements(XmlNamespaces.WindowsAzure + "ExtensionImage").Select(x => new ExtensionImage(x)).ToArray();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ExtensionImage").Select(x => new AvailableExtensionImage(x, this)).ToArray();
         }
 
         async Task<ReservedIp[]> GetReservedIpsAsync()

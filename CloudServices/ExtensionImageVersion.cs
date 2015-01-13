@@ -3,9 +3,9 @@ using System.Xml.Linq;
 
 namespace Linq2Azure.CloudServices
 {
-    public class ExtensionImage
+    public class ExtensionImageVersion
     {
-        internal ExtensionImage(XElement xml)
+        internal ExtensionImageVersion(XElement xml)
         {
             var azureNamespace = XmlNamespaces.WindowsAzure;
 
@@ -13,6 +13,7 @@ namespace Linq2Azure.CloudServices
 
             PublicConfigurationSchema = PublicConfigurationSchema.FromBase64String();
             PrivateConfigurationSchema = PrivateConfigurationSchema.FromBase64String();
+            SampleConfig = SampleConfig.FromBase64String();
         }
 
         public string ProviderNameSpace { get; private set; }
