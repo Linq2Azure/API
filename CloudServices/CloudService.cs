@@ -23,12 +23,14 @@ namespace Linq2Azure.CloudServices
         public LatentSequence<ServiceCertificate> Certificates { get; private set; }
         public IEnumerable<string> WebWorkerRoleSizes { get; private set; }
         public Subscription Subscription { get; private set; }
+        public LatentSequence<Extension> Extensions { get; private set; }
 
         CloudService()
         {
             Deployments = new DeploymentSet(GetDeploymentsAsync);
             Certificates = new LatentSequence<ServiceCertificate>(GetCertificatesAsync);
             WebWorkerRoleSizes = new List<string>();
+            Extensions = new LatentSequence<Extension>(GetExtensionsAsync);
         }
 
         /// <summary>
@@ -130,6 +132,11 @@ namespace Linq2Azure.CloudServices
             return certificate.AddAsync(this);
         }
 
+        public Task AddExtensionAsync(Extension extension)
+        {
+            return extension.AddAsync(this);
+        }
+
         public async Task RefreshAsync()
         {
             Contract.Requires(Subscription != null);
@@ -188,6 +195,15 @@ namespace Linq2Azure.CloudServices
             var results = await client.GetXmlAsync();
             return results.Elements(XmlNamespaces.WindowsAzure + "Certificate")
                 .Select(x => new ServiceCertificate(x, this))
+                .ToArray();
+        }
+
+        async Task<Extension[]> GetExtensionsAsync()
+        {
+            var client = GetRestClient("/extensions");
+            var results = await client.GetXmlAsync();
+            return results.Elements(XmlNamespaces.WindowsAzure + "Extension")
+                .Select(x => new Extension(x, this))
                 .ToArray();
         }
 

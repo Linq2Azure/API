@@ -5,7 +5,7 @@ namespace Linq2Azure.CloudServices
 {
     public class ExtensionImage
     {
-        public ExtensionImage(XElement xml)
+        internal ExtensionImage(XElement xml)
         {
             var azureNamespace = XmlNamespaces.WindowsAzure;
 
