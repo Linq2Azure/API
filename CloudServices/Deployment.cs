@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http;
@@ -95,17 +96,35 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// Submits any changes to the Configuration property.
         /// </summary>
-        public async Task UpdateConfigurationAsync()
+        public  Task UpdateConfigurationAsync()
+        {
+            return UpdateConfigurationWithExtensionsAsync();
+        }
+
+        public async Task UpdateConfigurationWithExtensionsAsync(params string[] extensionIds)
         {
             Contract.Requires(Parent != null);
 
             var ns = XmlNamespaces.WindowsAzure;
-            var content = new XElement(ns + "ChangeConfiguration",
-                new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));
+            var content = new XElement(ns + "ChangeConfiguration");
+            content.Add(new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));
+
+            var extensionElements = extensionIds.Select(id => new XElement(ns + "Extension", new XElement(ns + "Id", id)))
+                .ToArray();
+
+            if (extensionElements.Length != 0)
+            {
+                var allRolesElement = new XElement(ns + "AllRoles");
+                allRolesElement.Add(extensionElements);
+                var extensionConfigurationElement = new XElement(ns + "ExtensionConfiguration");
+                extensionConfigurationElement.Add(allRolesElement);
+                content.Add(extensionConfigurationElement);
+            }
 
             // With the deployments endpoint, you need a forward slash separating the URI from the query string!
             var response = await GetRestClient(Parent, "/?comp=config").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
+            
         }
 
         public Task StartAsync()

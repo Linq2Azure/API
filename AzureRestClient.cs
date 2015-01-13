@@ -62,7 +62,7 @@ namespace Linq2Azure
 
         async Task<HttpResponseMessage> SendAsync (XElement xml, HttpMethod method)
         {
-            string xmlString = xml == null ? "" : xml.ToString();
+            string xmlString = xml == null ? "" : xml.ToString(SaveOptions.DisableFormatting);
             var payload = new StringContent(xmlString);
             payload.Headers.ContentType = new MediaTypeHeaderValue("application/xml");
 
