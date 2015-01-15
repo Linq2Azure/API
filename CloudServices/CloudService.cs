@@ -122,9 +122,13 @@ namespace Linq2Azure.CloudServices
             Subscription = subscription;
         }
 
-        public Task PublishDeploymentAsync(Deployment deployment, Uri packageUrl, Deployment.CreationOptions options = null)
+        public Task PublishDeploymentAsync(
+            Deployment deployment,
+            Uri packageUrl,
+            Deployment.CreationOptions options = null,
+            params ExtensionAssociation[] extensionAssociations)
         {
-            return deployment.CreateAsync(this, packageUrl, options);
+            return deployment.CreateAsync(this, packageUrl, options, extensionAssociations);
         }
 
         public Task AddServiceCertificateAsync(ServiceCertificate certificate)
