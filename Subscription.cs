@@ -39,9 +39,10 @@ namespace Linq2Azure
         public LatentSequence<StorageAccount> StorageAccounts { get; private set; }
         public LatentSequence<AffinityGroup> AffinityGroups { get; private set; }
         public LatentSequence<Location> Locations { get; private set; }
+        public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
 
-        HttpClient _coreHttpClient20140601, _databaseHttpClient;
+        HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
@@ -78,6 +79,7 @@ namespace Linq2Azure
         void Init()
         {
             _coreHttpClient20140601 = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
+            _coreHttpClient20141001 = AzureRestClient.CreateHttpClient(this, "2014-10-01", () => LogDestinations);
             _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
@@ -86,6 +88,7 @@ namespace Linq2Azure
             StorageAccounts = new LatentSequence<StorageAccount>(GetStorageAccountsAsync);
             AffinityGroups = new LatentSequence<AffinityGroup>(GetAffinityGroupsAsync);
             Locations = new LatentSequence<Location>(GetLocationsAsync);
+            ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
         }
 
@@ -132,6 +135,12 @@ namespace Linq2Azure
             return xe.Elements(XmlNamespaces.WindowsAzure + "Location").Select(x => new Location(x, this)).ToArray();
         }
 
+        async Task<AvailableExtensionImage[]> GetExtensionImagesAsync()
+        {
+            var xe = await GetCoreRestClient20141001("services/extensions").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ExtensionImage").Select(x => new AvailableExtensionImage(x, this)).ToArray();
+        }
+
         async Task<ReservedIp[]> GetReservedIpsAsync()
         {
             var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
@@ -141,6 +150,11 @@ namespace Linq2Azure
         internal AzureRestClient GetCoreRestClient20140601(string servicePath)
         {
             return new AzureRestClient(this, _coreHttpClient20140601, CoreUri, servicePath);
+        }
+
+        internal AzureRestClient GetCoreRestClient20141001(string servicePath)
+        {
+            return new AzureRestClient(this, _coreHttpClient20141001, CoreUri, servicePath);
         }
 
         internal AzureRestClient GetDatabaseRestClient(string servicePath)
@@ -188,6 +202,7 @@ namespace Linq2Azure
         public void Dispose()
         {
             if (_coreHttpClient20140601 != null) _coreHttpClient20140601.Dispose();
+            if (_coreHttpClient20141001 != null) _coreHttpClient20141001.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
     }

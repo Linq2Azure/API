@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http;
@@ -16,11 +17,13 @@ namespace Linq2Azure.CloudServices
         public string Label { get; set; }
         public ServiceConfiguration Configuration { get; set; }
         public LatentSequence<RoleInstance> RoleInstances { get; private set; }
+        public LatentSequence<ExtensionAssociation> ExtensionAssociations { get; private set; }
         public CloudService Parent { get; private set; }
 
-        Deployment()
+        private Deployment()
         {
             RoleInstances = new LatentSequence<RoleInstance>(GetRoleInstancesAsync);
+            ExtensionAssociations = new LatentSequence<ExtensionAssociation>(GetExtensionAssociationsAsync);
         }
 
         public Deployment(string deploymentName, DeploymentSlot deploymentSlot, string serviceConfig)
@@ -62,7 +65,11 @@ namespace Linq2Azure.CloudServices
             Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.WindowsAzure + "Configuration").Value.FromBase64String()));
         }
 
-        internal async Task CreateAsync(CloudService parent, Uri packageUrl, CreationOptions options = null)
+        internal async Task CreateAsync(
+            CloudService parent,
+            Uri packageUrl,
+            CreationOptions options = null,
+            params ExtensionAssociation[] extensionAssociations)
         {
             Contract.Requires(parent != null);
             Contract.Requires(packageUrl != null);
@@ -80,6 +87,8 @@ namespace Linq2Azure.CloudServices
                 new XElement(ns + "TreatWarningsAsError", options.TreatWarningsAsError)
                 );
 
+            AddExtensionConfigurationXml(content, extensionAssociations);
+
             var response = await GetRestClient(parent).PostAsync(content);
             await parent.Subscription.WaitForOperationCompletionAsync(response);
             Parent = parent;
@@ -95,17 +104,94 @@ namespace Linq2Azure.CloudServices
         /// <summary>
         /// Submits any changes to the Configuration property.
         /// </summary>
-        public async Task UpdateConfigurationAsync()
+        /// <param name="extensionAssociations">
+        ///     Optional extensions to be adjusted against the deployment
+        /// </param>
+        public async Task UpdateConfigurationAsync(params ExtensionAssociation[] extensionAssociations)
         {
             Contract.Requires(Parent != null);
 
             var ns = XmlNamespaces.WindowsAzure;
-            var content = new XElement(ns + "ChangeConfiguration",
-                new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));
+            var content = new XElement(ns + "ChangeConfiguration");
+            content.Add(new XElement(ns + "Configuration", Configuration.ToXml().ToString().ToBase64String()));
+
+            AddExtensionConfigurationXml(content, extensionAssociations);
 
             // With the deployments endpoint, you need a forward slash separating the URI from the query string!
             var response = await GetRestClient(Parent, "/?comp=config").PostAsync(content);
             await Parent.Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        private static void AddExtensionConfigurationXml(
+            XContainer parentElement,
+            ExtensionAssociation[] extensionAssociations)
+        {
+            if (extensionAssociations.Length == 0)
+            {
+                return;
+            }
+
+            var ns = XmlNamespaces.WindowsAzure;
+
+            var extensionConfigurationElement = new XElement(ns + "ExtensionConfiguration");
+            parentElement.Add(extensionConfigurationElement);
+
+            AddAllRolesExtensions(extensionAssociations, ns, extensionConfigurationElement);
+            AddNamedRoleExtensions(extensionAssociations, ns, extensionConfigurationElement);
+        }
+
+        private static void AddAllRolesExtensions(ExtensionAssociation[] extensionAssociations, XNamespace ns, XElement extensionConfigurationElement)
+        {
+            var allRolesAssociations = extensionAssociations.OfType<AllRolesExtensionAssociation>().ToArray();
+
+            if (allRolesAssociations.Length == 0)
+            {
+                return;
+            }
+
+            var allRolesElement = new XElement(ns + "AllRoles");
+
+            var children = allRolesAssociations.Select(ara =>
+                new XElement(
+                    ns + "Extension",
+                    new XElement(ns + "Id", ara.Id),
+                    new XElement(ns + "State", ara.State ?? "Enable")));
+
+            allRolesElement.Add(children);
+
+            extensionConfigurationElement.Add(allRolesElement);
+        }
+
+        private static void AddNamedRoleExtensions(ExtensionAssociation[] extensionAssociations, XNamespace ns, XElement extensionConfigurationElement)
+        {
+            var namedRoleAssociations = extensionAssociations.OfType<NamedRoleExtensionAssociation>().ToArray();
+
+            if (namedRoleAssociations.Length == 0)
+            {
+                return;
+            }
+
+            var namedRolesElement = new XElement(ns + "NamedRoles");
+            extensionConfigurationElement.Add(namedRolesElement);
+
+            foreach (var role in namedRoleAssociations.GroupBy(nra => nra.RoleName))
+            {
+                var roleElement = new XElement(
+                    ns + "Role",
+                    new XElement(ns + "RoleName", role.Key));
+                var roleExtensionsElement = new XElement(ns + "Extensions");
+                roleElement.Add(roleExtensionsElement);
+
+                namedRolesElement.Add(roleElement);
+
+                var children = role.Select(nra =>
+                    new XElement(
+                        ns + "Extension",
+                        new XElement(ns + "Id", nra.Id),
+                        new XElement(ns + "State", nra.State ?? "Enable")));
+
+                roleExtensionsElement.Add(children);
+            }
         }
 
         public Task StartAsync()
@@ -172,7 +258,7 @@ namespace Linq2Azure.CloudServices
             Parent = null;
         }
 
-        async Task<RoleInstance[]> GetRoleInstancesAsync()
+        private async Task<RoleInstance[]> GetRoleInstancesAsync()
         {
             Contract.Requires(Parent != null);
             var xe = await GetRestClient().GetXmlAsync();
@@ -182,13 +268,64 @@ namespace Linq2Azure.CloudServices
                 .ToArray();
         }
 
+        private async Task<ExtensionAssociation[]> GetExtensionAssociationsAsync()
+        {
+            Contract.Requires(Parent != null);
+            var xe = await GetRestClient().GetXmlAsync();
+
+            var extensionConfigurationElement = xe.Element(XmlNamespaces.WindowsAzure + "ExtensionConfiguration");
+
+            return extensionConfigurationElement != null
+                ? ConvertToExtensionAssociations(extensionConfigurationElement).ToArray()
+                : new ExtensionAssociation[]{};
+        }
+
+        private static IEnumerable<ExtensionAssociation> ConvertToExtensionAssociations(XElement extensionConfigurationElement)
+        {
+            var allRolesElement = extensionConfigurationElement.Element(XmlNamespaces.WindowsAzure + "AllRoles");
+            if (allRolesElement != null)
+            {
+                foreach (var extension in allRolesElement.Elements(XmlNamespaces.WindowsAzure + "Extension"))
+                {
+                    yield return new AllRolesExtensionAssociation
+                    {
+                        Id = (string) extension.Element(XmlNamespaces.WindowsAzure + "Id"),
+                        SequenceNumber = (string)extension.Element(XmlNamespaces.WindowsAzure + "SequenceNumber"),
+                        State = (string)extension.Element(XmlNamespaces.WindowsAzure + "State"),
+                    };
+                }
+            }
+
+            var namedRolesElement = extensionConfigurationElement.Element(XmlNamespaces.WindowsAzure + "NamedRoles");
+            if (namedRolesElement == null)
+            {
+                yield break;
+            }
+
+            foreach (var role in namedRolesElement.Elements(XmlNamespaces.WindowsAzure + "Role"))
+            {
+                var roleName = (string) role.Element(XmlNamespaces.WindowsAzure + "RoleName");
+
+                foreach (var extension in role.Descendants(XmlNamespaces.WindowsAzure + "Extension"))
+                {
+                    yield return new NamedRoleExtensionAssociation
+                    {
+                        Id = (string)extension.Element(XmlNamespaces.WindowsAzure + "Id"),
+                        RoleName = roleName,
+                        SequenceNumber = (string)extension.Element(XmlNamespaces.WindowsAzure + "SequenceNumber"),
+                        State = (string)extension.Element(XmlNamespaces.WindowsAzure + "State"),
+                    };
+                }
+            }
+        }
+
         internal AzureRestClient GetRestClient(string pathSuffix = null) { return GetRestClient(Parent, pathSuffix); }
 
         AzureRestClient GetRestClient(CloudService cloudService, string pathSuffix = null)
         {
             var servicePath = "services/hostedservices/" + cloudService.Name + "/deploymentslots/" + Slot.ToString().ToLowerInvariant();
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
-            return cloudService.Subscription.GetCoreRestClient20140601(servicePath);
+            return cloudService.Subscription.GetCoreRestClient20141001(servicePath);
         }
 
         public class CreationOptions
@@ -200,4 +337,19 @@ namespace Linq2Azure.CloudServices
 
     public enum DeploymentSlot { Production, Staging }
     public enum UpgradeMode { Auto, Simultaneous }
+
+    public abstract class ExtensionAssociation
+    {
+        public string Id { get; set; }
+        public string SequenceNumber { get; internal set; }
+        public string State { get; set; }
+    }
+
+    public class AllRolesExtensionAssociation : ExtensionAssociation
+    {}
+
+    public class NamedRoleExtensionAssociation : ExtensionAssociation
+    {
+        public string RoleName { get; set; }
+    }
 }
