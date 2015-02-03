@@ -80,6 +80,10 @@
     <Compile Include="AffinityGroupTests.cs" />
     <Compile Include="DatabaseTests.cs" />
     <Compile Include="FirewallTests.cs" />
+    <Compile Include="IntegrationScoped.cs" />
+    <Compile Include="IScopedStrategy.cs" />
+    <Compile Include="ReplicaDatabaseStrategy.cs" />
+    <Compile Include="StandardDatabaseStrategy.cs" />
     <Compile Include="StorageAccountKeysTests.cs" />
     <Compile Include="StorageAccountTests.cs" />
     <Compile Include="SubscriptionTests.cs" />
@@ -89,6 +93,8 @@
     <Compile Include="DeploymentTests.cs" />
     <Compile Include="DatabaseServerTests.cs" />
     <Compile Include="TrafficManagerTests.cs" />
+    <Compile Include="When_creating_a_database_and_live_replica.cs" />
+    <Compile Include="When_creating_a_database_with_valid_credentials.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Linq2Azure.csproj">
