@@ -42,7 +42,7 @@ namespace Linq2Azure
         public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
 
-        HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
+        HttpClient _coreHttpClient20140601, _coreHttpClient20141001,_coreHttpClient20120301, _databaseHttpClient;
 
         public Subscription(Guid id, string name, X509Certificate2 managementCertificate)
         {
@@ -80,6 +80,7 @@ namespace Linq2Azure
         {
             _coreHttpClient20140601 = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
             _coreHttpClient20141001 = AzureRestClient.CreateHttpClient(this, "2014-10-01", () => LogDestinations);
+            _coreHttpClient20120301 = AzureRestClient.CreateHttpClient(this, "2012-03-01", () => LogDestinations);
             _databaseHttpClient = AzureRestClient.CreateHttpClient(this, "2014-06-01", () => LogDestinations);
 
             CloudServices = new LatentSequence<CloudService>(GetCloudServicesAsync);
@@ -145,6 +146,11 @@ namespace Linq2Azure
         {
             var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
+        }
+
+        internal AzureRestClient GetCoreRestClient20120301(string servicePath)
+        {
+            return new AzureRestClient(this, _coreHttpClient20120301, CoreUri, servicePath);
         }
 
         internal AzureRestClient GetCoreRestClient20140601(string servicePath)
