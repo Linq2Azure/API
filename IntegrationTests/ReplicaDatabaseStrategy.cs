@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Linq2Azure;
@@ -23,10 +24,8 @@ namespace IntegrationTests
             DatabaseServer = new DatabaseServer("testadmin", "West US");
             DestinationServer = new DatabaseServer("replicaadmin", "West US");
 
-            foreach (var server in await Subscription.DatabaseServers.AsTask())
-            {
-                await server.DropAsync();
-            }
+            var servers = await Subscription.DatabaseServers.AsTask();
+            await Task.WhenAll(servers.Select(x => x.DropAsync()));
 
             await Subscription.CreateDatabaseServerAsync(DatabaseServer, Password);
             await Subscription.CreateDatabaseServerAsync(DestinationServer, Password);
@@ -36,8 +35,21 @@ namespace IntegrationTests
 
         public async Task Teardown()
         {
-            await DatabaseServer.DropAsync();
-            await DestinationServer.DropAsync();
+
+            await Task.Run( async() =>
+            {
+
+                var servers = await DestinationServer.Databases.AsTask();
+                var replicas = servers.ToList().Select(x => x.Replicas.AsTask());
+                var allReplicas = await Task.WhenAll(replicas);
+                var flattened = allReplicas.SelectMany(x => x);
+                await Task.WhenAll(flattened.Select(x => x.Stop()));
+                await DestinationServer.DropAsync();
+                await DatabaseServer.DropAsync();
+                return Unit.Instance;
+
+            }).Catch();
+
         }
     }
 }

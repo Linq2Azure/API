@@ -134,6 +134,7 @@
     <Compile Include="TrafficManagement\TrafficManagerMonitor.cs" />
     <Compile Include="TrafficManagement\TrafficManagerPolicy.cs" />
     <Compile Include="TrafficManagement\TrafficManagerProfile.cs" />
+    <Compile Include="Unit.cs" />
     <Compile Include="XmlHelper.cs" />
     <Compile Include="XmlNamespaces.cs" />
     <Compile Include="CloudServices\Deployment.cs" />
