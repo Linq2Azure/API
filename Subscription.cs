@@ -115,7 +115,7 @@ namespace Linq2Azure
         async Task<TrafficManagerProfile[]> GetTrafficManagerProfilesAsync()
         {
             var xe = await GetCoreRestClient20140601("services/WATM/profiles").GetXmlAsync();
-            return xe.Elements(XmlNamespaces.WindowsAzure + "Profile").Select(x => new TrafficManagerProfile(x, this)).ToArray();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceTier").Select(x => new TrafficManagerProfile(x, this)).ToArray();
         }
 
         async Task<StorageAccount[]> GetStorageAccountsAsync()

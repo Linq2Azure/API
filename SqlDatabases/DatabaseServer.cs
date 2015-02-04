@@ -114,17 +114,23 @@ namespace Linq2Azure.SqlDatabases
             Subscription = null;
         }
 
-        public async Task<Database> CreateDatabase(DatabaseRequest request)
+        public async Task<Database> CreateDatabase(string databaseName, ServiceTier serviceTier = ServiceTier.Basic, string collationName = "SQL_LATIN1_GENERAL_CP1_CI_AS", long maximumBytes = 2147483648)
         {
             Contract.Requires(Subscription != null);
+            Contract.Requires(!String.IsNullOrEmpty(databaseName));
+
+            var tier = new Tier(serviceTier);
+            
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "ServiceResource",
-                new XElement(ns + "Name", request.Name),
-                new XElement(ns + "Edition", request.Edition.Value),
-                new XElement(ns + "CollationName", request.CollationName),
-                new XElement(ns + "MaxSizeBytes", request.MaxBytes),
-                new XElement(ns + "ServiceObjectiveId", request.Performance.Value)
-                );
+                new XElement(ns + "Name", databaseName),
+                new XElement(ns + "Edition", tier.Edition.ToString()),
+                new XElement(ns + "CollationName", collationName),
+                new XElement(ns + "MaxSizeBytes", maximumBytes));
+
+            if(tier.PerformanceLevel != Guid.Empty)
+                content.Add(new XElement(ns + "ServiceObjectiveId", tier.PerformanceLevel) );
+
 
             var response = await GetRestClient("/" + Name + "/databases").PostAsync(content);
             return new Database(XElement.Parse(await response.Content.ReadAsStringAsync()), this);

@@ -12,7 +12,6 @@ namespace IntegrationTests
         public Subscription Subscription;
         public DatabaseServer DatabaseServer;
         public DatabaseServer DestinationServer;
-        public DatabaseRequest DatabaseRequest;
         public Database Database;
         public string DatabaseName;
 
@@ -25,8 +24,6 @@ namespace IntegrationTests
         private async Task SetupImpl()
         {
             DatabaseName = "TestDB";
-            DatabaseRequest = new DatabaseRequest(DatabaseName, Edition.Premium, PerformanceLevel.PremiumS1, Collation.Default,
-                20.Gigabytes());
             Subscription = TestConstants.Subscription;
             DatabaseServer = new DatabaseServer("testadmin", "West US");
             DestinationServer = new DatabaseServer("replicaadmin", "West US");
@@ -37,7 +34,7 @@ namespace IntegrationTests
             await Subscription.CreateDatabaseServerAsync(DatabaseServer, Password);
             await Subscription.CreateDatabaseServerAsync(DestinationServer, Password);
             var databaseServer = (await Subscription.DatabaseServers.AsTask()).Single(d => d.Name == DatabaseServer.Name);
-            Database = await databaseServer.CreateDatabase(DatabaseRequest);
+            Database = await databaseServer.CreateDatabase(DatabaseName,ServiceTier.PremiumS1);
         }
 
         [TestCleanup]

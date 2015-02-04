@@ -45,7 +45,7 @@ namespace Linq2Azure.TrafficManagement
             Contract.Requires(!string.IsNullOrWhiteSpace(DomainName));
 
             var ns = XmlNamespaces.WindowsAzure;
-            var content = new XElement(ns + "Profile",
+            var content = new XElement(ns + "ServiceTier",
                 new XElement(ns + "DomainName", DomainName),
                 new XElement(ns + "Name", Name)
                 );
@@ -72,7 +72,7 @@ namespace Linq2Azure.TrafficManagement
             Contract.Requires(Subscription != null);
 
             var ns = XmlNamespaces.WindowsAzure;
-            var content = new XElement(ns + "Profile",
+            var content = new XElement(ns + "ServiceTier",
                 new XElement(ns + "Status", enabled ? "Enabled" : "Disabled"),
                 new XElement(ns + "StatusDetails",
                     new XElement(ns + "EnabledVersion", definitionVersion))
