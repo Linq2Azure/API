@@ -1,4 +1,4 @@
-namespace Linq2Azure.SqlDatabases
+namespace IntegrationTests
 {
     public static class Collation
     {

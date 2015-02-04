@@ -113,8 +113,6 @@
     <Compile Include="CloudServices\LocationType.cs" />
     <Compile Include="Locations\Location.cs" />
     <Compile Include="ReservedIps\ReservedIp.cs" />
-    <Compile Include="Scoped.cs" />
-    <Compile Include="SqlDatabases\Collation.cs" />
     <Compile Include="SqlDatabases\Database.cs" />
     <Compile Include="CloudServices\DeploymentType.cs" />
     <Compile Include="SqlDatabases\DatabaseRequest.cs" />
@@ -134,7 +132,6 @@
     <Compile Include="TrafficManagement\TrafficManagerMonitor.cs" />
     <Compile Include="TrafficManagement\TrafficManagerPolicy.cs" />
     <Compile Include="TrafficManagement\TrafficManagerProfile.cs" />
-    <Compile Include="Unit.cs" />
     <Compile Include="XmlHelper.cs" />
     <Compile Include="XmlNamespaces.cs" />
     <Compile Include="CloudServices\Deployment.cs" />

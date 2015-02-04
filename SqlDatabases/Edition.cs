@@ -1,3 +1,5 @@
+using System;
+
 namespace Linq2Azure.SqlDatabases
 {
     public class Edition
@@ -10,10 +12,13 @@ namespace Linq2Azure.SqlDatabases
 
         public string Value { get; private set; }
 
+        [Obsolete]
         public static Edition Web = new Edition("Web");
         public static Edition Basic = new Edition("Basic");
         public static Edition Standard = new Edition("Standard");
         public static Edition Premium = new Edition("Premium");
+
+        [Obsolete]
         public static Edition Business = new Edition("Business");
     }
 }

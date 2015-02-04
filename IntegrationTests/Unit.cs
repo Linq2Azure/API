@@ -1,6 +1,6 @@
-﻿namespace Linq2Azure
+﻿namespace IntegrationTests
 {
-    public class Unit
+    internal class Unit
     {
 
         protected Unit() { }

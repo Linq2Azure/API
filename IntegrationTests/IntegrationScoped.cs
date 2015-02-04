@@ -2,7 +2,8 @@
 
 namespace IntegrationTests
 {
-    public class IntegrationScoped<TStrategy> where TStrategy : IScopedStrategy, new()
+    public class IntegrationScoped<TStrategy>
+        where TStrategy : IScopedStrategy, new()
     {
 
         protected readonly TStrategy Strategy = new TStrategy();

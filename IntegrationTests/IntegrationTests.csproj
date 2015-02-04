@@ -78,6 +78,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AffinityGroupTests.cs" />
+    <Compile Include="Collation.cs" />
     <Compile Include="DatabaseTests.cs" />
     <Compile Include="FirewallTests.cs" />
     <Compile Include="IntegrationScoped.cs" />
@@ -94,6 +95,7 @@
     <Compile Include="DeploymentTests.cs" />
     <Compile Include="DatabaseServerTests.cs" />
     <Compile Include="TrafficManagerTests.cs" />
+    <Compile Include="Unit.cs" />
     <Compile Include="When_creating_a_database_and_live_replica.cs" />
     <Compile Include="When_creating_a_database_with_valid_credentials.cs" />
   </ItemGroup>
