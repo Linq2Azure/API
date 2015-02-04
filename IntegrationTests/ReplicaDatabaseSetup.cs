@@ -1,12 +1,12 @@
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Linq2Azure;
 using Linq2Azure.SqlDatabases;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationTests
 {
-    public class ReplicaDatabaseStrategy : IScopedStrategy
+    public class ReplicaDatabaseSetup
     {
         private const string Password = "gj3eowl%5fi:edf";
         public Subscription Subscription;
@@ -16,10 +16,17 @@ namespace IntegrationTests
         public Database Database;
         public string DatabaseName;
 
-        public async Task Setup()
+        [TestInitialize]
+        public void Setup()
+        {
+            SetupImpl().Wait();
+        }
+
+        private async Task SetupImpl()
         {
             DatabaseName = "TestDB";
-            DatabaseRequest = new DatabaseRequest(DatabaseName, Edition.Premium, PerformanceLevel.PremiumS1, Collation.Default, 20.Gigabytes());
+            DatabaseRequest = new DatabaseRequest(DatabaseName, Edition.Premium, PerformanceLevel.PremiumS1, Collation.Default,
+                20.Gigabytes());
             Subscription = TestConstants.Subscription;
             DatabaseServer = new DatabaseServer("testadmin", "West US");
             DestinationServer = new DatabaseServer("replicaadmin", "West US");
@@ -33,12 +40,16 @@ namespace IntegrationTests
             Database = await databaseServer.CreateDatabase(DatabaseRequest);
         }
 
-        public async Task Teardown()
+        [TestCleanup]
+        public void Teardown()
         {
+            TeardownImpl().Wait();
+        }
 
-            await Task.Run( async() =>
+        private async Task TeardownImpl()
+        {
+            await Task.Run(async () =>
             {
-
                 var servers = await DestinationServer.Databases.AsTask();
                 var replicas = servers.ToList().Select(x => x.Replicas.AsTask());
                 var allReplicas = await Task.WhenAll(replicas);
@@ -47,9 +58,7 @@ namespace IntegrationTests
                 await DestinationServer.DropAsync();
                 await DatabaseServer.DropAsync();
                 return Unit.Instance;
-
             }).Catch();
-
         }
     }
 }
