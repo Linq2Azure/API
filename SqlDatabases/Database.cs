@@ -92,7 +92,7 @@ namespace Linq2Azure.SqlDatabases
         public async Task<DatabaseServer> Delete()
         {
             var servicePath = "services/sqlservers/servers/" + DatabaseServer.Name + "/databases/" + Name;
-            var client = DatabaseServer.Subscription.GetCoreRestClient20120301(servicePath);
+            var client = DatabaseServer.Subscription.GetDatabaseRestClient(servicePath);
             await client.DeleteAsync();
             return DatabaseServer;
         }
@@ -100,7 +100,7 @@ namespace Linq2Azure.SqlDatabases
         private AzureRestClient GetRestClient()
         {
             var servicePath = "services/sqlservers/servers/" + DatabaseServer.Name + "/databases/" + Name + "/databasecopies";
-            return DatabaseServer.Subscription.GetCoreRestClient20120301(servicePath);
+            return DatabaseServer.Subscription.GetDatabaseRestClient(servicePath);
         }
 
     }

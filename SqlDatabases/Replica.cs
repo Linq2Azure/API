@@ -56,7 +56,7 @@ namespace Linq2Azure.SqlDatabases
         private AzureRestClient GetRestClient(DatabaseServer server, string databaseName)
         {
             var servicePath = "services/sqlservers/servers/" + server.Name + "/databases/" + databaseName + "/databasecopies/" + Name;
-            return server.Subscription.GetCoreRestClient20120301(servicePath);
+            return server.Subscription.GetDatabaseRestClient(servicePath);
         }
     }
 }

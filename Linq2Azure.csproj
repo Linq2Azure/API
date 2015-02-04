@@ -124,6 +124,7 @@
     <Compile Include="CloudServices\ServiceCertificate.cs" />
     <Compile Include="SqlDatabases\IntMemorySizeExtensions.cs" />
     <Compile Include="SqlDatabases\Replica.cs" />
+    <Compile Include="SqlDatabases\ServiceTier.cs" />
     <Compile Include="SqlDatabases\ServiceTierMetadataAttribute.cs" />
     <Compile Include="SqlDatabases\Tier.cs" />
     <Compile Include="StorageAccounts\KeyType.cs" />

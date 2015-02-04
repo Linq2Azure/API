@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Linq2Azure;
@@ -23,7 +24,7 @@ namespace IntegrationTests
 
         private async Task SetupImpl()
         {
-            DatabaseName = "TestDB";
+            DatabaseName = "TestDB" + Guid.NewGuid();
             Subscription = TestConstants.Subscription;
             DatabaseServer = new DatabaseServer("testadmin", "West US");
             DestinationServer = new DatabaseServer("replicaadmin", "West US");
@@ -35,6 +36,7 @@ namespace IntegrationTests
             await Subscription.CreateDatabaseServerAsync(DestinationServer, Password);
             var databaseServer = (await Subscription.DatabaseServers.AsTask()).Single(d => d.Name == DatabaseServer.Name);
             Database = await databaseServer.CreateDatabase(DatabaseName,ServiceTier.PremiumS1);
+            await Task.Delay(TimeSpan.FromSeconds(10));
         }
 
         [TestCleanup]
@@ -47,15 +49,24 @@ namespace IntegrationTests
         {
             await Task.Run(async () =>
             {
-                var servers = await DestinationServer.Databases.AsTask();
-                var replicas = servers.ToList().Select(x => x.Replicas.AsTask());
-                var allReplicas = await Task.WhenAll(replicas);
-                var flattened = allReplicas.SelectMany(x => x);
-                await Task.WhenAll(flattened.Select(x => x.Stop()));
+                await DropReplicas(DestinationServer);
+                await DropReplicas(DatabaseServer);
                 await DestinationServer.DropAsync();
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 await DatabaseServer.DropAsync();
+                await Task.Delay(TimeSpan.FromSeconds(10));
                 return Unit.Instance;
             }).Catch();
+        }
+
+        private async Task DropReplicas(DatabaseServer server)
+        {
+            var servers = await server.Databases.AsTask();
+            var replicas = servers.ToList().Select(x => x.Replicas.AsTask());
+            var allReplicas = await Task.WhenAll(replicas);
+            var flattened = allReplicas.SelectMany(x => x);
+            await Task.WhenAll(flattened.Select(x => x.AllowForcedTermination(true)));
+            await Task.WhenAll(flattened.Select(x => x.Stop()));
         }
     }
 }
