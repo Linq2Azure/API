@@ -80,9 +80,6 @@ namespace Linq2Azure.SqlDatabases
                 );
 
             var restClient = GetRestClient();
-
-            Console.WriteLine(restClient.Uri);
-
             var response = await restClient.PostAsync(content);
 
             return new Replica(XElement.Parse(await response.Content.ReadAsStringAsync()), this);

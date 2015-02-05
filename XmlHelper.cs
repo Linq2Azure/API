@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Xml.Linq;
+using Linq2Azure.VirtualMachines;
 
 namespace Linq2Azure
 {
@@ -12,6 +15,11 @@ namespace Linq2Azure
         /// </summary>
         public static void HydrateObject(this XElement element, XNamespace ns, object target)
         {
+
+            if (element == null) // base case
+                return;
+
+
             foreach (var prop in target.GetType().GetProperties())
             {
                 var child = element.Element(ns + prop.Name);
@@ -20,7 +28,7 @@ namespace Linq2Azure
                     continue;
                 }
 
-                object value;
+                object value = null;
                 if (prop.PropertyType == typeof(string))
                     value = child.Value;
                 else if (prop.PropertyType == typeof(Uri))
@@ -52,6 +60,29 @@ namespace Linq2Azure
                 }
                 else if (prop.PropertyType.IsEnum)
                     value = Enum.Parse(prop.PropertyType, child.Value, true);
+                else if (Attribute.IsDefined(prop, typeof (TraverseAttribute)))
+                {
+                    var instance = Activator.CreateInstance(prop.PropertyType);
+
+                    if (prop.PropertyType.IsGenericType)
+                    {
+                        var genericArguments = prop.PropertyType.GetGenericArguments();
+                        if (typeof(ICollection<>).MakeGenericType(genericArguments).IsAssignableFrom(prop.PropertyType))
+                        {
+                            foreach (var item in child.Elements(prop.Name))
+                            {
+                                var obj = Activator.CreateInstance(genericArguments.First());
+                                HydrateObject(item, ns, obj);
+                                instance.GetType().GetMethod("Add").Invoke(instance, new object[]{obj});
+                            }
+                        }
+
+                    }
+                    
+                    HydrateObject(child,ns,instance);
+                    prop.SetValue(target, instance);
+                    continue;
+                }
                 else
                     continue;
 

@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
 using Linq2Azure.AffinityGroups;
 using Linq2Azure.CloudServices;
 using Linq2Azure.Locations;
@@ -15,8 +14,8 @@ using Linq2Azure.ReservedIps;
 using Linq2Azure.SqlDatabases;
 using Linq2Azure.StorageAccounts;
 using Linq2Azure.TrafficManagement;
-
 using System.Diagnostics;
+using Linq2Azure.VirtualMachines;
 
 namespace Linq2Azure
 {
@@ -41,6 +40,8 @@ namespace Linq2Azure
         public LatentSequence<Location> Locations { get; private set; }
         public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
+        public LatentSequence<VMImage> VirtualMachineImages { get; private set; }
+        public LatentSequence<Disk> VirtualMachineDisks { get; private set; }
 
         HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
 
@@ -90,6 +91,8 @@ namespace Linq2Azure
             Locations = new LatentSequence<Location>(GetLocationsAsync);
             ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
+            VirtualMachineImages = new LatentSequence<VMImage>(GetVirtualMachinesAsync);
+            VirtualMachineDisks = new LatentSequence<Disk>(GetVirtualMachineDisksAsync);
         }
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
@@ -145,6 +148,18 @@ namespace Linq2Azure
         {
             var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
+        }
+
+        async Task<VMImage[]> GetVirtualMachinesAsync()
+        {
+            var xe = await GetDatabaseRestClient("services/vmimages").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "VMImage").Select(x => new VMImage(x, this)).ToArray();
+        }
+
+        async Task<Disk[]> GetVirtualMachineDisksAsync()
+        {
+            var xe = await GetDatabaseRestClient("services/disks").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "Disk").Select(x => new Disk(x, this)).ToArray();
         }
 
         internal AzureRestClient GetCoreRestClient20140601(string servicePath)
@@ -205,5 +220,9 @@ namespace Linq2Azure
             if (_coreHttpClient20141001 != null) _coreHttpClient20141001.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
+
     }
+
+
+
 }

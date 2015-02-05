@@ -122,7 +122,6 @@
     <Compile Include="LatentSequence.cs" />
     <Compile Include="CloudServices\RoleInstance.cs" />
     <Compile Include="CloudServices\ServiceCertificate.cs" />
-    <Compile Include="SqlDatabases\IntMemorySizeExtensions.cs" />
     <Compile Include="SqlDatabases\Replica.cs" />
     <Compile Include="SqlDatabases\ServiceTier.cs" />
     <Compile Include="SqlDatabases\ServiceTierMetadataAttribute.cs" />
@@ -134,6 +133,7 @@
     <Compile Include="TrafficManagement\TrafficManagerMonitor.cs" />
     <Compile Include="TrafficManagement\TrafficManagerPolicy.cs" />
     <Compile Include="TrafficManagement\TrafficManagerProfile.cs" />
+    <Compile Include="VirtualMachines\VMImage.cs" />
     <Compile Include="XmlHelper.cs" />
     <Compile Include="XmlNamespaces.cs" />
     <Compile Include="CloudServices\Deployment.cs" />
