@@ -65,7 +65,7 @@ namespace IntegrationTests
             var replicas = servers.ToList().Select(x => x.Replicas.AsTask());
             var allReplicas = await Task.WhenAll(replicas);
             var flattened = allReplicas.SelectMany(x => x);
-            await Task.WhenAll(flattened.Select(x => x.AllowForcedTermination(true)));
+            await Task.WhenAll(flattened.Select(x => x.SetForcedTerminationAllowed(true)));
             await Task.WhenAll(flattened.Select(x => x.Stop()));
         }
     }

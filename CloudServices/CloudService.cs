@@ -4,6 +4,7 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Linq2Azure.VirtualMachines;
 
 namespace Linq2Azure.CloudServices
 {
@@ -39,7 +40,7 @@ namespace Linq2Azure.CloudServices
         [Obsolete("This constructor has been replaced by the overload that takes LocationType.", false)]
         public CloudService(string serviceName, string locationOrAffinityGroup, bool isAffinityGroup = false)
             : this(serviceName, locationOrAffinityGroup, isAffinityGroup ? LocationType.AffinityGroup : LocationType.Region)
-        {}
+        { }
 
         public CloudService(string serviceName, string locationOrAffinityGroup, LocationType locationType)
             : this()
@@ -57,7 +58,8 @@ namespace Linq2Azure.CloudServices
             ExtendedProperties = new Dictionary<string, string>();
         }
 
-        internal CloudService(XElement element, Subscription subscription) : this()
+        internal CloudService(XElement element, Subscription subscription)
+            : this()
         {
             Contract.Requires(element != null);
             Contract.Requires(subscription != null);
@@ -74,11 +76,11 @@ namespace Linq2Azure.CloudServices
             Name = (string)element.Element(ns + "ServiceName");
 
             var properties = element.Element(ns + "HostedServiceProperties");
-            
+
             properties.HydrateObject(ns, this);
-            
-            if (!string.IsNullOrEmpty (Label)) Label = Label.FromBase64String();
-            
+
+            if (!string.IsNullOrEmpty(Label)) Label = Label.FromBase64String();
+
             DateCreated = (DateTime)properties.Element(ns + "DateCreated");
             DateLastModified = (DateTime)properties.Element(ns + "DateLastModified");
 
@@ -110,7 +112,7 @@ namespace Linq2Azure.CloudServices
                 string.IsNullOrWhiteSpace(Description) ? null : new XElement(ns + "Description", Description),
                 string.IsNullOrWhiteSpace(Location) ? null : new XElement(ns + "Location", Location),
                 string.IsNullOrWhiteSpace(AffinityGroup) ? null : new XElement(ns + "AffinityGroup", AffinityGroup),
-                ExtendedProperties == null || ExtendedProperties.Count == 0 ? null : 
+                ExtendedProperties == null || ExtendedProperties.Count == 0 ? null :
                     new XElement(ns + "ExtendedProperties", ExtendedProperties.Select(kv =>
                         new XElement(ns + "ExtendedProperty",
                             new XElement(ns + "Name", kv.Key),
@@ -152,10 +154,10 @@ namespace Linq2Azure.CloudServices
         {
             Contract.Requires(Subscription != null);
             var deployments = await GetDeploymentsAsync();
-            
+
             var production = deployments.SingleOrDefault(d => d.Slot == DeploymentSlot.Production);
             if (production == null) throw new InvalidOperationException("Cannot swap deployments: No production slot found");
-            
+
             var staging = deployments.SingleOrDefault(d => d.Slot == DeploymentSlot.Staging);
             if (production == null) throw new InvalidOperationException("Cannot swap deployments: No staging slot found");
 
@@ -211,6 +213,11 @@ namespace Linq2Azure.CloudServices
                 .ToArray();
         }
 
+        public IVirtualMachineBuilder CreateVirtualMachine(string blobContainer, Ststring serviceName, string virtualMachineName, string password)
+        {
+            return new VirtualMachineBuilder(this,blobContainer, serviceName, virtualMachineName, password);
+        }
+
         private static IEnumerable<string> GetRoleSizes(
             XContainer computeCapabilitiesElement,
             XNamespace azureNamespace,
@@ -229,7 +236,8 @@ namespace Linq2Azure.CloudServices
 
     public class DeploymentSet : LatentSequence<Deployment>
     {
-        public DeploymentSet(Func<Task<Deployment[]>> taskGenerator) : base (taskGenerator)
+        public DeploymentSet(Func<Task<Deployment[]>> taskGenerator)
+            : base(taskGenerator)
         {
         }
 

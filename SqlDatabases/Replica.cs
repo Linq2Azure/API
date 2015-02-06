@@ -42,7 +42,7 @@ namespace Linq2Azure.SqlDatabases
             return Database;
         }
 
-        public async Task<Database> AllowForcedTermination(bool forced)
+        public async Task<Database> SetForcedTerminationAllowed(bool forced)
         {
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "ServiceResource",
