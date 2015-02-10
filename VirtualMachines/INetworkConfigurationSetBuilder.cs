@@ -4,5 +4,7 @@
     {
         INetworkConfigurationSetBuilder AddWebPort();
         INetworkConfigurationSetBuilder AddRemoteDesktop();
+        IRoleBuilder AddRole(string roleName);
+        IVirtualMachineBuilder FinalizeRoles();
     }
 }

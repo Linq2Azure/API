@@ -4,6 +4,12 @@ namespace Linq2Azure.VirtualMachines
 {
     public class ConfigurationSet
     {
+        public ConfigurationSet()
+        {
+            InputEndpoints = new List<InputEndpoint>();
+            DisableSshPasswordAuthentication = true;
+        }
+
         public ConfigurationSetType ConfigurationSetType { get; set; }
         public string ComputerName { get; set; }
         public string AdminPassword { get; set; }

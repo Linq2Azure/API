@@ -16,7 +16,7 @@ namespace Linq2Azure.VirtualMachines
         {
 
             var element = new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSet",
-                    new XElement("ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString())
+                    new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString())
                 );
 
             if (ConfigurationSet.InputEndpoints.Any())
@@ -26,10 +26,10 @@ namespace Linq2Azure.VirtualMachines
                 foreach (var input in ConfigurationSet.InputEndpoints)
                 {
                     var inputEndpoint = new XElement(XmlNamespaces.WindowsAzure + "InputEnpoint",
-                            new XElement("LocalPort",input.LocalPort),
-                            new XElement("Port", input.LocalPort),
-                            new XElement("Protocol", input.Protocol.ToString()),
-                            new XElement("Name", input.Name)
+                            new XElement(XmlNamespaces.WindowsAzure + "LocalPort", input.LocalPort),
+                            new XElement(XmlNamespaces.WindowsAzure + "Port", input.LocalPort),
+                            new XElement(XmlNamespaces.WindowsAzure + "Protocol", input.Protocol.ToString()),
+                            new XElement(XmlNamespaces.WindowsAzure + "Name", input.Name)
                         );
                     inputEndpoints.Add(inputEndpoint);
                 }

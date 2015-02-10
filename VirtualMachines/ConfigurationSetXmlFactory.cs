@@ -16,6 +16,7 @@ namespace Linq2Azure.VirtualMachines
                     _builder = new WindowsConfigurationSetBuilder(cfg);
                     break;
                 case ConfigurationSetType.LinuxProvisioningConfiguration:
+                    _builder = new LinuxConfigurationSetBuilder(cfg);
                     break;
                 case ConfigurationSetType.NetworkConfiguration:
                     _builder = new NetworkConfigurationSetBuilder(cfg);

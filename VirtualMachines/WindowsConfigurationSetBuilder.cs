@@ -15,10 +15,11 @@ namespace Linq2Azure.VirtualMachines
         {
 
             var element = new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSet",
-                    new XElement("ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString()),
-                    new XElement("ComputerName", ConfigurationSet.ComputerName),
-                    new XElement("AdminPassword", ConfigurationSet.AdminPassword),
-                    new XElement("EnableAutomaticUpdates",ConfigurationSet.EnableAutomaticUpdates)
+                    new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString()),
+                    new XElement(XmlNamespaces.WindowsAzure + "ComputerName", ConfigurationSet.ComputerName),
+                    new XElement(XmlNamespaces.WindowsAzure + "AdminUsername", "Administrator"),
+                    new XElement(XmlNamespaces.WindowsAzure + "AdminPassword", ConfigurationSet.AdminPassword),
+                    new XElement(XmlNamespaces.WindowsAzure + "EnableAutomaticUpdates", ConfigurationSet.EnableAutomaticUpdates)
                 );
 
             return element;

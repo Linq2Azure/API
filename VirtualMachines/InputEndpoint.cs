@@ -2,7 +2,6 @@
 {
     public class InputEndpoint
     {
-        public string InputEndpoint_ { get; set; }
         public string LoadBalancedEndpointSetName { get; set; }
         public string LocalPort { get; set; }
         public string Name { get; set; }

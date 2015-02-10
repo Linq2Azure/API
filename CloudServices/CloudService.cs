@@ -213,9 +213,16 @@ namespace Linq2Azure.CloudServices
                 .ToArray();
         }
 
-        public IVirtualMachineBuilder CreateVirtualMachine(string blobContainer, Ststring serviceName, string virtualMachineName, string password)
+        public IVirtualMachineBuilder CreateVirtualMachineDeployment(string deploymentName)
         {
-            return new VirtualMachineBuilder(this,blobContainer, serviceName, virtualMachineName, password);
+            return new VirtualMachineBuilder(this, deploymentName);
+        }
+
+        public async Task DeleteDeploymentSlot(string slotName)
+        {
+            var client = GetRestClient("/deploymentslots/" + slotName);
+            var response = await client.DeleteAsync();
+            await Subscription.WaitForOperationCompletionAsync(response);
         }
 
         private static IEnumerable<string> GetRoleSizes(

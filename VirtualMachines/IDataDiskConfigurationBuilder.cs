@@ -2,6 +2,7 @@
 {
     public interface IDataDiskConfigurationBuilder
     {
-        IRoleBuilder AddDisk(HostCaching caching, string label, int size);
+        ISpecificDataDiskConfigurationBuilder AddDisk();
+        IRoleBuilder FinsishedDataDiskConfiguration();
     }
 }

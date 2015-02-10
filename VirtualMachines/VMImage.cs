@@ -31,8 +31,8 @@ namespace Linq2Azure.VirtualMachines
         public string RoleName { get; set; }
         public string Location { get; set; }
         public string AffinityGroup { get; set; }
-        public DateTimeOffset CreateTime { get; set; }
-        public DateTimeOffset ModifiedTime { get; set; }
+        public DateTimeOffset? CreateTime { get; set; }
+        public DateTimeOffset? ModifiedTime { get; set; }
         public string Language { get; set; }
         public string ImageFamily { get; set; }
         public string RecommendedVMSize { get; set; }
@@ -41,7 +41,7 @@ namespace Linq2Azure.VirtualMachines
         public string IconUri { get; set; }
         public string SmalIconUri { get; set; }
         public string PrivacyUri { get; set; }
-        public DateTimeOffset PublishDate { get; set; }
+        public DateTimeOffset? PublishDate { get; set; }
 
     }
 }

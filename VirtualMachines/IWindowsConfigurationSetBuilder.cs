@@ -7,6 +7,7 @@
         IWindowsConfigurationSetBuilder ComputerName(string name);
         IWindowsConfigurationSetBuilder AdminPassword(string password);
         IRoleBuilder AddRole(string roleName);
-        IWindowsConfigurationSetBuilder AddWindowsConfiguration();
+        IVirtualMachineBuilder FinalizeRoles();
+        INetworkConfigurationSetBuilder AddNetworkConfiguration();
     }
 }
