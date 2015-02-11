@@ -25,5 +25,6 @@ namespace Linq2Azure.VirtualMachines
         public string RoleSize { get; set; }
         public bool ProvisionGuessAgent { get; set; }
         public VImageInput VmImageInput { get; set; }
+        public bool OsVersion { get; set; }
     }
 }

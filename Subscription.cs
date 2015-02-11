@@ -41,6 +41,7 @@ namespace Linq2Azure
         public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
         public LatentSequence<VMImage> VirtualMachineImages { get; private set; }
+        public LatentSequence<OSImage> OSImages { get; private set; }
         public LatentSequence<Disk> VirtualMachineDisks { get; private set; }
 
         HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
@@ -92,6 +93,7 @@ namespace Linq2Azure
             ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
             VirtualMachineImages = new LatentSequence<VMImage>(GetVirtualMachinesAsync);
+            OSImages = new LatentSequence<OSImage>(GetOSImagesAsync);
             VirtualMachineDisks = new LatentSequence<Disk>(GetVirtualMachineDisksAsync);
         }
 
@@ -154,6 +156,12 @@ namespace Linq2Azure
         {
             var xe = await GetDatabaseRestClient("services/vmimages").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "VMImage").Select(x => new VMImage(x, this)).ToArray();
+        }
+
+        private async Task<OSImage[]> GetOSImagesAsync()
+        {
+            var xe = await GetDatabaseRestClient("services/images").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "OSImage").Select(x => new OSImage(x, this)).ToArray();
         }
 
         async Task<Disk[]> GetVirtualMachineDisksAsync()

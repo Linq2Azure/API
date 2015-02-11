@@ -1,3 +1,4 @@
+using System;
 using System.Xml.Linq;
 
 namespace Linq2Azure.VirtualMachines
@@ -15,10 +16,17 @@ namespace Linq2Azure.VirtualMachines
         {
             var element = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk",
                 new XElement(XmlNamespaces.WindowsAzure + "HostCaching", DataVirtualHardDisk.HostCaching.ToString()),
-                new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", DataVirtualHardDisk.DiskLabel),
-                new XElement(XmlNamespaces.WindowsAzure + "LogicalSizeInGB", DataVirtualHardDisk.LogicalDiskSizeInGB),
-                new XElement(XmlNamespaces.WindowsAzure + "MediaLink", DataVirtualHardDisk.MediaLink)
+                new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", DataVirtualHardDisk.DiskLabel)
                 );
+
+            if (!String.IsNullOrEmpty(DataVirtualHardDisk.DiskName))
+                element.Add(new XElement(XmlNamespaces.WindowsAzure + "DiskName", DataVirtualHardDisk.DiskName));
+
+            if (DataVirtualHardDisk.LogicalDiskSizeInGB.HasValue)
+                element.Add(new XElement(XmlNamespaces.WindowsAzure + "LogicalDiskSizeInGB",DataVirtualHardDisk.LogicalDiskSizeInGB));
+
+            if (!String.IsNullOrEmpty(DataVirtualHardDisk.MediaLink))
+                element.Add(new XElement(XmlNamespaces.WindowsAzure + "MediaLink", DataVirtualHardDisk.MediaLink));
 
             return element;
         }

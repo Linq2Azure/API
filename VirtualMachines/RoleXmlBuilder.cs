@@ -15,16 +15,22 @@ namespace Linq2Azure.VirtualMachines
 
         public XElement Create()
         {
-            var roleElement = new XElement(XmlNamespaces.WindowsAzure + "Role",
-                new XElement(XmlNamespaces.WindowsAzure + "RoleName", Role.RoleName),
-                new XElement(XmlNamespaces.WindowsAzure + "RoleType", Role.RoleType)
-                );
 
-            if (UsingVMImage())
-            {
+            XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+
+            var roleElement = new XElement(XmlNamespaces.WindowsAzure + "Role",new XAttribute(xsi + "type", "PersistentVMRole"),
+                new XElement(XmlNamespaces.WindowsAzure + "RoleName", Role.RoleName));
+
+            if(Role.OsVersion)
+                roleElement.Add(new XElement("OsVersion", new XAttribute(xsi + "nil", true)));
+
+            roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "RoleType", Role.RoleType));
+
+            if (!String.IsNullOrEmpty(Role.VMImageName))
                 roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "VMImageName", Role.VMImageName));
+
+            if (!String.IsNullOrEmpty(Role.MediaLocation))
                 roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "MediaLocation", Role.MediaLocation));
-            }
 
             if (Role.ConfigurationSets.Any())
             {
@@ -38,7 +44,7 @@ namespace Linq2Azure.VirtualMachines
                 roleElement.Add(configurationSetsElement);
             }
 
-            if (Role.DataVirtualHardDisks.Any() && !(UsingVMImage()))
+            if (Role.DataVirtualHardDisks.Any())
             {
                 var dataVirtualHardDisksElement = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisks");
 
@@ -50,18 +56,13 @@ namespace Linq2Azure.VirtualMachines
                 roleElement.Add(dataVirtualHardDisksElement);
             }
 
-            if (!UsingVMImage())
-            {
-                roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OsVirtualHardDisk).Create());
-            }
+            if (!String.IsNullOrEmpty(Role.OsVirtualHardDisk.DiskLabel))
+                roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OsVirtualHardDisk, Role.ConfigurationSets.Any(x => x.ConfigurationSetType == ConfigurationSetType.WindowsProvisioningConfiguration)).Create());
+
 
             return roleElement;
         }
 
-        private bool UsingVMImage()
-        {
-            return !String.IsNullOrEmpty(Role.VMImageName) || !String.IsNullOrEmpty(Role.MediaLocation);
-        }
 
         private XElement BuildConfigurationSet(ConfigurationSet cfg)
         {

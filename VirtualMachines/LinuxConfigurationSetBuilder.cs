@@ -15,7 +15,9 @@ namespace Linq2Azure.VirtualMachines
         public XElement Create()
         {
 
-            var element = new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSet",
+            XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
+
+            var element = new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSet", new XAttribute(xsi + "type", "LinuxProvisioningConfigurationSet"),
                 new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString()),
                 new XElement(XmlNamespaces.WindowsAzure + "HostName", ConfigurationSet.HostName),
                 new XElement(XmlNamespaces.WindowsAzure + "UserName", ConfigurationSet.UserName),

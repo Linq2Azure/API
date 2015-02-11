@@ -157,12 +157,14 @@
     <Compile Include="VirtualMachines\IOSDiskConfigurationBuilder.cs" />
     <Compile Include="VirtualMachines\IRoleBuilder.cs" />
     <Compile Include="VirtualMachines\IRoleOSVirtualHardDisk.cs" />
+    <Compile Include="VirtualMachines\ISpecificDataDiskConfigurationBuilder.cs" />
     <Compile Include="VirtualMachines\IVirtualMachineBuilder.cs" />
     <Compile Include="VirtualMachines\IWindowsConfigurationSetBuilder.cs" />
     <Compile Include="VirtualMachines\LinuxConfigurationSetBuilder.cs" />
     <Compile Include="VirtualMachines\LoadBalancerProbe.cs" />
     <Compile Include="VirtualMachines\NetworkConfigurationSetBuilder.cs" />
     <Compile Include="VirtualMachines\OSDiskConfiguration.cs" />
+    <Compile Include="VirtualMachines\OSImage.cs" />
     <Compile Include="VirtualMachines\OSVirtualHardDisk.cs" />
     <Compile Include="VirtualMachines\OSVirtualHardDiskXmlBuilder.cs" />
     <Compile Include="VirtualMachines\Protocol.cs" />

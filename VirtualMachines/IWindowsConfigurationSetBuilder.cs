@@ -6,8 +6,10 @@
         IWindowsConfigurationSetBuilder ResetPasswordOnFirstLogon(bool reset);
         IWindowsConfigurationSetBuilder ComputerName(string name);
         IWindowsConfigurationSetBuilder AdminPassword(string password);
+        IWindowsConfigurationSetBuilder AdminUsername(string username);
         IRoleBuilder AddRole(string roleName);
         IVirtualMachineBuilder FinalizeRoles();
         INetworkConfigurationSetBuilder AddNetworkConfiguration();
+        
     }
 }

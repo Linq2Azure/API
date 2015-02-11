@@ -3,12 +3,7 @@
     public class OSVirtualHardDisk
     {
 
-        public OSVirtualHardDisk()
-        {
-            HostCaching = HostCaching.ReadWrite;
-        }
-
-        public HostCaching HostCaching { get; set; }
+        public HostCaching? HostCaching { get; set; }
         public string DiskLabel { get; set; }
         public string DiskName { get; set; }
         public string MediaLink { get; set; }
