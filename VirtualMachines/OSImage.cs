@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Xml.Linq;
 
 namespace Linq2Azure.VirtualMachines
@@ -10,7 +9,6 @@ namespace Linq2Azure.VirtualMachines
         {
             Subscription = subscription;
             xml.HydrateObject(XmlNamespaces.WindowsAzure, this);
-            Debug.WriteLine(xml);
         }
         public Subscription Subscription { get; private set; }
         public string Name { get; set; }

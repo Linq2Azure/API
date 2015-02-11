@@ -100,6 +100,7 @@
     <Compile Include="When_creating_a_linux_virtual_machine.cs" />
     <Compile Include="When_creating_a_linux_virtual_machine_from_predefined_image.cs" />
     <Compile Include="When_creating_a_windows_virtual_machine.cs" />
+    <Compile Include="When_creating_a_windows_virtual_machine_from_predefined_image.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Linq2Azure.csproj">

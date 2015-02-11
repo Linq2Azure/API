@@ -20,11 +20,11 @@ namespace IntegrationTests
 
             await CloudService
                 .CreateVirtualMachineDeployment("UbuntuDeployment")
-                .AddRole("OpenSuse")
+                .AddRole("Ubuntu")
                 .WithSize("Small")
                 .WithOsVerion()
                 .WithOSHardDisk("Ubuntu")
-                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/UbunutuLinux1.vhd")
+                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/UbunutuLinux22.vhd")
                 .WithSourceImageName("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_10-amd64-server-20150202-en-us-30GB")
                 .Continue()
                 .AddLinuxConfiguration()

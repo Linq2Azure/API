@@ -57,7 +57,7 @@ namespace Linq2Azure.VirtualMachines
             }
 
             if (!String.IsNullOrEmpty(Role.OsVirtualHardDisk.DiskLabel))
-                roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OsVirtualHardDisk, Role.ConfigurationSets.Any(x => x.ConfigurationSetType == ConfigurationSetType.WindowsProvisioningConfiguration)).Create());
+                roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OsVirtualHardDisk, Role.OsVersion).Create());
 
 
             return roleElement;

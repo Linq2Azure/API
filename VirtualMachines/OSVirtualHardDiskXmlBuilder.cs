@@ -5,12 +5,12 @@ namespace Linq2Azure.VirtualMachines
 {
     public class OSVirtualHardDiskXmlBuilder
     {
-        private readonly bool _isWindows;
+        private readonly bool _isOsImage;
         public OSVirtualHardDisk OSVirtualHardDisk { get; set; }
 
-        public OSVirtualHardDiskXmlBuilder(OSVirtualHardDisk osVirtualHardDisk, bool isWindows)
+        public OSVirtualHardDiskXmlBuilder(OSVirtualHardDisk osVirtualHardDisk, bool isOsImage)
         {
-            _isWindows = isWindows;
+            _isOsImage = isOsImage;
             OSVirtualHardDisk = osVirtualHardDisk;
         }
 
@@ -28,7 +28,7 @@ namespace Linq2Azure.VirtualMachines
                 element.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", OSVirtualHardDisk.HostCaching));
 
 
-            if (_isWindows)
+            if (!_isOsImage)
             {
                 AddSourceImageName(element);
                 AddMediaLink(element);

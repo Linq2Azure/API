@@ -1,10 +1,10 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationTests
 {
     [TestClass]
-    public class When_creating_a_windows_virtual_machine : VirtualMachineSetup
+    public class When_creating_a_windows_virtual_machine_from_predefined_image : VirtualMachineSetup
     {
 
 
@@ -15,24 +15,20 @@ namespace IntegrationTests
             CreateVirtualMachine().Wait();
         }
 
-        protected override string Location()
-        {
-            return "Australia East";
-        }
-
         public async Task CreateVirtualMachine()
         {
 
             await CloudService
-                .CreateVirtualMachineDeployment("WindowsFromGeneralized")
-                .AddRole("WindowsFromGeneralized")
+                .CreateVirtualMachineDeployment("WinPreDeployment")
+                .AddRole("Windows3")
                 .WithSize("Small")
-                .WithOSHardDisk("Windows1")
-                .WithSourceImageName("CC2Win008R2-os-2015-02-11")
-                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/Windows33.vhd")
+                .WithOsVerion()
+                .WithOSHardDisk("Windows3")
+                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/Windows5.vhd")
+                .WithSourceImageName("03f55de797f546a1b29d1b8d66be687a__Visual-Studio-2013-Community-12.0.31101.0-AzureSDK-2.5-WS2012R2")
                 .Continue()
                 .AddWindowsConfiguration()
-                .ComputerName("Windows1")
+                .ComputerName("Windows3")
                 .AdminUsername("CashConverters")
                 .AdminPassword("CashConverters1")
                 .AddNetworkConfiguration()

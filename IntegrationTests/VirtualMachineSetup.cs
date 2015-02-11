@@ -9,7 +9,7 @@ namespace IntegrationTests
 {
     public class VirtualMachineSetup
     {
-        public const string TestLocation = "Australia East";
+        public const string TestLocation = "West US";
         public Subscription Subscription = TestConstants.Subscription;
         public CloudService CloudService;
 
@@ -19,9 +19,14 @@ namespace IntegrationTests
             Initialize().Wait();
         }
 
+        protected virtual string Location()
+        {
+            return TestLocation;
+        }
+
         private async Task Initialize()
         {
-            CloudService = new CloudService("VM-" + Guid.NewGuid().ToString("N"), TestLocation, LocationType.Region)
+            CloudService = new CloudService("VM-" + Guid.NewGuid().ToString("N"), Location(), LocationType.Region)
             {
                 Description = "Virtual Machine Setup Description"
             };
@@ -40,8 +45,14 @@ namespace IntegrationTests
 
         public async Task CleanUp()
         {
-            // await CloudService.DeleteDeploymentSlot("Production");
-            //await CloudService.DeleteAsync();
+           // var deployments = await CloudService.Deployments.AsTask();
+
+           // foreach (var deployment in deployments)
+           // {
+           //     await deployment.DeleteAsync();
+           // }
+
+           //await CloudService.DeleteAsync();
         }
     }
 }

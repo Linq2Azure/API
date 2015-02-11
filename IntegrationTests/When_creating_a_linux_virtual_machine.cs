@@ -7,7 +7,10 @@ namespace IntegrationTests
     public class When_creating_a_linux_virtual_machine : VirtualMachineSetup
     {
 
-        
+        protected override string Location()
+        {
+            return "West US";
+        }
 
         [TestMethod]
         public void It_should_create_a_new_virtual_machine()
@@ -23,8 +26,8 @@ namespace IntegrationTests
                 .AddRole("OpenSuse2")
                 .WithSize("Small")
                 .WithOSHardDisk("OpenSuse")
-                .WithDiskName("Main2")
-                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/server2221.vhd")
+                .WithDiskName("Main22")
+                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/servera2221.vhd")
                 .WithSourceImageName("openSUSE-12-3-for-Windows-Azure")
                 .Continue()
                 .WithDataDiskConfiguration("ExtraDisk")
@@ -32,7 +35,7 @@ namespace IntegrationTests
                 .WithDataDiskLabel("Backup")
                 .WithDataDiskLogicalSizeInGB(3)
                 .WithDataDiskLun(0)
-                .WithDataDiskMediaLink("https://linq2azuredev.blob.core.windows.net/vms/sd1backup221.vhd")
+                .WithDataDiskMediaLink("https://linq2azuredev.blob.core.windows.net/vms/sd1backupa221.vhd")
                 .FinishedAddingDataDisk()
                 .FinsishedDataDiskConfiguration()
                 .AddLinuxConfiguration()
