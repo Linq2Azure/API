@@ -159,6 +159,7 @@
     <Compile Include="VirtualMachines\Hostname.cs" />
     <Compile Include="VirtualMachines\IConfigurationSetBuilder.cs" />
     <Compile Include="VirtualMachines\IDataDiskConfigurationBuilder.cs" />
+    <Compile Include="VirtualMachines\IgnoreAttribute.cs" />
     <Compile Include="VirtualMachines\IGuidedSpecificDataDiskConfiguration.cs" />
     <Compile Include="VirtualMachines\ILinuxConfigurationGuided.cs" />
     <Compile Include="VirtualMachines\ILinuxConfigurationSetBuilder.cs" />

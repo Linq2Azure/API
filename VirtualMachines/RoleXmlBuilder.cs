@@ -51,8 +51,8 @@ namespace Linq2Azure.VirtualMachines
                 roleElement.Add(dataVirtualHardDisksElement);
             }
 
-            if (!String.IsNullOrEmpty(Role.OsVirtualHardDisk.DiskLabel))
-                roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OsVirtualHardDisk, Role.OsVersion).Create());
+            if (!String.IsNullOrEmpty(Role.OSVirtualHardDisk.DiskLabel))
+                roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OSVirtualHardDisk, Role.OsVersion).Create());
 
             roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "RoleSize", Role.RoleSize.ToString()));
 

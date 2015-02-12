@@ -18,14 +18,13 @@ namespace Linq2Azure.VirtualMachines
         {
             var element = new XElement(XmlNamespaces.WindowsAzure + "OSVirtualHardDisk");
 
-            if(!String.IsNullOrEmpty(OSVirtualHardDisk.DiskLabel))
+            if (!String.IsNullOrEmpty(OSVirtualHardDisk.DiskLabel))
                 element.Add(new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", OSVirtualHardDisk.DiskLabel));
 
-            if(!String.IsNullOrEmpty(OSVirtualHardDisk.DiskName))
+            if (!String.IsNullOrEmpty(OSVirtualHardDisk.DiskName))
                 element.Add(new XElement(XmlNamespaces.WindowsAzure + "DiskName", OSVirtualHardDisk.DiskName));
 
-            if(OSVirtualHardDisk.HostCaching.HasValue)
-                element.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", OSVirtualHardDisk.HostCaching));
+            element.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", OSVirtualHardDisk.HostCaching));
 
 
             if (!_isOsImage)

@@ -6,6 +6,8 @@
         public int LocalPort { get; set; }
         public string Name { get; set; }
         public int Port { get; set; }
+
+        [Traverse]
         public LoadBalancerProbe LoadBalancerProbe { get; set; }
         public Protocol Protocol { get; set; }
         public bool EnableDirectServerReturn { get; set; }

@@ -99,7 +99,7 @@ namespace Linq2Azure.VirtualMachines
 
         public IRoleOSVirtualHardDisk WithOSHardDisk(OperationSystemDiskLabel label)
         {
-            GetCurrentRole().OsVirtualHardDisk = new OSVirtualHardDisk
+            GetCurrentRole().OSVirtualHardDisk = new OSVirtualHardDisk
             {
                 DiskLabel = label.Label
             };
@@ -108,7 +108,7 @@ namespace Linq2Azure.VirtualMachines
 
         public ISpecifyMediaForOS WithDiskName(string name)
         {
-            GetCurrentRole().OsVirtualHardDisk.DiskName = name;
+            GetCurrentRole().OSVirtualHardDisk.DiskName = name;
             return this;
         }
 
@@ -120,16 +120,16 @@ namespace Linq2Azure.VirtualMachines
         ISpecifyOperatingSystem ISpecifyMediaForOS.WithOSMedia(Os operatingSystem, OsDriveBlobStoredAt operatingSystemLocation)
         {
             GetCurrentRole().OsVersion = true;
-            GetCurrentRole().OsVirtualHardDisk.SourceImageName = operatingSystem.OsName;
-            GetCurrentRole().OsVirtualHardDisk.MediaLink = operatingSystemLocation.Location.ToString();
+            GetCurrentRole().OSVirtualHardDisk.SourceImageName = operatingSystem.OsName;
+            GetCurrentRole().OSVirtualHardDisk.MediaLink = operatingSystemLocation.Location.ToString();
             return this;
         }
 
         ISpecifyOperatingSystem ISpecifyMediaForOS.WithImageMedia(ImageName image, OsDriveBlobStoredAt operatingSystemDriveBlobStoredAt)
         {
             GetCurrentRole().OsVersion = false;
-            GetCurrentRole().OsVirtualHardDisk.SourceImageName = image.OsName;
-            GetCurrentRole().OsVirtualHardDisk.MediaLink = operatingSystemDriveBlobStoredAt.Location.ToString();
+            GetCurrentRole().OSVirtualHardDisk.SourceImageName = image.OsName;
+            GetCurrentRole().OSVirtualHardDisk.MediaLink = operatingSystemDriveBlobStoredAt.Location.ToString();
             return this;
         }
 

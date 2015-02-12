@@ -29,7 +29,50 @@ namespace Linq2Azure
                 }
 
                 object value = null;
-                if (prop.PropertyType == typeof(string))
+                if (Attribute.IsDefined(prop, typeof (TraverseAttribute)))
+                {
+
+                 //   Debug.WriteLine(prop.Name + " Traverse");
+
+                    var instance = Activator.CreateInstance(prop.PropertyType);
+
+                    if (prop.PropertyType.IsGenericType)
+                    {
+
+                      //  Debug.WriteLine(prop.Name + " Generic");
+
+                        var genericArguments = prop.PropertyType.GetGenericArguments();
+                        if (typeof(ICollection<>).MakeGenericType(genericArguments).IsAssignableFrom(prop.PropertyType))
+                        {
+
+                           // Debug.WriteLine(prop.Name + " Collection");
+
+                            var subProps = child.Elements();
+
+                           // Debug.WriteLine(subProps.Count() + " Count Sub Props");
+
+                            foreach (var item in subProps)
+                            {
+                                var obj = Activator.CreateInstance(genericArguments.First());
+                                HydrateObject(item, ns, obj);
+                                instance.GetType().GetMethod("Add").Invoke(instance, new object[]{obj});
+                            }
+                        }
+
+                    }
+                    
+               
+
+                    HydrateObject(child,ns,instance);
+                    prop.SetValue(target, instance);
+                    continue;
+                }else if (Attribute.IsDefined(prop, typeof (IgnoreAttribute)))
+                {
+                   // Debug.WriteLine(prop.Name + " Ignored");
+                    continue;
+                    
+                }
+                else if  (prop.PropertyType == typeof(string))
                     value = child.Value;
                 else if (prop.PropertyType == typeof(Uri))
                     value = string.IsNullOrWhiteSpace(child.Value) ? null : new Uri(child.Value);
@@ -60,29 +103,6 @@ namespace Linq2Azure
                 }
                 else if (prop.PropertyType.IsEnum)
                     value = Enum.Parse(prop.PropertyType, child.Value, true);
-                else if (Attribute.IsDefined(prop, typeof (TraverseAttribute)))
-                {
-                    var instance = Activator.CreateInstance(prop.PropertyType);
-
-                    if (prop.PropertyType.IsGenericType)
-                    {
-                        var genericArguments = prop.PropertyType.GetGenericArguments();
-                        if (typeof(ICollection<>).MakeGenericType(genericArguments).IsAssignableFrom(prop.PropertyType))
-                        {
-                            foreach (var item in child.Elements(prop.Name))
-                            {
-                                var obj = Activator.CreateInstance(genericArguments.First());
-                                HydrateObject(item, ns, obj);
-                                instance.GetType().GetMethod("Add").Invoke(instance, new object[]{obj});
-                            }
-                        }
-
-                    }
-                    
-                    HydrateObject(child,ns,instance);
-                    prop.SetValue(target, instance);
-                    continue;
-                }
                 else
                     continue;
 
