@@ -11,6 +11,7 @@ namespace Linq2Azure.VirtualMachines
             DataVirtualHardDisks = new List<DataVirtualHardDisk>();
             OsVirtualHardDisk = new OSVirtualHardDisk();
             VmImageInput = new VImageInput();
+            RoleSize = RoleSize.Small;
         }
 
         public string RoleName { get; set; }
@@ -22,7 +23,7 @@ namespace Linq2Azure.VirtualMachines
         public List<ResourceExtensionReference> ResourceExtensionReferences { get; set; }
         public List<DataVirtualHardDisk> DataVirtualHardDisks { get; set; }
         public OSVirtualHardDisk OsVirtualHardDisk { get; set; }
-        public string RoleSize { get; set; }
+        public RoleSize RoleSize { get; set; }
         public bool ProvisionGuessAgent { get; set; }
         public VImageInput VmImageInput { get; set; }
         public bool OsVersion { get; set; }

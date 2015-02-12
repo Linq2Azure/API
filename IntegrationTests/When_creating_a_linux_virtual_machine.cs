@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Linq2Azure.VirtualMachines;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationTests
@@ -24,30 +26,18 @@ namespace IntegrationTests
             await CloudService
                 .CreateVirtualMachineDeployment("SuseDeployment2")
                 .AddRole("OpenSuse2")
-                .WithSize("Small")
-                .WithOSHardDisk("OpenSuse")
+                .WithOSHardDisk(OperationSystemDiskLabel.Is("OpenSuse"))
                 .WithDiskName("Main22")
-                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/servera2221.vhd")
-                .WithSourceImageName("openSUSE-12-3-for-Windows-Azure")
-                .Continue()
-                .WithDataDiskConfiguration("ExtraDisk")
-                .AddDisk()
-                .WithDataDiskLabel("Backup")
-                .WithDataDiskLogicalSizeInGB(3)
-                .WithDataDiskLun(0)
-                .WithDataDiskMediaLink("https://linq2azuredev.blob.core.windows.net/vms/sd1backupa221.vhd")
-                .FinishedAddingDataDisk()
-                .FinsishedDataDiskConfiguration()
-                .AddLinuxConfiguration()
-                .WithComputerName("AwesomePC2")
-                .WithSSHEnabled()
-                .WithUserName("admin")
-                .WithUserPassword("Blair@015!")
-                .WithHostname("ccopensuse2")
+                .WithOSMedia(Os.Named("openSUSE-12-3-for-Windows-Azure"), 
+                             OsDriveBlobStoredAt.LocatedAt(new Uri("https://linq2azuredev.blob.core.windows.net/vms/servera2221.vhd")))
+                .AddLinuxConfiguration(Hostname.Is("OpenSuseCC"), Administrator.Is("admin"), Password.Is("CashConverters1!"))
                 .AddNetworkConfiguration()
                 .AddSSH()
                 .AddWebPort()
-                .FinalizeRoles()
+                .AddDisk(DiskLabel.Is("ExtraDisk"))
+                .IsNew()
+                .StoredAt(DriveStoredAt.LocatedAt(new Uri("https://linq2azuredev.blob.core.windows.net/vms/sd1backupa221.vhd")))
+                .WithAdditionalDiskSettings(x => x.SizeInGB = 3)
                 .Provision();
         }
 

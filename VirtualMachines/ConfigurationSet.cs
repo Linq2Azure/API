@@ -29,6 +29,7 @@ namespace Linq2Azure.VirtualMachines
         public List<InputEndpoint> InputEndpoints { get; set; }
         public List<string> SubnetNames { get; set; }
         public string StaticVirtualNetworkIPAddress { get; set; }
-        public List<PublicIP> PublicIPs { get; set; } 
+        public List<PublicIP> PublicIPs { get; set; }
+        public bool ResetPasswordOnFirstLogin { get; set; }
     }
 }

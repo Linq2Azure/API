@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Linq2Azure.VirtualMachines;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationTests
@@ -21,20 +23,19 @@ namespace IntegrationTests
             await CloudService
                 .CreateVirtualMachineDeployment("WinPreDeployment")
                 .AddRole("Windows3")
-                .WithSize("Small")
-                .WithOsVerion()
-                .WithOSHardDisk("Windows3")
-                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/Windows5.vhd")
-                .WithSourceImageName("03f55de797f546a1b29d1b8d66be687a__Visual-Studio-2013-Community-12.0.31101.0-AzureSDK-2.5-WS2012R2")
-                .Continue()
-                .AddWindowsConfiguration()
-                .ComputerName("Windows3")
-                .AdminUsername("CashConverters")
-                .AdminPassword("CashConverters1")
+                .WithOSHardDisk(OperationSystemDiskLabel.Is("Windows3"))
+                .WithDiskName("Windows3")
+                .WithOSMedia(Os.Named("03f55de797f546a1b29d1b8d66be687a__Visual-Studio-2013-Community-12.0.31101.0-AzureSDK-2.5-WS2012R2"),
+                             OsDriveBlobStoredAt.LocatedAt(new Uri("https://linq2azuredev.blob.core.windows.net/vms/Windows5.vhd")))
+                .AddWindowsConfiguration(ComputerName.Is("WindowsMachine"),Administrator.Is("CashConverters"),Password.Is("CashConverters1"))
+                .WithAdditionalWindowsSettings(x =>
+                {
+                    x.EnableAutomaticUpdates = true;
+                    x.ResetPasswordOnFirstLogin = true;
+                })
                 .AddNetworkConfiguration()
                 .AddRemoteDesktop()
                 .AddWebPort()
-                .FinalizeRoles()
                 .Provision();
         }
 

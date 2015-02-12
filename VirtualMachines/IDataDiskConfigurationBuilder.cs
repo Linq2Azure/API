@@ -2,7 +2,8 @@
 {
     public interface IDataDiskConfigurationBuilder
     {
-        ISpecificDataDiskConfigurationBuilder AddDisk();
-        IRoleBuilder FinsishedDataDiskConfiguration();
+        ISpecificDataDiskConfigurationBuilder Existing(string name);
+        ISpecificDataDiskConfigurationBuilder IsNew();
+
     }
 }

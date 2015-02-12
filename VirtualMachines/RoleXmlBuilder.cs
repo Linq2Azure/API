@@ -25,13 +25,8 @@ namespace Linq2Azure.VirtualMachines
                 roleElement.Add(new XElement("OsVersion", new XAttribute(xsi + "nil", true)));
 
             roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "RoleType", Role.RoleType));
-
-            if (!String.IsNullOrEmpty(Role.VMImageName))
-                roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "VMImageName", Role.VMImageName));
-
-            if (!String.IsNullOrEmpty(Role.MediaLocation))
-                roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "MediaLocation", Role.MediaLocation));
-
+            
+            
             if (Role.ConfigurationSets.Any())
             {
                 var configurationSetsElement = new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSets");
@@ -59,6 +54,7 @@ namespace Linq2Azure.VirtualMachines
             if (!String.IsNullOrEmpty(Role.OsVirtualHardDisk.DiskLabel))
                 roleElement.Add(new OSVirtualHardDiskXmlBuilder(Role.OsVirtualHardDisk, Role.OsVersion).Create());
 
+            roleElement.Add(new XElement(XmlNamespaces.WindowsAzure + "RoleSize", Role.RoleSize.ToString()));
 
             return roleElement;
         }

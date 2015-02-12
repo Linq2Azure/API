@@ -1,15 +1,10 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+
+namespace Linq2Azure.VirtualMachines
 {
     public interface IWindowsConfigurationSetBuilder
     {
-        IWindowsConfigurationSetBuilder EnableAutomaticUpdates(bool enable);
-        IWindowsConfigurationSetBuilder ResetPasswordOnFirstLogon(bool reset);
-        IWindowsConfigurationSetBuilder ComputerName(string name);
-        IWindowsConfigurationSetBuilder AdminPassword(string password);
-        IWindowsConfigurationSetBuilder AdminUsername(string username);
-        IRoleBuilder AddRole(string roleName);
-        IVirtualMachineBuilder FinalizeRoles();
+        IWindowsConfigurationGuidedConfiguration WithAdditionalWindowsSettings(Action<AdditionalWindowsSettings> setting);
         INetworkConfigurationSetBuilder AddNetworkConfiguration();
-        
     }
 }

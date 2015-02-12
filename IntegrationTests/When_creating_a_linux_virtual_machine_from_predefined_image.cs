@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Linq2Azure.VirtualMachines;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace IntegrationTests
@@ -21,22 +23,15 @@ namespace IntegrationTests
             await CloudService
                 .CreateVirtualMachineDeployment("UbuntuDeployment")
                 .AddRole("Ubuntu")
-                .WithSize("Small")
-                .WithOsVerion()
-                .WithOSHardDisk("Ubuntu")
-                .WithMediaLink("https://linq2azuredev.blob.core.windows.net/vms/UbunutuLinux22.vhd")
-                .WithSourceImageName("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_10-amd64-server-20150202-en-us-30GB")
-                .Continue()
-                .AddLinuxConfiguration()
-                .WithComputerName("CCUbuntu01")
-                .WithSSHEnabled()
-                .WithUserName("admin")
-                .WithUserPassword("Blair@015!")
-                .WithHostname("CCUbuntu01")
+                .WithOSHardDisk(OperationSystemDiskLabel.Is("Ubuntu"))
+                .WithDiskName("Ubuntu")
+                .WithOSMedia(Os.Named("b39f27a8b8c64d52b05eac6a62ebad85__Ubuntu-14_10-amd64-server-20150202-en-us-30GB"),
+                             OsDriveBlobStoredAt.LocatedAt(new Uri("https://linq2azuredev.blob.core.windows.net/vms/UbunutuLinux22.vhd")))
+                .AddLinuxConfiguration(Hostname.Is("ubuntumachine"),Administrator.Is("cashconverters"), Password.Is("CashConverters1!"))
+                .WithAdditionalLinuxSettings(x => x.EnableSSH = true)
                 .AddNetworkConfiguration()
                 .AddSSH()
                 .AddWebPort()
-                .FinalizeRoles()
                 .Provision();
         }
 

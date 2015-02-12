@@ -1,4 +1,6 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System.Threading.Tasks;
+
+namespace Linq2Azure.VirtualMachines
 {
     public interface INetworkConfigurationSetBuilder
     {
@@ -8,7 +10,8 @@
         INetworkConfigurationSetBuilder AddPowershell();
         INetworkConfigurationSetBuilder AddCustomPort(string name, Protocol protocol, int localPort, int remotePort);
         INetworkConfigurationSetBuilder AddCustomPort(string name, Protocol protocol, int localPort);
-        IRoleBuilder AddRole(string roleName);
-        IVirtualMachineBuilder FinalizeRoles();
+        IRoleBuilder AddRole(string roleName, RoleSize roleSize);
+        IDataDiskConfigurationBuilder AddDisk(DiskLabel label);
+        Task Provision();
     }
 }
