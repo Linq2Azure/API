@@ -45,14 +45,14 @@ namespace IntegrationTests
 
         public async Task CleanUp()
         {
-           // var deployments = await CloudService.Deployments.AsTask();
+            var deployments = await CloudService.Deployments.AsTask();
 
-           // foreach (var deployment in deployments)
-           // {
-           //     await deployment.DeleteAsync();
-           // }
+            foreach (var deployment in deployments)
+            {
+                await deployment.DeleteAsync();
+            }
 
-           //await CloudService.DeleteAsync();
+            await CloudService.DeleteAsync();
         }
     }
 }
