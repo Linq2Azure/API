@@ -103,6 +103,8 @@ namespace Linq2Azure
         public Task CreateStorageAccountAsync(StorageAccount storageAccount) { return storageAccount.CreateAsync(this); }
         public Task CreateAffinityGroupAsync(AffinityGroup affinityGroup) { return affinityGroup.CreateAsync(this); }
         public Task CreateReservedIpAsync(ReservedIp reservedIp) { return reservedIp.CreateAsync(this); }
+        public Task CreateOsImageAsync(OSImage osImage) { return osImage.CreateOsImageAsync(this); }
+        public Task CreateDiskAsync(string label, Disk disk) { return disk.CreateDiskAsync(this, label); }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
@@ -154,7 +156,7 @@ namespace Linq2Azure
 
         async Task<VMImage[]> GetVirtualMachinesAsync()
         {
-            var xe = await GetDatabaseRestClient("services/vmimages").GetXmlAsync();
+            var xe = await GetDatabaseRestClient("services/vmimages?category=User").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "VMImage").Select(x => new VMImage(x, this)).ToArray();
         }
 

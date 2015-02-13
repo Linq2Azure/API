@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.Xml.Linq;
+using Linq2Azure.CloudServices;
 
 namespace Linq2Azure.VirtualMachines
 {
     public class Role
     {
+        
         public Role()
         {
             ConfigurationSets = new List<ConfigurationSet>();
@@ -20,11 +21,15 @@ namespace Linq2Azure.VirtualMachines
             : this()
         {
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
-         //   Debug.WriteLine(element);
         }
 
         public string RoleName { get; set; }
         public string RoleType { get; set; }
+
+        public bool IsVirtualMachineRole()
+        {
+            return RoleType == "PersistentVMRole";
+        }
 
         [Traverse]
         public List<ConfigurationSet> ConfigurationSets { get; set; }
@@ -32,7 +37,7 @@ namespace Linq2Azure.VirtualMachines
         public string MediaLocation { get; set; }
         public string AvailabilitySetName { get; set; }
 
-       // [Traverse]
+        [Traverse]
         public List<ResourceExtensionReference> ResourceExtensionReferences { get; set; }
 
         [Traverse]
@@ -43,7 +48,7 @@ namespace Linq2Azure.VirtualMachines
         public RoleSize RoleSize { get; set; }
         public bool ProvisionGuessAgent { get; set; }
 
-        //[Traverse]
+        [Traverse]
         public VImageInput VmImageInput { get; set; }
 
         [Ignore]

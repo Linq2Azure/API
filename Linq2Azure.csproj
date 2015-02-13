@@ -182,6 +182,8 @@
     <Compile Include="VirtualMachines\OSDiskConfiguration.cs" />
     <Compile Include="VirtualMachines\OsDriveBlobStoredAt.cs" />
     <Compile Include="VirtualMachines\OSImage.cs" />
+    <Compile Include="VirtualMachines\OSState.cs" />
+    <Compile Include="VirtualMachines\OsType.cs" />
     <Compile Include="VirtualMachines\OSVirtualHardDisk.cs" />
     <Compile Include="VirtualMachines\OSVirtualHardDiskXmlBuilder.cs" />
     <Compile Include="VirtualMachines\Password.cs" />

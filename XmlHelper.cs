@@ -31,26 +31,14 @@ namespace Linq2Azure
                 object value = null;
                 if (Attribute.IsDefined(prop, typeof (TraverseAttribute)))
                 {
-
-                 //   Debug.WriteLine(prop.Name + " Traverse");
-
                     var instance = Activator.CreateInstance(prop.PropertyType);
 
                     if (prop.PropertyType.IsGenericType)
                     {
-
-                      //  Debug.WriteLine(prop.Name + " Generic");
-
                         var genericArguments = prop.PropertyType.GetGenericArguments();
                         if (typeof(ICollection<>).MakeGenericType(genericArguments).IsAssignableFrom(prop.PropertyType))
                         {
-
-                           // Debug.WriteLine(prop.Name + " Collection");
-
                             var subProps = child.Elements();
-
-                           // Debug.WriteLine(subProps.Count() + " Count Sub Props");
-
                             foreach (var item in subProps)
                             {
                                 var obj = Activator.CreateInstance(genericArguments.First());
@@ -68,9 +56,7 @@ namespace Linq2Azure
                     continue;
                 }else if (Attribute.IsDefined(prop, typeof (IgnoreAttribute)))
                 {
-                   // Debug.WriteLine(prop.Name + " Ignored");
                     continue;
-                    
                 }
                 else if  (prop.PropertyType == typeof(string))
                     value = child.Value;
