@@ -135,6 +135,7 @@
     <Compile Include="TrafficManagement\TrafficManagerMonitor.cs" />
     <Compile Include="TrafficManagement\TrafficManagerPolicy.cs" />
     <Compile Include="TrafficManagement\TrafficManagerProfile.cs" />
+    <Compile Include="VirtualMachines\AddDnsServer.cs" />
     <Compile Include="VirtualMachines\AdditionalDiskSettings.cs" />
     <Compile Include="VirtualMachines\AdditionaLinuxSettings.cs" />
     <Compile Include="VirtualMachines\AdditionalUnattendedContent.cs" />
@@ -150,9 +151,11 @@
     <Compile Include="VirtualMachines\DataDiskConfiguration.cs" />
     <Compile Include="VirtualMachines\DataVirtualHardDisk.cs" />
     <Compile Include="VirtualMachines\DataVirtualHardDiskXmlBuilder.cs" />
+    <Compile Include="VirtualMachines\DeleteDnsServer.cs" />
     <Compile Include="VirtualMachines\Deployment.cs" />
     <Compile Include="VirtualMachines\Disk.cs" />
     <Compile Include="VirtualMachines\DiskLabel.cs" />
+    <Compile Include="VirtualMachines\Dns.cs" />
     <Compile Include="VirtualMachines\DnsServer.cs" />
     <Compile Include="VirtualMachines\DomainJoin.cs" />
     <Compile Include="VirtualMachines\DriveStoredAt.cs" />

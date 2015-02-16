@@ -60,6 +60,16 @@ namespace Linq2Azure.CloudServices
             PopulateFromXml(element);
         }
 
+        public Task AddDnsServerAsync(DnsServer dnsServer)
+        {
+            return new AddDnsServer().AddDnsServerAsync( GetCloudService(), Name, dnsServer);
+        }
+
+        public Task DeleteDnsServerAsync(DnsServer dnsServer)
+        {
+            return new DeleteDnsServer().AddDnsServerAsync(GetCloudService(), Name, dnsServer);
+        }
+
         public CloudService GetCloudService()
         {
             return Parent;

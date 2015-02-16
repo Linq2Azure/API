@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Threading.Tasks;
 using Linq2Azure.CloudServices;
 
 namespace Linq2Azure.VirtualMachines
@@ -37,6 +38,16 @@ namespace Linq2Azure.VirtualMachines
             }
         }
 
+        public Task AddDnsServerAsync(DnsServer dnsServer)
+        {
+           return new AddDnsServer().AddDnsServerAsync(CloudService, Name, dnsServer);
+        }
+
+        public Task DeleteDnsServerAsync(DnsServer dnsServer)
+        {
+            return new DeleteDnsServer().AddDnsServerAsync(CloudService, Name, dnsServer);
+        }
+
         public CloudService GetCloudService()
         {
             return CloudService;
@@ -47,6 +58,9 @@ namespace Linq2Azure.VirtualMachines
         public DeploymentSlot Slot { get; private set; }
         public string Label { get; private set; }
         public List<Role> RoleList { get; private set; }
+
+        [Traverse]
+        public Dns Dns { get; private set; }
         public string VirtualNetworkName { get; private set; }
         public string ReservedIPName { get; private set; }
     }

@@ -38,21 +38,6 @@ namespace Linq2Azure.VirtualMachines
             RoleSize = roleSize;
         }
 
-        public async Task AddDnsServer(DnsServer dnsServer)
-        {
-
-            Contract.Requires(dnsServer != null);
-
-            var suffix = Deployment.Name + "/dnsservers/";
-            var content = new XElement(XmlNamespaces.WindowsAzure + "DnsServer");
-            content.Add(new XElement(XmlNamespaces.WindowsAzure + "Name", dnsServer.Name));
-            content.Add(new XElement(XmlNamespaces.WindowsAzure + "Address", dnsServer.Address.ToString()));
-
-            var client = GetRestClient(suffix);
-            var response = await client.PostAsync(content);
-            await Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
-        }
-
         public async Task DeleteVirtualMachineAsync(bool removeAssociatedDisksAndBlobs)
         {
            
