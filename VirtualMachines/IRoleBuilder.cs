@@ -2,6 +2,6 @@
 {
     public interface IRoleBuilder
     {
-        IRoleOSVirtualHardDisk WithOSHardDisk(OperationSystemDiskLabel label);
+        IRoleOSVirtualHardDisk WithOSHardDisk(OperationSystemDiskLabel label, HostCaching caching = HostCaching.None);
     }
 }

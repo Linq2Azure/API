@@ -1,4 +1,7 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class DataDiskConfiguration
     {
@@ -10,11 +13,25 @@
             LogicalDiskSizeInGB = 1;
         }
 
-        public string Name { get; set; }
-        public HostCaching HostCaching { get; set; }
-        public int Lun { get; set; }
-        public string MediaLink { get; set; }
-        public int LogicalDiskSizeInGB { get; set; }
-        public string IOType { get; set; }
+        internal DataDiskConfiguration(HostCaching caching, string name, int lun, string mediaLink, int logicalDiskSizeInGb)
+        {
+
+            Contract.Requires(logicalDiskSizeInGb > 0);
+            Contract.Requires(lun >= 0 && lun <= 31);
+            Contract.Requires(!String.IsNullOrEmpty(mediaLink));
+
+            HostCaching = caching;
+            Name = name;
+            Lun = lun;
+            MediaLink = mediaLink;
+            LogicalDiskSizeInGB = logicalDiskSizeInGb;
+        }
+
+        public string Name { get; private set; }
+        public HostCaching HostCaching { get; private set; }
+        public int Lun { get; private set; }
+        public string MediaLink { get; private set; }
+        public int LogicalDiskSizeInGB { get; private set; }
+        public string IOType { get; private set; }
     }
 }

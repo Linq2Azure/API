@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Contracts;
 using System.Xml.Linq;
 
 namespace Linq2Azure.VirtualMachines
@@ -10,6 +11,9 @@ namespace Linq2Azure.VirtualMachines
 
         public ConfigurationSetXmlFactory(ConfigurationSet cfg)
         {
+
+            Contract.Requires(cfg != null);
+
             switch (cfg.ConfigurationSetType)
             {
                 case ConfigurationSetType.WindowsProvisioningConfiguration:

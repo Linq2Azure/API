@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 
 namespace Linq2Azure.VirtualMachines
 {
@@ -11,6 +12,7 @@ namespace Linq2Azure.VirtualMachines
 
         public static DriveStoredAt LocatedAt(Uri location)
         {
+            Contract.Requires(location != null);
             return new DriveStoredAt(location);
         }
 

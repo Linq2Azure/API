@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http;
@@ -10,7 +9,7 @@ using Linq2Azure.VirtualMachines;
 
 namespace Linq2Azure.CloudServices
 {
-    public class Deployment
+    public class Deployment : IDeployment
     {
         public string Name { get; private set; }
         public string Url { get; private set; }
@@ -61,17 +60,25 @@ namespace Linq2Azure.CloudServices
             PopulateFromXml(element);
         }
 
+        public CloudService GetCloudService()
+        {
+            return Parent;
+        }
+
+        public Lazy<bool> IsVirtualMachineDeployment
+        {
+            get { return new Lazy<bool>(() => RoleList.Any(x => x.IsVirtualMachineRole()));  }
+        }
+
         void PopulateFromXml(XElement element)
         {
-
-
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
             Slot = (DeploymentSlot)Enum.Parse(typeof(DeploymentSlot), (string)element.Element(XmlNamespaces.WindowsAzure + "DeploymentSlot"), true);
             if (!string.IsNullOrEmpty(Label)) Label = Label.FromBase64String();
 
             var roleListElement = element.Element(XmlNamespaces.WindowsAzure + "RoleList");
             if (roleListElement != null)
-                RoleList.AddRange(roleListElement.Elements(XmlNamespaces.WindowsAzure + "Role").Select(x => new Role(x)));
+                RoleList.AddRange(roleListElement.Elements(XmlNamespaces.WindowsAzure + "Role").Select(x => new Role(this, x)));
 
 
             Configuration = new ServiceConfiguration(XElement.Parse(element.Element(XmlNamespaces.WindowsAzure + "Configuration").Value.FromBase64String()));

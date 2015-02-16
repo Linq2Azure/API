@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Threading.Tasks;
 using Linq2Azure.CloudServices;
@@ -9,26 +10,20 @@ namespace Linq2Azure.VirtualMachines
                                          INetworkConfigurationSetBuilder, ILinuxConfigurationSetBuilder,ILinuxConfigurationGuided , IRoleOSVirtualHardDisk, IDataDiskConfigurationBuilder,
                                          ISpecificDataDiskConfigurationBuilder, IGuidedSpecificDataDiskConfiguration, ISpecifyOperatingSystem
     {
-        private readonly CloudService _cloudService;
+
         public Deployment Deployment { get; set; }
 
         public VirtualMachineBuilder(CloudService cloudService, string deploymentName)
         {
-            _cloudService = cloudService;
-            Deployment = new Deployment
-            {
-                DeploymentSlot = "Production",
-                Name = deploymentName,
-                Label = deploymentName
-            };
+            Deployment = new Deployment(cloudService, DeploymentSlot.Production, deploymentName, deploymentName);
         }
 
         #region Helpers
 
         private Role GetCurrentRole()
         {
-            if (!Deployment.RoleList.Any())
-                return null;
+            Contract.Requires(Deployment != null);
+            Contract.Requires(Deployment.RoleList.Any());
 
             return Deployment.RoleList[Deployment.RoleList.Count - 1];
         }
@@ -37,11 +32,7 @@ namespace Linq2Azure.VirtualMachines
         {
             var currentRole = GetCurrentRole();
 
-            if (currentRole == null)
-                return null;
-
-            if (!currentRole.ConfigurationSets.Any())
-                return null;
+            Contract.Requires(currentRole.ConfigurationSets.Any());
 
             return currentRole.ConfigurationSets[currentRole.ConfigurationSets.Count - 1];
         }
@@ -51,19 +42,15 @@ namespace Linq2Azure.VirtualMachines
 
             var currentRole = GetCurrentRole();
 
-            if (currentRole == null)
-                return null;
-
-            if (!currentRole.DataVirtualHardDisks.Any())
-                return null;
+            Contract.Requires(currentRole.DataVirtualHardDisks.Any());
 
             return Deployment.RoleList[Deployment.RoleList.Count - 1].DataVirtualHardDisks[currentRole.DataVirtualHardDisks.Count - 1];
         }
 
         private AzureRestClient GetRestClient()
         {
-            var servicePath = "services/hostedservices/" + _cloudService.Name + "/deployments";
-            var client = _cloudService.Subscription.GetDatabaseRestClient(servicePath);
+            var servicePath = "services/hostedservices/" + Deployment.CloudService.Name + "/deployments";
+            var client = Deployment.CloudService.Subscription.GetDatabaseRestClient(servicePath);
             return client;
         }
 
@@ -73,16 +60,7 @@ namespace Linq2Azure.VirtualMachines
 
         public IRoleBuilder AddRole(string roleName, RoleSize roleSize = RoleSize.Small)
         {
-
-            var role = new Role
-            {
-                RoleName = roleName,
-                RoleType = "PersistentVMRole",
-                RoleSize = roleSize
-            };
-
-            Deployment.RoleList.Add(role);
-
+            Deployment.RoleList.Add(new Role(Role.VirtualMachineRoleType, roleName, roleSize, this));
             return this;
         }
 
@@ -90,25 +68,29 @@ namespace Linq2Azure.VirtualMachines
         {
             var client = GetRestClient();
             var response = await client.PostAsync(new VirtualMachinePayloadBuilder(Deployment).CreatePostPayload());
-            await _cloudService.Subscription.WaitForOperationCompletionAsync(response);
+            await Deployment.CloudService.Subscription.WaitForOperationCompletionAsync(response);
         }
 
         #endregion
 
         #region Operating System Disk
 
-        public IRoleOSVirtualHardDisk WithOSHardDisk(OperationSystemDiskLabel label)
+        public IRoleOSVirtualHardDisk WithOSHardDisk(OperationSystemDiskLabel label, HostCaching caching = HostCaching.None)
         {
-            GetCurrentRole().OSVirtualHardDisk = new OSVirtualHardDisk
-            {
-                DiskLabel = label.Label
-            };
+            var currentRole = GetCurrentRole();
+            Contract.Requires(label != null);
+            Contract.Requires(currentRole != null);
+            
+            currentRole.OSVirtualHardDisk = new OSVirtualHardDisk(label.Label,caching);
             return this;
         }
 
         public ISpecifyMediaForOS WithDiskName(string name)
         {
-            GetCurrentRole().OSVirtualHardDisk.DiskName = name;
+            var currentRole = GetCurrentRole();
+            Contract.Requires(currentRole != null);
+
+            currentRole.OSVirtualHardDisk.AssignDiskName(name);
             return this;
         }
 
@@ -119,17 +101,30 @@ namespace Linq2Azure.VirtualMachines
 
         ISpecifyOperatingSystem ISpecifyMediaForOS.WithOSMedia(Os operatingSystem, OsDriveBlobStoredAt operatingSystemLocation)
         {
-            GetCurrentRole().OsVersion = true;
-            GetCurrentRole().OSVirtualHardDisk.SourceImageName = operatingSystem.OsName;
-            GetCurrentRole().OSVirtualHardDisk.MediaLink = operatingSystemLocation.Location.ToString();
+
+            var currentRole = GetCurrentRole();
+
+            Contract.Requires(operatingSystemLocation != null);
+            Contract.Requires(currentRole != null);
+            Contract.Requires(currentRole.OSVirtualHardDisk != null);
+
+            currentRole.OSVirtualHardDisk.AssignMedia(operatingSystem.OsName,operatingSystemLocation.Location.ToString());
+
+            currentRole.OsVersion = true;
             return this;
         }
 
         ISpecifyOperatingSystem ISpecifyMediaForOS.WithImageMedia(ImageName image, OsDriveBlobStoredAt operatingSystemDriveBlobStoredAt)
         {
-            GetCurrentRole().OsVersion = false;
-            GetCurrentRole().OSVirtualHardDisk.SourceImageName = image.OsName;
-            GetCurrentRole().OSVirtualHardDisk.MediaLink = operatingSystemDriveBlobStoredAt.Location.ToString();
+            var currentRole = GetCurrentRole();
+
+            Contract.Requires(image != null);
+            Contract.Requires(operatingSystemDriveBlobStoredAt != null);
+            Contract.Requires(currentRole != null);
+            Contract.Requires(currentRole.OSVirtualHardDisk != null);
+
+            currentRole.OsVersion = false;
+            currentRole.OSVirtualHardDisk.AssignMedia(image.OsName,operatingSystemDriveBlobStoredAt.Location.ToString());
             return this;
         }
 

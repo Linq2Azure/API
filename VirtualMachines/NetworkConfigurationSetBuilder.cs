@@ -16,8 +16,7 @@ namespace Linq2Azure.VirtualMachines
         {
 
             var element = new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSet",
-                    new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString())
-                );
+                    new XElement(XmlNamespaces.WindowsAzure + "ConfigurationSetType", ConfigurationSet.ConfigurationSetType.ToString()));
 
             if (ConfigurationSet.InputEndpoints.Any())
             {
@@ -28,16 +27,10 @@ namespace Linq2Azure.VirtualMachines
                     var inputEndpoint = new XElement(XmlNamespaces.WindowsAzure + "InputEndpoint",
                             new XElement(XmlNamespaces.WindowsAzure + "LocalPort", input.LocalPort),
                             new XElement(XmlNamespaces.WindowsAzure + "Name", input.Name),
-                            new XElement(XmlNamespaces.WindowsAzure + "Port", input.LocalPort),
+                            new XElement(XmlNamespaces.WindowsAzure + "Port", input.Port),
                             new XElement(XmlNamespaces.WindowsAzure + "Protocol", input.Protocol.ToString().ToLower())
                             
                         );
-
-
-                    if (input.IdleTimeoutInMinutes.HasValue)
-                    {
-                        //inputEndpoint.Add(new XElement(XmlNamespaces.WindowsAzure + "IdleTimeoutInMinutes", input.IdleTimeoutInMinutes));
-                    }
 
                     inputEndpoints.Add(inputEndpoint);
                 }

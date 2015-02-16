@@ -111,6 +111,7 @@
     <Compile Include="CloudServices\Extension.cs" />
     <Compile Include="CloudServices\AvailableExtensionImage.cs" />
     <Compile Include="CloudServices\ExtensionImageVersion.cs" />
+    <Compile Include="CloudServices\IDeployment.cs" />
     <Compile Include="CloudServices\LocationType.cs" />
     <Compile Include="Locations\Location.cs" />
     <Compile Include="ReservedIps\ReservedIp.cs" />
@@ -187,6 +188,7 @@
     <Compile Include="VirtualMachines\OSVirtualHardDisk.cs" />
     <Compile Include="VirtualMachines\OSVirtualHardDiskXmlBuilder.cs" />
     <Compile Include="VirtualMachines\Password.cs" />
+    <Compile Include="VirtualMachines\PostShutdownAction.cs" />
     <Compile Include="VirtualMachines\Protocol.cs" />
     <Compile Include="VirtualMachines\PublicIP.cs" />
     <Compile Include="VirtualMachines\ResourceExtensionParameterValue.cs" />
@@ -194,6 +196,7 @@
     <Compile Include="VirtualMachines\Role.cs" />
     <Compile Include="VirtualMachines\RoleSize.cs" />
     <Compile Include="VirtualMachines\RoleXmlBuilder.cs" />
+    <Compile Include="VirtualMachines\RoleOperationType.cs" />
     <Compile Include="VirtualMachines\SSH.cs" />
     <Compile Include="VirtualMachines\StoredCertificateSettings.cs" />
     <Compile Include="VirtualMachines\TraverseAttribute.cs" />

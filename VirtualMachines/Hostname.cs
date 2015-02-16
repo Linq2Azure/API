@@ -1,4 +1,7 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class Hostname
     {
@@ -9,6 +12,7 @@
 
         public static Hostname Is(string hostname)
         {
+            Contract.Requires(!String.IsNullOrEmpty(hostname));
             return new Hostname(hostname);
         }
 

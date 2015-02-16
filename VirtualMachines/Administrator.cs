@@ -1,4 +1,7 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class Administrator
     {
@@ -9,6 +12,7 @@
 
         public static Administrator Is(string administrator)
         {
+            Contract.Requires(!String.IsNullOrEmpty(administrator));
             return new Administrator(administrator);
         }
 

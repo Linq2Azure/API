@@ -1,4 +1,7 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class OSVirtualHardDisk
     {
@@ -8,13 +11,42 @@
             HostCaching = HostCaching.None;
         }
 
-        public HostCaching HostCaching { get; set; }
-        public string DiskLabel { get; set; }
-        public string DiskName { get; set; }
-        public string MediaLink { get; set; }
-        public string SourceImageName { get; set; }
-        public string OS { get; set; }
-        public string ResizedSizeInGB { get; set; }
-        public string RemoteSourceImageLink { get; set; }
+        public OSVirtualHardDisk(string label, HostCaching caching = HostCaching.None)
+        {
+            Contract.Requires(!String.IsNullOrEmpty(label));
+            DiskLabel = label;
+            HostCaching = caching;
+        }
+
+        public void AssignMedia(string sourceImageName, string mediaLInk)
+        {
+            Contract.Requires(!String.IsNullOrEmpty(sourceImageName));
+            Contract.Requires(!String.IsNullOrEmpty(mediaLInk));
+
+            SourceImageName = sourceImageName;
+            MediaLink = mediaLInk;
+        }
+
+        public void ChangeHostCaching(HostCaching caching)
+        {
+            HostCaching = caching;
+        }
+
+        public void AssignDiskName(string name)
+        {
+            Contract.Requires(!String.IsNullOrEmpty(name));
+            DiskName = name;
+        }
+
+        public HostCaching HostCaching { get; private set; }
+        public string DiskLabel { get; private set; }
+        public string DiskName { get; private set; }
+        public string MediaLink { get; private set; }
+        public string SourceImageName { get; private set; }
+        public OsType OS { get; private set; }
+        public string ResizedSizeInGB { get; private set; }
+        public string RemoteSourceImageLink { get; private set; }
+
+        
     }
 }

@@ -20,7 +20,7 @@ namespace Linq2Azure.VirtualMachines
             var content = new XElement(XmlNamespaces.WindowsAzure + "Deployment",new XAttribute(XNamespace.Xmlns + "i", xsi));
                 content.Add(
                 new XElement(XmlNamespaces.WindowsAzure + "Name", Deployment.Name),
-                new XElement(XmlNamespaces.WindowsAzure + "DeploymentSlot", Deployment.DeploymentSlot),
+                new XElement(XmlNamespaces.WindowsAzure + "DeploymentSlot", Deployment.Slot.ToString()),
                 new XElement(XmlNamespaces.WindowsAzure + "Label", Deployment.Label),
                 roleListElement);
 

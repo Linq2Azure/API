@@ -1,4 +1,7 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class ComputerName
     {
@@ -9,6 +12,7 @@
 
         public static ComputerName Is(string computerName)
         {
+            Contract.Requires(!String.IsNullOrEmpty(computerName));
             return new ComputerName(computerName);
         }
 

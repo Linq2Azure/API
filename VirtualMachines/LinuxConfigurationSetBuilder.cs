@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics.Contracts;
 using System.Xml.Linq;
 
 namespace Linq2Azure.VirtualMachines
@@ -9,11 +11,16 @@ namespace Linq2Azure.VirtualMachines
 
         public LinuxConfigurationSetBuilder(ConfigurationSet configurationSet)
         {
+            Contract.Requires(configurationSet != null);
             ConfigurationSet = configurationSet;
         }
 
         public XElement Create()
         {
+
+            Contract.Requires(!String.IsNullOrEmpty(ConfigurationSet.HostName));
+            Contract.Requires(!String.IsNullOrEmpty(ConfigurationSet.UserName));
+            Contract.Requires(!String.IsNullOrEmpty(ConfigurationSet.UserPassword));
 
             XNamespace xsi = "http://www.w3.org/2001/XMLSchema-instance";
 

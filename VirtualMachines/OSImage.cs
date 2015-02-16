@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -8,6 +9,9 @@ namespace Linq2Azure.VirtualMachines
     {
         internal OSImage(XElement xml, Subscription subscription)
         {
+
+            Contract.Requires(subscription != null);
+
             Subscription = subscription;
             xml.HydrateObject(XmlNamespaces.WindowsAzure, this);
         }
@@ -15,6 +19,11 @@ namespace Linq2Azure.VirtualMachines
         internal OSImage(string label, string name, string mediaLink, OsType os, string description = "", string imageFamily = "", 
                          string language = "", string eula = "", string privacyUri = "", string iconUri = "", string smallIconUri = "")
         {
+
+            Contract.Requires(!String.IsNullOrEmpty(label));
+            Contract.Requires(!String.IsNullOrEmpty(name));
+            Contract.Requires(!String.IsNullOrEmpty(mediaLink));
+
             Label = label;
             MediaLink = mediaLink;
             Name = name;

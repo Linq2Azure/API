@@ -1,4 +1,7 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class Os
     {
@@ -9,6 +12,7 @@
 
         public static Os Named(string name)
         {
+            Contract.Requires(!String.IsNullOrEmpty(name));
             return new Os(name);
         }
 

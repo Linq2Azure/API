@@ -10,6 +10,9 @@ namespace Linq2Azure.VirtualMachines
 
         internal Disk(XElement xml, Subscription subscription)
         {
+            Contract.Requires(subscription != null);
+            Contract.Requires(xml != null);
+
             Subscription = subscription;
             xml.HydrateObject(XmlNamespaces.WindowsAzure, this);
         }
