@@ -22,11 +22,15 @@ namespace Linq2Azure.CloudServices
         public LatentSequence<ExtensionAssociation> ExtensionAssociations { get; private set; }
         public CloudService Parent { get; private set; }
 
+        [Traverse]
+        public Dns Dns { get; private set; }
+
         private Deployment()
         {
             RoleInstances = new LatentSequence<RoleInstance>(GetRoleInstancesAsync);
             ExtensionAssociations = new LatentSequence<ExtensionAssociation>(GetExtensionAssociationsAsync);
             RoleList = new List<Role>();
+            Dns = new Dns();
         }
 
         public Deployment(string deploymentName, DeploymentSlot deploymentSlot, string serviceConfig)

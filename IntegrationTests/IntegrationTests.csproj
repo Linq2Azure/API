@@ -95,13 +95,16 @@
     <Compile Include="TrafficManagerTests.cs" />
     <Compile Include="Unit.cs" />
     <Compile Include="VirtualMachineSetup.cs" />
+    <Compile Include="When_adding_dns_servers_to_an_existing_deployment.cs" />
     <Compile Include="When_creating_a_database_and_live_replica.cs" />
     <Compile Include="When_creating_a_database_with_valid_credentials.cs" />
     <Compile Include="When_creating_a_linux_virtual_machine.cs" />
     <Compile Include="When_creating_a_linux_virtual_machine_from_predefined_image.cs" />
     <Compile Include="When_creating_a_windows_virtual_machine.cs" />
     <Compile Include="When_creating_a_windows_virtual_machine_from_predefined_image.cs" />
+    <Compile Include="When_deleting_dns_servers_from_an_existing_deployment.cs" />
     <Compile Include="When_stopping_a_running_virtual_machine.cs" />
+    <Compile Include="When_stopping_a_running_virtual_machine_and_then_starting_again.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Linq2Azure.csproj">

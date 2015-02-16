@@ -10,6 +10,7 @@ namespace Linq2Azure.VirtualMachines
             DnsServers = new List<DnsServer>();
         }
 
+        [Traverse]
         public List<DnsServer> DnsServers { get; set; }
     }
 }
