@@ -153,6 +153,7 @@
     <Compile Include="VirtualMachines\Deployment.cs" />
     <Compile Include="VirtualMachines\Disk.cs" />
     <Compile Include="VirtualMachines\DiskLabel.cs" />
+    <Compile Include="VirtualMachines\DnsServer.cs" />
     <Compile Include="VirtualMachines\DomainJoin.cs" />
     <Compile Include="VirtualMachines\DriveStoredAt.cs" />
     <Compile Include="VirtualMachines\EndpointACL.cs" />

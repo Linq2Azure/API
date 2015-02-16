@@ -28,16 +28,29 @@ namespace Linq2Azure.VirtualMachines
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
         }
 
-        public Role(string roleType, string roleName, RoleSize roleSize, VirtualMachineBuilder vmBuilder)
+        public Role(string roleType, string roleName, RoleSize roleSize)
         {
             Contract.Requires(!String.IsNullOrEmpty(roleType));
             Contract.Requires(!String.IsNullOrEmpty(roleName));
-            Contract.Requires(vmBuilder != null);
 
             RoleType = roleType;
             RoleName = roleName;
             RoleSize = roleSize;
-            VirtualMachineBuilder = vmBuilder;
+        }
+
+        public async Task AddDnsServer(DnsServer dnsServer)
+        {
+
+            Contract.Requires(dnsServer != null);
+
+            var suffix = Deployment.Name + "/dnsservers/";
+            var content = new XElement(XmlNamespaces.WindowsAzure + "DnsServer");
+            content.Add(new XElement(XmlNamespaces.WindowsAzure + "Name", dnsServer.Name));
+            content.Add(new XElement(XmlNamespaces.WindowsAzure + "Address", dnsServer.Address.ToString()));
+
+            var client = GetRestClient(suffix);
+            var response = await client.PostAsync(content);
+            await Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
         }
 
         public async Task DeleteVirtualMachineAsync(bool removeAssociatedDisksAndBlobs)
@@ -99,8 +112,6 @@ namespace Linq2Azure.VirtualMachines
         [Ignore]
         public IDeployment Deployment { get; private set; }
 
-        [Ignore]
-        public VirtualMachineBuilder VirtualMachineBuilder { get; private set; }
         public string RoleName { get; private set; }
         public string RoleType { get; private set; }
 

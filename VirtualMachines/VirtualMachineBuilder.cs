@@ -60,7 +60,7 @@ namespace Linq2Azure.VirtualMachines
 
         public IRoleBuilder AddRole(string roleName, RoleSize roleSize = RoleSize.Small)
         {
-            Deployment.RoleList.Add(new Role(Role.VirtualMachineRoleType, roleName, roleSize, this));
+            Deployment.RoleList.Add(new Role(Role.VirtualMachineRoleType, roleName, roleSize));
             return this;
         }
 
