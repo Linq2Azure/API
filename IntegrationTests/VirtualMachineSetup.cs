@@ -12,6 +12,7 @@ namespace IntegrationTests
         public const string TestLocation = "West US";
         public Subscription Subscription = TestConstants.Subscription;
         public CloudService CloudService;
+        private string serviceName = "VM-" + Guid.NewGuid();
 
         [TestInitialize]
         public void Setup()
@@ -26,7 +27,7 @@ namespace IntegrationTests
 
         private async Task Initialize()
         {
-            CloudService = new CloudService("VM-" + Guid.NewGuid().ToString("N"), Location(), LocationType.Region)
+            CloudService = new CloudService(ServiceName(), Location(), LocationType.Region)
             {
                 Description = "Virtual Machine Setup Description"
             };
@@ -35,6 +36,11 @@ namespace IntegrationTests
             var cert = new X509Certificate2(@"..\..\CertKey.pfx", "1234", X509KeyStorageFlags.Exportable);
             var serviceCertificate = new ServiceCertificate(cert);
             await CloudService.AddServiceCertificateAsync(serviceCertificate);
+        }
+
+        protected string ServiceName()
+        {
+            return serviceName;
         }
 
         [TestCleanup]

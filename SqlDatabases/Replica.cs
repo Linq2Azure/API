@@ -38,7 +38,8 @@ namespace Linq2Azure.SqlDatabases
         public async Task<Database> Stop()
         {
             var client = GetRestClient(Database.DatabaseServer, Database.Name);
-            await client.DeleteAsync();
+            var response = await client.DeleteAsync();
+            await Database.DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
             return Database;
         }
 
@@ -49,7 +50,8 @@ namespace Linq2Azure.SqlDatabases
                 new XElement(ns + "IsForcedTerminate", forced)
                 );
             var client = GetRestClient(Database.DatabaseServer, Database.Name);
-            await client.PutAsync(content);
+            var response = await client.PutAsync(content);
+            await Database.DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
             return Database;
         }
 

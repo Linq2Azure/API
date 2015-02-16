@@ -35,8 +35,7 @@ namespace IntegrationTests
             await Subscription.CreateDatabaseServerAsync(DatabaseServer, Password);
             await Subscription.CreateDatabaseServerAsync(DestinationServer, Password);
             var databaseServer = (await Subscription.DatabaseServers.AsTask()).Single(d => d.Name == DatabaseServer.Name);
-            Database = await databaseServer.CreateDatabase(DatabaseName,ServiceTier.PremiumS1);
-            await Task.Delay(TimeSpan.FromSeconds(10));
+            Database = await databaseServer.CreateDatabase(DatabaseName, ServiceTier.PremiumS1);
         }
 
         [TestCleanup]
@@ -52,9 +51,7 @@ namespace IntegrationTests
                 await DropReplicas(DestinationServer);
                 await DropReplicas(DatabaseServer);
                 await DestinationServer.DropAsync();
-                await Task.Delay(TimeSpan.FromSeconds(10));
                 await DatabaseServer.DropAsync();
-                await Task.Delay(TimeSpan.FromSeconds(10));
                 return Unit.Instance;
             }).Catch();
         }

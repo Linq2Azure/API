@@ -133,6 +133,7 @@ namespace Linq2Azure.SqlDatabases
 
 
             var response = await GetRestClient("/" + Name + "/databases").PostAsync(content);
+            await Subscription.WaitForOperationCompletionAsync(response);
             return new Database(XElement.Parse(await response.Content.ReadAsStringAsync()), this);
         }
 

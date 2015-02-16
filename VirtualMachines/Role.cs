@@ -28,7 +28,7 @@ namespace Linq2Azure.VirtualMachines
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
         }
 
-        public Role(string roleType, string roleName, RoleSize roleSize)
+        public Role(string roleType, string roleName, RoleSize roleSize) : this()
         {
             Contract.Requires(!String.IsNullOrEmpty(roleType));
             Contract.Requires(!String.IsNullOrEmpty(roleName));
