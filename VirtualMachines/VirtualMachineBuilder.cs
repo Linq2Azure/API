@@ -275,17 +275,14 @@ namespace Linq2Azure.VirtualMachines
 
         public IDataDiskConfigurationBuilder AddDisk(DiskLabel label)
         {
-            GetCurrentRole().DataVirtualHardDisks.Add(new DataVirtualHardDisk
-            {
-                DiskLabel = label.Label,
-                HostCaching = HostCaching.None
-            });
+            var currentRole = GetCurrentRole();
+            currentRole.DataVirtualHardDisks.Add(new DataVirtualHardDisk(currentRole, label.Label));
             return this;
         }
 
         public ISpecificDataDiskConfigurationBuilder Existing(string name)
         {
-            GetCurrentDataDisk().DiskName = name;
+            GetCurrentDataDisk().AssignDiskName(name);
             return this;
         }
 
@@ -297,7 +294,7 @@ namespace Linq2Azure.VirtualMachines
         public IGuidedSpecificDataDiskConfiguration StoredAt(DriveStoredAt location)
         {
             var current = GetCurrentDataDisk();
-            current.MediaLink = location.Location.ToString();
+            current.AssignMediaLink(location.Location.ToString());
             return this;
         }
 
@@ -307,9 +304,9 @@ namespace Linq2Azure.VirtualMachines
             settings(additionalDiskSettings);
 
             var current = GetCurrentDataDisk();
-            current.LogicalDiskSizeInGB = additionalDiskSettings.SizeInGB;
-            current.Lun = additionalDiskSettings.Lun;
-            current.HostCaching = current.HostCaching;
+            current.AssignLogicalDiskSizeInGB(additionalDiskSettings.SizeInGB);
+            current.AssignLun(additionalDiskSettings.Lun);
+            current.AssignHostCaching(current.HostCaching);
 
             return this;
         }

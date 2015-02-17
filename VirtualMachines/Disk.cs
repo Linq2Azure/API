@@ -19,7 +19,7 @@ namespace Linq2Azure.VirtualMachines
 
         internal Disk() { }
 
-        internal Disk(OsType os, string name, string mediaLink)
+        public Disk(OsType os, string name, string mediaLink)
         {
 
             Contract.Requires(!String.IsNullOrEmpty(name));
@@ -32,9 +32,11 @@ namespace Linq2Azure.VirtualMachines
 
         public async Task CreateDiskAsync(Subscription subscription, string label)
         {
+            Subscription = subscription;
+
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "Disk",
-                new XElement(ns + "OS", OS),
+                new XElement(ns + "OS", OS.ToString()),
                 new XElement(ns + "Label", label),
                 new XElement(ns + "MediaLink", MediaLink),
                 new XElement(ns + "Name", Name))
@@ -79,14 +81,19 @@ namespace Linq2Azure.VirtualMachines
             return this;
         }
 
-        private AzureRestClient GetRestClient(string queryString = null)
+        private AzureRestClient GetRestClient(string extra = "", string queryString = null)
         {
-            var servicePath = "services/disks/" + Name;
+            var servicePath = "services/disks/" + extra;
 
             if (!String.IsNullOrEmpty(queryString))
                 servicePath += queryString;
 
             return Subscription.GetDatabaseRestClient(servicePath);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("Subscription: {0}, AffinityGroup: {1}, AttachedTo: {2}, OS: {3}, Location: {4}, LogicalSizeInGB: {5}, MediaLink: {6}, Name: {7}, SourceImageName: {8}, CreatedTime: {9}, IOType: {10}", Subscription, AffinityGroup, AttachedTo, OS, Location, LogicalSizeInGB, MediaLink, Name, SourceImageName, CreatedTime, IOType);
         }
 
         public Subscription Subscription { get; private set; }
@@ -102,5 +109,7 @@ namespace Linq2Azure.VirtualMachines
         public string SourceImageName { get; private set; }
         public DateTimeOffset CreatedTime { get; private set; }
         public string IOType { get; private set; }
+
+        
     }
 }

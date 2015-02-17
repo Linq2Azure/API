@@ -26,6 +26,7 @@ namespace Linq2Azure.VirtualMachines
         {
             Deployment = deployment;
             element.HydrateObject(XmlNamespaces.WindowsAzure, this);
+            DataVirtualHardDisks.ForEach(x => x.AssignRole(this));
         }
 
         public Role(string roleType, string roleName, RoleSize roleSize) : this()
@@ -86,6 +87,11 @@ namespace Linq2Azure.VirtualMachines
             await Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
         }
 
+        public Task AddEmptyDataDiskAsync(DataVirtualHardDisk disk)
+        {
+            return disk.AddEmptyDataDiskAsync(this);
+        }
+
         private AzureRestClient GetRestClient(string suffix = "", string queryString = "")
         {
             var cloudService = Deployment.GetCloudService();
@@ -127,5 +133,6 @@ namespace Linq2Azure.VirtualMachines
 
         [Ignore]
         public bool OsVersion { get; set; }
+
     }
 }
