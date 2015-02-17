@@ -17,10 +17,12 @@ namespace IntegrationTests
         }
 
         [TestMethod]
-        public void It_should_provision_the_disk()
+        public void it_should_list_the_disk_in_the_user_repository()
         {
-            var disk = new Disk(OsType.Windows, "Windows","https://portalvhdsgmzrhtl0l1c21.blob.core.windows.net/vhds/cashconverters-cashconverters-2015-02-11.vhd");
-            Subscription.CreateDiskAsync("AwesomeDisk",disk).Wait();
+            const string name = "WindowsMachine";
+
+            var disk = new Disk(OsType.Windows, name, string.Format("https://linq2azuredev.blob.core.windows.net/vms/{0}.vhd", name));
+            Subscription.CreateDiskAsync(name, disk).Wait();
             disk.DeleteDiskAsync(false).Wait();
         }
 

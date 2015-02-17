@@ -30,7 +30,7 @@ namespace Linq2Azure.VirtualMachines
             MediaLink = mediaLink;
         }
 
-        public async Task CreateDiskAsync(Subscription subscription, string label)
+        internal async Task CreateDiskAsync(Subscription subscription, string label)
         {
             Subscription = subscription;
 
@@ -75,7 +75,7 @@ namespace Linq2Azure.VirtualMachines
 
         public async Task<Disk> DeleteDiskAsync(bool deleteAssociatedBlob)
         {
-            var client = GetRestClient(deleteAssociatedBlob ? "?comp=media" : null);
+            var client = GetRestClient(Name, deleteAssociatedBlob ? "?comp=media" : null);
             var response = await client.DeleteAsync();
             await Subscription.WaitForOperationCompletionAsync(response);
             return this;
@@ -83,7 +83,10 @@ namespace Linq2Azure.VirtualMachines
 
         private AzureRestClient GetRestClient(string extra = "", string queryString = null)
         {
-            var servicePath = "services/disks/" + extra;
+            var servicePath = "services/disks";
+
+            if (!String.IsNullOrEmpty(extra))
+                servicePath = servicePath + "/" + extra;
 
             if (!String.IsNullOrEmpty(queryString))
                 servicePath += queryString;

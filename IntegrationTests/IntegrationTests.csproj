@@ -96,6 +96,7 @@
     <Compile Include="Unit.cs" />
     <Compile Include="VirtualMachineSetup.cs" />
     <Compile Include="When_adding_an_empty_data_disk_to_a_virtual_machine.cs" />
+    <Compile Include="When_adding_an_existing_data_disk_to_a_virtual_machine.cs" />
     <Compile Include="When_adding_a_disk.cs" />
     <Compile Include="When_adding_dns_servers_to_an_existing_deployment.cs" />
     <Compile Include="When_creating_a_database_and_live_replica.cs" />
@@ -111,6 +112,8 @@
     <Compile Include="When_requesting_a_listing_of_virtual_machines.cs" />
     <Compile Include="When_stopping_a_running_virtual_machine.cs" />
     <Compile Include="When_stopping_a_running_virtual_machine_and_then_starting_again.cs" />
+    <Compile Include="When_updating_an_existing_disks_host_caching.cs" />
+    <Compile Include="When_updating_an_existing_disks_lun.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Linq2Azure.csproj">

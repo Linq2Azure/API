@@ -92,6 +92,11 @@ namespace Linq2Azure.VirtualMachines
             return disk.AddEmptyDataDiskAsync(this);
         }
 
+        public Task AddExistingDataDiskAsync(DataVirtualHardDisk disk)
+        {
+            return disk.AddExistingDataDiskAsync(this);
+        }
+
         private AzureRestClient GetRestClient(string suffix = "", string queryString = "")
         {
             var cloudService = Deployment.GetCloudService();
@@ -134,5 +139,6 @@ namespace Linq2Azure.VirtualMachines
         [Ignore]
         public bool OsVersion { get; set; }
 
+        
     }
 }

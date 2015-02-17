@@ -47,6 +47,23 @@ namespace Linq2Azure.VirtualMachines
             Lun = lun;
         }
 
+        public DataVirtualHardDisk(HostCaching caching, string diskLabel, string diskName, int lun, string mediaLink,string sourceMediaLink )
+        {
+
+            Contract.Requires(!String.IsNullOrEmpty(diskLabel));
+            Contract.Requires(!String.IsNullOrEmpty(diskName));
+            Contract.Requires(!String.IsNullOrEmpty(mediaLink));
+            Contract.Requires(!String.IsNullOrEmpty(sourceMediaLink));
+            Contract.Requires(lun >= 0 && lun <= 31);
+
+            HostCaching = caching;
+            DiskLabel = diskLabel;
+            DiskName = diskName;
+            MediaLink = mediaLink;
+            SourceMediaLink = sourceMediaLink;
+            Lun = lun;
+        }
+
         internal void AssignRole(Role role)
         {
             Contract.Requires(role != null);
@@ -70,6 +87,55 @@ namespace Linq2Azure.VirtualMachines
 
             var client = GetRestClient(suffix);
             var response = await client.PostAsync(content);
+            await Role.Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        internal async Task AddExistingDataDiskAsync(Role role)
+        {
+            Contract.Requires(role != null);
+            Role = role;
+
+            var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks";
+            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", HostCaching.ToString()),
+                        new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", DiskLabel),
+                        new XElement(XmlNamespaces.WindowsAzure + "DiskName", DiskName),
+                        new XElement(XmlNamespaces.WindowsAzure + "MediaLink", MediaLink),
+                        new XElement(XmlNamespaces.WindowsAzure + "SourceMediaLink", SourceMediaLink));
+
+
+            var client = GetRestClient(suffix);
+            var response = await client.PostAsync(content);
+            await Role.Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        public async Task ChangeLunAsync(int lun)
+        {
+
+            var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks/" + Lun;
+            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", HostCaching.ToString()),
+                        new XElement(XmlNamespaces.WindowsAzure + "DiskName", DiskName),
+                        new XElement(XmlNamespaces.WindowsAzure + "Lun", lun),
+                        new XElement(XmlNamespaces.WindowsAzure + "MediaLink", MediaLink));
+
+            var client = GetRestClient(suffix);
+            var response = await client.PutAsync(content);
+            await Role.Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
+        }
+
+        public async Task ChangeOrDefaultHostCachingAsync(HostCaching caching = HostCaching.None)
+        {
+
+            var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks/" + Lun;
+            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", caching.ToString()),
+                        new XElement(XmlNamespaces.WindowsAzure + "DiskName", DiskName),
+                        new XElement(XmlNamespaces.WindowsAzure + "Lun", Lun),
+                        new XElement(XmlNamespaces.WindowsAzure + "MediaLink", MediaLink));
+
+            var client = GetRestClient(suffix);
+            var response = await client.PutAsync(content);
             await Role.Deployment.GetCloudService().Subscription.WaitForOperationCompletionAsync(response);
         }
 

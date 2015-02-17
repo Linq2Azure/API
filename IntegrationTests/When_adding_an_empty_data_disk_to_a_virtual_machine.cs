@@ -9,7 +9,7 @@ namespace IntegrationTests
     {
 
         [TestMethod]
-        public void It_should_list_all_the_virtual_machines_under_all_the_accounts()
+        public void it_should_add_the_disk_to_the_vm()
         {
 
             CreateNewVm().Wait();
