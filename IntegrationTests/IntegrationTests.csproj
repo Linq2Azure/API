@@ -106,7 +106,6 @@
     <Compile Include="When_creating_a_windows_virtual_machine.cs" />
     <Compile Include="When_creating_a_windows_virtual_machine_from_predefined_image.cs" />
     <Compile Include="When_deleting_a_data_disk.cs" />
-    <Compile Include="When_deleting_a_disk.cs" />
     <Compile Include="When_deleting_dns_servers_from_an_existing_deployment.cs" />
     <Compile Include="When_listing_disks.cs" />
     <Compile Include="When_requesting_a_listing_of_virtual_machines.cs" />

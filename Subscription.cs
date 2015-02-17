@@ -39,6 +39,7 @@ namespace Linq2Azure
         public LatentSequence<AffinityGroup> AffinityGroups { get; private set; }
         public LatentSequence<Location> Locations { get; private set; }
         public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
+        public LatentSequence<ResourceExtensionReference> ResourceExtensionReferences { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
         public LatentSequence<VMImage> VirtualMachineImages { get; private set; }
         public LatentSequence<OSImage> OSImages { get; private set; }
@@ -91,11 +92,14 @@ namespace Linq2Azure
             AffinityGroups = new LatentSequence<AffinityGroup>(GetAffinityGroupsAsync);
             Locations = new LatentSequence<Location>(GetLocationsAsync);
             ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
+            ResourceExtensionReferences = new LatentSequence<ResourceExtensionReference>(GetResourceExtensionReferencesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
             VirtualMachineImages = new LatentSequence<VMImage>(GetVirtualMachinesAsync);
             OSImages = new LatentSequence<OSImage>(GetOSImagesAsync);
             VirtualMachineDisks = new LatentSequence<Disk>(GetVirtualMachineDisksAsync);
         }
+
+       
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
         public Task CreateDatabaseServerAsync(DatabaseServer server, string adminPassword) { return server.CreateAsync(this, adminPassword); }
@@ -146,6 +150,12 @@ namespace Linq2Azure
         {
             var xe = await GetCoreRestClient20141001("services/extensions").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ExtensionImage").Select(x => new AvailableExtensionImage(x, this)).ToArray();
+        }
+
+        async Task<ResourceExtensionReference[]> GetResourceExtensionReferencesAsync()
+        {
+            var xe = await GetCoreRestClient20141001("services/resourceextensions").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ResourceExtension").Select(x => new ResourceExtensionReference(x, this)).ToArray();
         }
 
         async Task<ReservedIp[]> GetReservedIpsAsync()
