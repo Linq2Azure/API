@@ -4,6 +4,8 @@ using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -44,6 +46,7 @@ namespace Linq2Azure
         public LatentSequence<VMImage> VirtualMachineImages { get; private set; }
         public LatentSequence<OSImage> OSImages { get; private set; }
         public LatentSequence<Disk> VirtualMachineDisks { get; private set; }
+        public LatentSequence<Role> VirtualMachines { get; private set; }
 
         HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
 
@@ -94,12 +97,11 @@ namespace Linq2Azure
             ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
             ResourceExtensionReferences = new LatentSequence<ResourceExtensionReference>(GetResourceExtensionReferencesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
-            VirtualMachineImages = new LatentSequence<VMImage>(GetVirtualMachinesAsync);
+            VirtualMachineImages = new LatentSequence<VMImage>(GetVirtualMachineImagesAsync);
             OSImages = new LatentSequence<OSImage>(GetOSImagesAsync);
             VirtualMachineDisks = new LatentSequence<Disk>(GetVirtualMachineDisksAsync);
+            this.VirtualMachines = new LatentSequence<Role>(GetVirtualMachineRolesAsync);
         }
-
-       
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
         public Task CreateDatabaseServerAsync(DatabaseServer server, string adminPassword) { return server.CreateAsync(this, adminPassword); }
@@ -164,7 +166,18 @@ namespace Linq2Azure
             return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
         }
 
-        async Task<VMImage[]> GetVirtualMachinesAsync()
+        private Task<Role[]> GetVirtualMachineRolesAsync()
+        {
+            var results = from cs in CloudServices.AsObservable()
+                          from d in cs.Deployments.AsObservable()
+                          where d.IsVirtualMachineDeployment.Value
+                          from r in d.RoleList
+                          select r;
+
+            return results.ToList().Select(x => x.ToArray()).ToTask();
+        }
+
+        async Task<VMImage[]> GetVirtualMachineImagesAsync()
         {
             var xe = await GetDatabaseRestClient("services/vmimages?category=User").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "VMImage").Select(x => new VMImage(x, this)).ToArray();
