@@ -60,9 +60,21 @@ namespace Linq2Azure.VirtualMachines
             return this;
         }
 
-        public AdditionalRoleSettings AddAntiMcAfee()
+        public AdditionalRoleSettings AddMcAfee()
         {
             Names.Add("McAfeeEndpointSecurity");
+            return this;
+        }
+
+        public AdditionalRoleSettings AddBGInfo()
+        {
+            Names.Add("BGInfo");
+            return this;
+        }
+
+        public AdditionalRoleSettings AddLinuxOSPatching()
+        {
+            Names.Add("OSPatchingForLinux");
             return this;
         }
 
@@ -79,6 +91,8 @@ namespace Linq2Azure.VirtualMachines
         public bool ProvisionGuestAgent { get; set; }
         public string AvailabilitySetName { get; set; }
         public List<ResourceExtensionReference> Extensions { get; set; }
+
+        
     }
 
 
