@@ -99,6 +99,7 @@
     <Compile Include="When_adding_an_existing_data_disk_to_a_virtual_machine.cs" />
     <Compile Include="When_adding_a_disk.cs" />
     <Compile Include="When_adding_dns_servers_to_an_existing_deployment.cs" />
+    <Compile Include="When_adding_extensions_to_a_vm.cs" />
     <Compile Include="When_creating_a_database_and_live_replica.cs" />
     <Compile Include="When_creating_a_database_with_valid_credentials.cs" />
     <Compile Include="When_creating_a_linux_virtual_machine.cs" />

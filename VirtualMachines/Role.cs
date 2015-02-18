@@ -39,6 +39,22 @@ namespace Linq2Azure.VirtualMachines
             RoleSize = roleSize;
         }
 
+        internal void ChangeOsVirtualHardDisk(OSVirtualHardDisk disk)
+        {
+            Contract.Requires(disk != null);
+            OSVirtualHardDisk = disk;
+        }
+
+        internal void ChangeAvailabilitySetName(string availabilitySetName)
+        {
+            AvailabilitySetName = availabilitySetName;
+        }
+
+        internal void ChangeProvisionGuestAgent(bool provision)
+        {
+            ProvisionGuestAgent = provision;
+        }
+
         public async Task DeleteVirtualMachineAsync(bool removeAssociatedDisksAndBlobs)
         {
            
@@ -120,24 +136,24 @@ namespace Linq2Azure.VirtualMachines
         public List<ConfigurationSet> ConfigurationSets { get; set; }
         public string VMImageName { get; set; }
         public string MediaLocation { get; set; }
-        public string AvailabilitySetName { get; set; }
+        public string AvailabilitySetName { get; private set; }
 
         [Traverse]
-        public List<ResourceExtensionReference> ResourceExtensionReferences { get; set; }
+        public List<ResourceExtensionReference> ResourceExtensionReferences { get; private set; }
 
         [Traverse]
-        public List<DataVirtualHardDisk> DataVirtualHardDisks { get; set; }
+        public List<DataVirtualHardDisk> DataVirtualHardDisks { get; private set; }
 
         [Traverse]
-        public OSVirtualHardDisk OSVirtualHardDisk { get; set; }
-        public RoleSize RoleSize { get; set; }
-        public bool ProvisionGuessAgent { get; set; }
+        public OSVirtualHardDisk OSVirtualHardDisk { get; private set; }
+        public RoleSize RoleSize { get; private set; }
+        public bool ProvisionGuestAgent { get; private set; }
 
         [Traverse]
-        public VImageInput VmImageInput { get; set; }
+        public VImageInput VmImageInput { get; private set; }
 
         [Ignore]
-        public bool OsVersion { get; set; }
+        internal bool OsVersion { get; set; }
 
         
     }

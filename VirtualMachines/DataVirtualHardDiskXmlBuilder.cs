@@ -14,7 +14,7 @@ namespace Linq2Azure.VirtualMachines
 
         public XElement Create()
         {
-            var element = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk",
+            var element = new XElement(XmlNamespaces.WindowsAzure + "reference",
                 new XElement(XmlNamespaces.WindowsAzure + "HostCaching", DataVirtualHardDisk.HostCaching.ToString()),
                 new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", DataVirtualHardDisk.DiskLabel)
                 );

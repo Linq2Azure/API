@@ -64,6 +64,24 @@ namespace Linq2Azure.VirtualMachines
             return this;
         }
 
+        public IRoleBuilder AddRole(string roleName, RoleSize roleSize , Action<AdditionalRoleSettings> f)
+        {
+
+            var settings = new AdditionalRoleSettings(Deployment.CloudService.Subscription);
+            f(settings);
+
+            var role = new Role(Role.VirtualMachineRoleType, roleName, roleSize);
+
+            role.ChangeAvailabilitySetName(settings.AvailabilitySetName);
+            role.ChangeProvisionGuestAgent(settings.ProvisionGuestAgent);
+            
+            if(settings.Extensions.Any())
+                settings.Extensions.ForEach(reference => role.ResourceExtensionReferences.Add(reference));
+            
+            Deployment.RoleList.Add(role);
+            return this;
+        }
+
         public async Task Provision()
         {
             var client = GetRestClient();
@@ -81,7 +99,7 @@ namespace Linq2Azure.VirtualMachines
             Contract.Requires(label != null);
             Contract.Requires(currentRole != null);
             
-            currentRole.OSVirtualHardDisk = new OSVirtualHardDisk(label.Label,caching);
+            currentRole.ChangeOsVirtualHardDisk(new OSVirtualHardDisk(label.Label,caching));
             return this;
         }
 

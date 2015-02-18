@@ -77,7 +77,7 @@ namespace Linq2Azure.VirtualMachines
             Role = role;
 
             var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks";
-            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            var content = new XElement(XmlNamespaces.WindowsAzure + "reference");
             content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", HostCaching.ToString()),
                         new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", DiskLabel),
                         new XElement(XmlNamespaces.WindowsAzure + "Lun", Lun),
@@ -96,7 +96,7 @@ namespace Linq2Azure.VirtualMachines
             Role = role;
 
             var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks";
-            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            var content = new XElement(XmlNamespaces.WindowsAzure + "reference");
             content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", HostCaching.ToString()),
                         new XElement(XmlNamespaces.WindowsAzure + "DiskLabel", DiskLabel),
                         new XElement(XmlNamespaces.WindowsAzure + "DiskName", DiskName),
@@ -113,7 +113,7 @@ namespace Linq2Azure.VirtualMachines
         {
 
             var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks/" + Lun;
-            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            var content = new XElement(XmlNamespaces.WindowsAzure + "reference");
             content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", HostCaching.ToString()),
                         new XElement(XmlNamespaces.WindowsAzure + "DiskName", DiskName),
                         new XElement(XmlNamespaces.WindowsAzure + "Lun", lun),
@@ -128,7 +128,7 @@ namespace Linq2Azure.VirtualMachines
         {
 
             var suffix = Role.Deployment.Name + "/roles/" + Role.RoleName + "/DataDisks/" + Lun;
-            var content = new XElement(XmlNamespaces.WindowsAzure + "DataVirtualHardDisk");
+            var content = new XElement(XmlNamespaces.WindowsAzure + "reference");
             content.Add(new XElement(XmlNamespaces.WindowsAzure + "HostCaching", caching.ToString()),
                         new XElement(XmlNamespaces.WindowsAzure + "DiskName", DiskName),
                         new XElement(XmlNamespaces.WindowsAzure + "Lun", Lun),

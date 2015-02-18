@@ -140,6 +140,7 @@
     <Compile Include="VirtualMachines\AdditionaLinuxSettings.cs" />
     <Compile Include="VirtualMachines\AdditionalUnattendedContent.cs" />
     <Compile Include="VirtualMachines\AdditionalWindowsSettings.cs" />
+    <Compile Include="VirtualMachines\AdditionalRoleSettings.cs" />
     <Compile Include="VirtualMachines\Administrator.cs" />
     <Compile Include="VirtualMachines\AttachedTo.cs" />
     <Compile Include="VirtualMachines\Certificate.cs" />
@@ -197,6 +198,7 @@
     <Compile Include="VirtualMachines\PublicIP.cs" />
     <Compile Include="VirtualMachines\ResourceExtensionParameterValue.cs" />
     <Compile Include="VirtualMachines\ResourceExtensionReference.cs" />
+    <Compile Include="VirtualMachines\ResourceExtensionReferenceXmlBuilder.cs" />
     <Compile Include="VirtualMachines\Role.cs" />
     <Compile Include="VirtualMachines\RoleSize.cs" />
     <Compile Include="VirtualMachines\RoleXmlBuilder.cs" />

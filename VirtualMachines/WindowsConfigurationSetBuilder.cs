@@ -23,13 +23,6 @@ namespace Linq2Azure.VirtualMachines
                     new XElement(XmlNamespaces.WindowsAzure + "EnableAutomaticUpdates", ConfigurationSet.EnableAutomaticUpdates)
                 );
 
-            var winrm = new XElement(XmlNamespaces.WindowsAzure + "WinRM", 
-                new XElement(XmlNamespaces.WindowsAzure + "Listeners",
-                    new XElement(XmlNamespaces.WindowsAzure + "Listener",
-                         new XElement(XmlNamespaces.WindowsAzure + "Type","Http"))));
-
-            element.Add(winrm);
-
             return element;
         }
     }
