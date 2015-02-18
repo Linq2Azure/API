@@ -24,7 +24,7 @@ namespace IntegrationTests
                     x =>
                     {
                         x.ProvisionGuestAgent = true;
-                        x.AddAntiMalware().AddDocker().AddPowershell().AddSystemCenter().AddVS14CTPDebugger().Build();
+                        x.AddAntiMalware().AddBGInfo().AddDocker().AddPowershell().AddSystemCenter().AddVS14CTPDebugger().Build();
                     })
                 .WithOSHardDisk(OperationSystemDiskLabel.Is(_windowsmachine))
                 .WithDiskName(_windowsmachine)
