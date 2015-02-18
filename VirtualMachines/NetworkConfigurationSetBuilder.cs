@@ -38,6 +38,12 @@ namespace Linq2Azure.VirtualMachines
                 element.Add(inputEndpoints);
             }
 
+            if (ConfigurationSet.SubnetNames.Any())
+            {
+                var subnets = new XElement(XmlNamespaces.WindowsAzure + "SubnetNames");
+                ConfigurationSet.SubnetNames.ForEach(x => subnets.Add(new XElement(XmlNamespaces.WindowsAzure + "SubnetName", x)));
+            }
+
             return element;
         }
     }

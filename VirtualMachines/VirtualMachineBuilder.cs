@@ -7,7 +7,7 @@ using Linq2Azure.CloudServices;
 namespace Linq2Azure.VirtualMachines
 {
     public class VirtualMachineBuilder : IVirtualMachineBuilder, IRoleBuilder, ISpecifyMediaForOS, IWindowsConfigurationSetBuilder, IWindowsConfigurationGuidedConfiguration,
-                                         INetworkConfigurationSetBuilder, ILinuxConfigurationSetBuilder,ILinuxConfigurationGuided , IRoleOSVirtualHardDisk, IDataDiskConfigurationBuilder,
+                                         INetworkConfigurationSetBuilder, ILinuxConfigurationSetBuilder, ILinuxConfigurationGuided, IRoleOSVirtualHardDisk, IDataDiskConfigurationBuilder,
                                          ISpecificDataDiskConfigurationBuilder, IGuidedSpecificDataDiskConfiguration, ISpecifyOperatingSystem
     {
 
@@ -64,7 +64,7 @@ namespace Linq2Azure.VirtualMachines
             return this;
         }
 
-        public IRoleBuilder AddRole(string roleName, RoleSize roleSize , Action<AdditionalRoleSettings> f)
+        public IRoleBuilder AddRole(string roleName, RoleSize roleSize, Action<AdditionalRoleSettings> f)
         {
 
             var settings = new AdditionalRoleSettings(Deployment.CloudService.Subscription);
@@ -74,10 +74,10 @@ namespace Linq2Azure.VirtualMachines
 
             role.ChangeAvailabilitySetName(settings.AvailabilitySetName);
             role.ChangeProvisionGuestAgent(settings.ProvisionGuestAgent);
-            
-            if(settings.Extensions.Any())
+
+            if (settings.Extensions.Any())
                 settings.Extensions.ForEach(reference => role.ResourceExtensionReferences.Add(reference));
-            
+
             Deployment.RoleList.Add(role);
             return this;
         }
@@ -98,8 +98,8 @@ namespace Linq2Azure.VirtualMachines
             var currentRole = GetCurrentRole();
             Contract.Requires(label != null);
             Contract.Requires(currentRole != null);
-            
-            currentRole.ChangeOsVirtualHardDisk(new OSVirtualHardDisk(label.Label,caching));
+
+            currentRole.ChangeOsVirtualHardDisk(new OSVirtualHardDisk(label.Label, caching));
             return this;
         }
 
@@ -126,7 +126,7 @@ namespace Linq2Azure.VirtualMachines
             Contract.Requires(currentRole != null);
             Contract.Requires(currentRole.OSVirtualHardDisk != null);
 
-            currentRole.OSVirtualHardDisk.AssignMedia(operatingSystem.OsName,operatingSystemLocation.Location.ToString());
+            currentRole.OSVirtualHardDisk.AssignMedia(operatingSystem.OsName, operatingSystemLocation.Location.ToString());
 
             currentRole.OsVersion = true;
             return this;
@@ -142,7 +142,7 @@ namespace Linq2Azure.VirtualMachines
             Contract.Requires(currentRole.OSVirtualHardDisk != null);
 
             currentRole.OsVersion = false;
-            currentRole.OSVirtualHardDisk.AssignMedia(image.OsName,operatingSystemDriveBlobStoredAt.Location.ToString());
+            currentRole.OSVirtualHardDisk.AssignMedia(image.OsName, operatingSystemDriveBlobStoredAt.Location.ToString());
             return this;
         }
 
@@ -178,6 +178,15 @@ namespace Linq2Azure.VirtualMachines
         #endregion
 
         #region Network Configuration
+
+        public INetworkConfigurationSetBuilder AddSubnetNames(params string[] subnets)
+        {
+            if (!(subnets != null && subnets.Any()))
+                return this;
+
+            subnets.ToList().ForEach(x => GetCurrentConfigurationSet().SubnetNames.Add(x));
+            return this;
+        }
 
         public INetworkConfigurationSetBuilder AddNetworkConfiguration()
         {
@@ -332,6 +341,6 @@ namespace Linq2Azure.VirtualMachines
 
         #endregion
 
-        
+
     }
 }

@@ -6,6 +6,7 @@ namespace Linq2Azure.VirtualMachines
         public ConfigurationSet()
         {
             InputEndpoints = new List<InputEndpoint>();
+            SubnetNames = new List<string>();
             DisableSshPasswordAuthentication = true;
         }
 
@@ -34,6 +35,8 @@ namespace Linq2Azure.VirtualMachines
 
         [Traverse]
         public List<InputEndpoint> InputEndpoints { get; set; }
+
+        [Traverse]
         public List<string> SubnetNames { get; set; }
         public string StaticVirtualNetworkIPAddress { get; set; }
 
