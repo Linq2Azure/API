@@ -9,6 +9,7 @@
 
         internal AttachedTo(string hostedServiceName, string deploymentName, string roleName)
         {
+
             HostedServiceName = hostedServiceName;
             DeploymentName = deploymentName;
             RoleName = roleName;

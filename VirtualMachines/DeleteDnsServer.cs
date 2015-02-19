@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
 using Linq2Azure.CloudServices;
 
@@ -7,6 +9,9 @@ namespace Linq2Azure.VirtualMachines
     {
         internal async Task AddDnsServerAsync(CloudService cloudService, string deploymentName, DnsServer dnsServer)
         {
+
+            Contract.Requires(!String.IsNullOrEmpty(deploymentName));
+
             var response = await GetRestClient(cloudService, deploymentName, dnsServer.Name ).DeleteAsync();
             await cloudService.Subscription.WaitForOperationCompletionAsync(response);
         }

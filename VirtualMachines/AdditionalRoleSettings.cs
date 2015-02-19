@@ -91,9 +91,5 @@ namespace Linq2Azure.VirtualMachines
         public bool ProvisionGuestAgent { get; set; }
         public string AvailabilitySetName { get; set; }
         public List<ResourceExtensionReference> Extensions { get; set; }
-
-        
     }
-
-
 }

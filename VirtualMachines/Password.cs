@@ -1,10 +1,16 @@
-﻿namespace Linq2Azure.VirtualMachines
+﻿using System;
+using System.Diagnostics.Contracts;
+
+namespace Linq2Azure.VirtualMachines
 {
     public class Password
     {
 
         protected Password(string value)
         {
+
+            Contract.Requires(!String.IsNullOrEmpty(value));
+
             Value = value;
         }
 

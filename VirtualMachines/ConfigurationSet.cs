@@ -31,7 +31,6 @@ namespace Linq2Azure.VirtualMachines
         public string UserName { get; set; }
         public string UserPassword { get; set; }
         public bool DisableSshPasswordAuthentication { get; set; }
-        public SSH SSH { get; set; }
 
         [Traverse]
         public List<InputEndpoint> InputEndpoints { get; set; }
