@@ -4,10 +4,11 @@ using System.Configuration;
 using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net.Http;
+using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
 using Linq2Azure.AffinityGroups;
 using Linq2Azure.CloudServices;
 using Linq2Azure.Locations;
@@ -15,8 +16,8 @@ using Linq2Azure.ReservedIps;
 using Linq2Azure.SqlDatabases;
 using Linq2Azure.StorageAccounts;
 using Linq2Azure.TrafficManagement;
-
 using System.Diagnostics;
+using Linq2Azure.VirtualMachines;
 
 namespace Linq2Azure
 {
@@ -40,7 +41,12 @@ namespace Linq2Azure
         public LatentSequence<AffinityGroup> AffinityGroups { get; private set; }
         public LatentSequence<Location> Locations { get; private set; }
         public LatentSequence<AvailableExtensionImage> ExtensionImages { get; private set; }
+        public LatentSequence<ResourceExtensionReference> ResourceExtensionReferences { get; private set; }
         public LatentSequence<ReservedIp> ReservedIps { get; private set; }
+        public LatentSequence<VMImage> VirtualMachineImages { get; private set; }
+        public LatentSequence<OSImage> OSImages { get; private set; }
+        public LatentSequence<Disk> VirtualMachineDisks { get; private set; }
+        public LatentSequence<Role> VirtualMachines { get; private set; }
 
         HttpClient _coreHttpClient20140601, _coreHttpClient20141001, _databaseHttpClient;
 
@@ -89,7 +95,12 @@ namespace Linq2Azure
             AffinityGroups = new LatentSequence<AffinityGroup>(GetAffinityGroupsAsync);
             Locations = new LatentSequence<Location>(GetLocationsAsync);
             ExtensionImages = new LatentSequence<AvailableExtensionImage>(GetExtensionImagesAsync);
+            ResourceExtensionReferences = new LatentSequence<ResourceExtensionReference>(GetResourceExtensionReferencesAsync);
             ReservedIps = new LatentSequence<ReservedIp>(GetReservedIpsAsync);
+            VirtualMachineImages = new LatentSequence<VMImage>(GetVirtualMachineImagesAsync);
+            OSImages = new LatentSequence<OSImage>(GetOSImagesAsync);
+            VirtualMachineDisks = new LatentSequence<Disk>(GetVirtualMachineDisksAsync);
+            this.VirtualMachines = new LatentSequence<Role>(GetVirtualMachineRolesAsync);
         }
 
         public Task CreateCloudServiceAsync(CloudService service) { return service.CreateAsync(this); }
@@ -98,6 +109,8 @@ namespace Linq2Azure
         public Task CreateStorageAccountAsync(StorageAccount storageAccount) { return storageAccount.CreateAsync(this); }
         public Task CreateAffinityGroupAsync(AffinityGroup affinityGroup) { return affinityGroup.CreateAsync(this); }
         public Task CreateReservedIpAsync(ReservedIp reservedIp) { return reservedIp.CreateAsync(this); }
+        public Task CreateOsImageAsync(OSImage osImage) { return osImage.CreateOsImageAsync(this); }
+        public Task CreateDiskAsync(string label, Disk disk) { return disk.CreateDiskAsync(this, label); }
 
         async Task<CloudService[]> GetCloudServicesAsync()
         {
@@ -114,7 +127,7 @@ namespace Linq2Azure
         async Task<TrafficManagerProfile[]> GetTrafficManagerProfilesAsync()
         {
             var xe = await GetCoreRestClient20140601("services/WATM/profiles").GetXmlAsync();
-            return xe.Elements(XmlNamespaces.WindowsAzure + "Profile").Select(x => new TrafficManagerProfile(x, this)).ToArray();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ServiceTier").Select(x => new TrafficManagerProfile(x, this)).ToArray();
         }
 
         async Task<StorageAccount[]> GetStorageAccountsAsync()
@@ -141,10 +154,45 @@ namespace Linq2Azure
             return xe.Elements(XmlNamespaces.WindowsAzure + "ExtensionImage").Select(x => new AvailableExtensionImage(x, this)).ToArray();
         }
 
+        async Task<ResourceExtensionReference[]> GetResourceExtensionReferencesAsync()
+        {
+            var xe = await GetCoreRestClient20141001("services/resourceextensions").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "ResourceExtension").Select(x => new ResourceExtensionReference(x, this)).ToArray();
+        }
+
         async Task<ReservedIp[]> GetReservedIpsAsync()
         {
             var xe = await GetCoreRestClient20140601("services/networking/reservedips").GetXmlAsync();
             return xe.Elements(XmlNamespaces.WindowsAzure + "ReservedIP").Select(x => new ReservedIp(x, this)).ToArray();
+        }
+
+        private Task<Role[]> GetVirtualMachineRolesAsync()
+        {
+            var results = from cs in CloudServices.AsObservable()
+                          from d in cs.Deployments.AsObservable()
+                          where d.IsVirtualMachineDeployment.Value
+                          from r in d.RoleList
+                          select r;
+
+            return results.ToList().Select(x => x.ToArray()).ToTask();
+        }
+
+        async Task<VMImage[]> GetVirtualMachineImagesAsync()
+        {
+            var xe = await GetDatabaseRestClient("services/vmimages?category=User").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "VMImage").Select(x => new VMImage(x, this)).ToArray();
+        }
+
+        private async Task<OSImage[]> GetOSImagesAsync()
+        {
+            var xe = await GetDatabaseRestClient("services/images").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "OSImage").Select(x => new OSImage(x, this)).ToArray();
+        }
+
+        async Task<Disk[]> GetVirtualMachineDisksAsync()
+        {
+            var xe = await GetDatabaseRestClient("services/disks").GetXmlAsync();
+            return xe.Elements(XmlNamespaces.WindowsAzure + "Disk").Select(x => new Disk(x, this)).ToArray();
         }
 
         internal AzureRestClient GetCoreRestClient20140601(string servicePath)
@@ -205,5 +253,9 @@ namespace Linq2Azure
             if (_coreHttpClient20141001 != null) _coreHttpClient20141001.Dispose();
             if (_databaseHttpClient != null) _databaseHttpClient.Dispose();
         }
+
     }
+
+
+
 }

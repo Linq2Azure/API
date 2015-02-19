@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Xml.Linq;
+using Linq2Azure.VirtualMachines;
 
 namespace Linq2Azure
 {
@@ -11,33 +15,67 @@ namespace Linq2Azure
         /// </summary>
         public static void HydrateObject(this XElement element, XNamespace ns, object target)
         {
+
+            if (element == null) // base case
+                return;
+
+
             foreach (var prop in target.GetType().GetProperties())
-            {                
+            {
                 var child = element.Element(ns + prop.Name);
                 if (child == null)
                 {
                     continue;
                 }
 
-                object value;
-                if (prop.PropertyType == typeof(string))
+                object value = null;
+                if (Attribute.IsDefined(prop, typeof (TraverseAttribute)))
+                {
+                    var instance = Activator.CreateInstance(prop.PropertyType);
+
+                    if (prop.PropertyType.IsGenericType)
+                    {
+                        var genericArguments = prop.PropertyType.GetGenericArguments();
+                        if (typeof(ICollection<>).MakeGenericType(genericArguments).IsAssignableFrom(prop.PropertyType))
+                        {
+                            var subProps = child.Elements();
+                            foreach (var item in subProps)
+                            {
+                                var obj = Activator.CreateInstance(genericArguments.First());
+                                HydrateObject(item, ns, obj);
+                                instance.GetType().GetMethod("Add").Invoke(instance, new object[]{obj});
+                            }
+                        }
+
+                    }
+                    
+               
+
+                    HydrateObject(child,ns,instance);
+                    prop.SetValue(target, instance);
+                    continue;
+                }else if (Attribute.IsDefined(prop, typeof (IgnoreAttribute)))
+                {
+                    continue;
+                }
+                else if  (prop.PropertyType == typeof(string))
                     value = child.Value;
                 else if (prop.PropertyType == typeof(Uri))
                     value = string.IsNullOrWhiteSpace(child.Value) ? null : new Uri(child.Value);
                 else if (prop.PropertyType == typeof(int))
-                    value = (int) child;
+                    value = (int)child;
                 else if (prop.PropertyType == typeof(int?))
-                    value = string.IsNullOrWhiteSpace(child.Value) ? (int?) null : (int) child;
+                    value = string.IsNullOrWhiteSpace(child.Value) ? (int?)null : (int)child;
                 else if (prop.PropertyType == typeof(long))
-                    value = (long) child;
+                    value = (long)child;
                 else if (prop.PropertyType == typeof(long?))
-                    value = string.IsNullOrWhiteSpace(child.Value) ? (long?) null : (long) child;
+                    value = string.IsNullOrWhiteSpace(child.Value) ? (long?)null : (long)child;
                 else if (prop.PropertyType == typeof(decimal?))
-                    value = string.IsNullOrWhiteSpace(child.Value) ? (decimal?) null : (decimal) child;
+                    value = string.IsNullOrWhiteSpace(child.Value) ? (decimal?)null : (decimal)child;
                 else if (prop.PropertyType == typeof(decimal))
-                    value = (decimal) child;
+                    value = (decimal)child;
                 else if (prop.PropertyType == typeof(bool))
-                    value = (bool) child;
+                    value = (bool)child;
                 else if (prop.PropertyType == typeof(Guid))
                     value = new Guid(child.Value);
                 else if (prop.PropertyType == typeof(DateTimeOffset))
@@ -47,7 +85,7 @@ namespace Linq2Azure
                     DateTimeOffset temp;
                     value = DateTimeOffset.TryParse(child.Value, out temp)
                         ? temp
-                        : (DateTimeOffset?) null;
+                        : (DateTimeOffset?)null;
                 }
                 else if (prop.PropertyType.IsEnum)
                     value = Enum.Parse(prop.PropertyType, child.Value, true);
@@ -55,6 +93,7 @@ namespace Linq2Azure
                     continue;
 
                 prop.SetValue(target, value);
+
             }
         }
     }

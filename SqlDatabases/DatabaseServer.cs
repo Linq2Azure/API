@@ -28,13 +28,15 @@ namespace Linq2Azure.SqlDatabases
             Databases = new LatentSequence<Database>(GetDatabasesAsync);
         }
 
-        internal DatabaseServer(XElement xml, Subscription subscription) : this()
+        internal DatabaseServer(XElement xml, Subscription subscription)
+            : this()
         {
             xml.HydrateObject(XmlNamespaces.SqlAzure, this);
             Subscription = subscription;
         }
 
-        public DatabaseServer(string administratorLogin, string location) : this()
+        public DatabaseServer(string administratorLogin, string location)
+            : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(administratorLogin));
             Contract.Requires(!string.IsNullOrWhiteSpace(location));
@@ -60,7 +62,7 @@ namespace Linq2Azure.SqlDatabases
 
             var hc = GetRestClient(subscription);
             var response = await hc.PostAsync(content);
-            var result = XElement.Parse (await response.Content.ReadAsStringAsync());
+            var result = XElement.Parse(await response.Content.ReadAsStringAsync());
             if (result.Name != ns + "ServerName")
                 throw new InvalidOperationException("Unexpected result creating database server: expected <ServerName>, got <" + result.Name + ">");
             Name = result.Value;
@@ -110,6 +112,29 @@ namespace Linq2Azure.SqlDatabases
             Contract.Requires(Subscription != null);
             await GetRestClient("/" + Name).DeleteAsync();
             Subscription = null;
+        }
+
+        public async Task<Database> CreateDatabase(string databaseName, ServiceTier serviceTier = ServiceTier.Basic, string collationName = "SQL_LATIN1_GENERAL_CP1_CI_AS", long maximumBytes = 2147483648)
+        {
+            Contract.Requires(Subscription != null);
+            Contract.Requires(!String.IsNullOrEmpty(databaseName));
+
+            var tier = new Tier(serviceTier);
+            
+            var ns = XmlNamespaces.WindowsAzure;
+            var content = new XElement(ns + "ServiceResource",
+                new XElement(ns + "Name", databaseName),
+                new XElement(ns + "Edition", tier.Edition.ToString()),
+                new XElement(ns + "CollationName", collationName),
+                new XElement(ns + "MaxSizeBytes", maximumBytes));
+
+            if(tier.PerformanceLevel != Guid.Empty)
+                content.Add(new XElement(ns + "ServiceObjectiveId", tier.PerformanceLevel) );
+
+
+            var response = await GetRestClient("/" + Name + "/databases").PostAsync(content);
+            await Subscription.WaitForOperationCompletionAsync(response);
+            return new Database(XElement.Parse(await response.Content.ReadAsStringAsync()), this);
         }
 
         async Task<FirewallRule[]> GetFirewallRulesAsync()
