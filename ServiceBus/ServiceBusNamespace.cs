@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
@@ -29,15 +30,22 @@ namespace Linq2Azure.ServiceBus
         public string NamespaceType { get; set; }
 
         public Subscription Subscription { get; private set; }
+        public LatentSequence<QueueDescription> Queues { get; private set; }
 
+        public ServiceBusNamespace()
+        {
+            Queues = new LatentSequence<QueueDescription>(GetQueuesAsync);
+        }
 
         public ServiceBusNamespace(string name, string region)
+            : this()
         {
             Name = name;
             Region = region;
         }
 
         public ServiceBusNamespace(XElement element, Subscription subscription)
+            : this()
         {
             Contract.Requires(element != null);
             Contract.Requires(subscription != null);
@@ -60,10 +68,27 @@ namespace Linq2Azure.ServiceBus
             var hc = subscription.GetCoreRestClient20140601("/services/ServiceBus/Namespaces/");
             var response = await hc.PostAsync(content);
             var result = await response.Content.ReadAsStringAsync();
-            Trace.TraceInformation("result recieved : {0}", result);
             var element = XElement.Parse(result);
 
             PopulatedSelf(subscription, element);
+        }
+
+        public async Task DeleteAsync()
+        {
+            Contract.Requires(Subscription != null);
+            await Subscription.GetCoreRestClient20140601("/services/ServiceBus/Namespaces/" + Name).DeleteAsync();
+            Subscription = null;
+        }
+
+        async Task<QueueDescription[]> GetQueuesAsync()
+        {
+            var response =  Subscription.GetCoreRestClient20140601("services/ServiceBus/Namespaces/" + Name + "/Queues/");
+            var xe = await response.GetXmlAsync();
+            return xe.Element(XmlNamespaces.Atom + "entry")
+	                 .Elements(XmlNamespaces.Atom + "content")
+	                 .Elements(XmlNamespaces.ServiceBusConfig + "QueueDescription")
+                     .Select(x => new QueueDescription(this, x))
+                     .ToArray();
         }
 
         private void PopulatedSelf(Subscription subscription, XElement element)
@@ -79,13 +104,6 @@ namespace Linq2Azure.ServiceBus
                 UpdatedAt = null;
             }
             Subscription = subscription;
-        }
-
-        public async Task DeleteAsync()
-        {
-            Contract.Requires(Subscription != null);
-            await Subscription.GetCoreRestClient20140601("/services/ServiceBus/Namespaces/" + Name).DeleteAsync();
-            Subscription = null;
         }
     }
 }
