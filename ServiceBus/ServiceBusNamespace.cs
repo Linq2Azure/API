@@ -9,6 +9,7 @@ namespace Linq2Azure.ServiceBus
 {
     /// <summary>
     /// Service Bus Namespace
+    /// https://msdn.microsoft.com/en-US/library/azure/jj873988.aspx
     /// </summary>
     public class ServiceBusNamespace
     {

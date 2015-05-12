@@ -11,9 +11,21 @@ namespace Linq2Azure.StorageAccounts
 {
     public enum StorageAccountType
     {
+        /// <summary>
+        /// Locally redundant storage
+        /// </summary>
         Standard_LRS = 0,
+        /// <summary>
+        /// Zone-redundant storage
+        /// </summary>
         Standard_ZRS = 1,
+        /// <summary>
+        /// Geo-redundant storage
+        /// </summary>
         Standard_GRS = 2,
+        /// <summary>
+        /// Read-access geo-redundant storage
+        /// </summary>
         Standard_RAGRS = 3
     }
     public class StorageAccount

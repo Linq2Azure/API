@@ -80,6 +80,7 @@
     <Compile Include="AffinityGroupTests.cs" />
     <Compile Include="DatabaseTests.cs" />
     <Compile Include="FirewallTests.cs" />
+    <Compile Include="ServiceBusTests.cs" />
     <Compile Include="StorageAccountKeysTests.cs" />
     <Compile Include="StorageAccountTests.cs" />
     <Compile Include="SubscriptionTests.cs" />
