@@ -113,6 +113,8 @@
     <Compile Include="CloudServices\LocationType.cs" />
     <Compile Include="Locations\Location.cs" />
     <Compile Include="ReservedIps\ReservedIp.cs" />
+    <Compile Include="ServiceBus\QueueDescription.cs" />
+    <Compile Include="ServiceBus\ServiceBusNamespace.cs" />
     <Compile Include="SqlDatabases\Database.cs" />
     <Compile Include="CloudServices\DeploymentType.cs" />
     <Compile Include="SqlDatabases\DatabaseServer.cs" />
