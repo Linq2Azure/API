@@ -11,47 +11,63 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace IntegrationTests
 {
     [TestClass]
-    public class DatabaseTests : IDisposable
+    public class DatabaseTests
     {
         public const string Password = "gj3eowl%5fi:edf";
 
         public readonly Subscription Subscription = TestConstants.Subscription;
         public readonly DatabaseServer DatabaseServer = new DatabaseServer("testadmin", "West US");
+        public readonly string DatabaseName = "TestDB";
 
-        public DatabaseTests()
+        [TestInitialize]
+        public void Setup()
         {
-            Debug.WriteLine("Creating database server...");
-            Subscription.CreateDatabaseServerAsync(DatabaseServer, Password).Wait();
+            SetupImpl().Wait();
         }
 
+        private async Task SetupImpl()
+        {
+            await Subscription.CreateDatabaseServerAsync(DatabaseServer, Password);
+        }
+      
         [TestMethod]
-        public async Task CanGetDatabases()
+        public async Task CanCreateDatabases()
         {
-            var database = (await Subscription.DatabaseServers.AsTask()).Single(d => d.Name == DatabaseServer.Name);
+            await DatabaseServer.CreateDatabase(DatabaseName, ServiceTier.StandardS0);
 
-            Assert.AreNotEqual(0, database.Databases.AsArray().Length);
+            var databaseServer = (await Subscription.DatabaseServers.AsTask()).Single(d => d.Name == DatabaseServer.Name);
+            var database = (await databaseServer.Databases.AsTask()).SingleOrDefault(x => x.Name == DatabaseName);
+
+            Assert.IsNotNull(database);
         }
 
-        public void Dispose()
+        [TestCleanup]
+        public void Teardown()
         {
-            if (DatabaseServer.Subscription == null)
-            {
-                return;
-            }
-            Debug.WriteLine("Dropping server...");
-            DatabaseServer.DropAsync().Wait();
-
-            // Verify the deletion only if we're testing the database server itself.
-            if (GetType() == typeof(DatabaseServerTests))
-            {
-                VerifyDeletion();
-            }
+            TeardownImpl().Wait();
         }
 
-        private void VerifyDeletion()
+        private async Task TeardownImpl()
         {
-            Debug.WriteLine("Verifying database server deletion...");
-            Assert.IsNull(Subscription.DatabaseServers.AsArray().SingleOrDefault(d => d.Name == DatabaseServer.Name));
+            await Task.Run(async () =>
+            {
+                if (DatabaseServer.Subscription == null)
+                {
+                    return;
+                }
+
+                try
+                {
+                    Debug.WriteLine("Dropping server...");
+                    await DatabaseServer.DropAsync();
+                    var deletedServer = (await Subscription.DatabaseServers.AsTask()).SingleOrDefault(d => d.Name == DatabaseServer.Name);
+                    Assert.IsNull(deletedServer);
+                }
+                catch (Exception e)
+                {
+                    Debug.WriteLine(e);
+                }
+            });
         }
     }
 }
