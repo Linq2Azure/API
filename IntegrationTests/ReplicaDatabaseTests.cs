@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Linq2Azure;
 using Linq2Azure.SqlDatabases;
@@ -39,12 +40,7 @@ namespace IntegrationTests
         }
 
         [TestMethod]
-        public void ReplicationWorks()
-        {
-            Task.WaitAll(CanCreateLiveReplica(), CanCreateOfflineReplica(), CanCreateCopy());
-        }
-
-        private async Task CanCreateLiveReplica()
+        public async Task CanCreateLiveReplica()
         {
             const string databaseName = "LiveReplicaTest";
             var database = await SoutheastAsiaDatabaseServer.CreateDatabase(databaseName, ServiceTier.PremiumS1);
@@ -56,7 +52,8 @@ namespace IntegrationTests
             Assert.IsNotNull(replica);
         }
 
-        private async Task CanCreateCopy()
+        [TestMethod]
+        public async Task CanCreateCopy()
         {
             const string databaseName = "CopyTest";
             const string copyDatabaseName = "CopyTestCopy";
@@ -68,7 +65,8 @@ namespace IntegrationTests
             Assert.IsNotNull(databaseCopy);
         }
 
-        private async Task CanCreateOfflineReplica()
+        [TestMethod]
+        public async Task CanCreateOfflineReplica()
         {
             const string databaseName = "OfflineReplicaTest";
             var database = await SoutheastAsiaDatabaseServer.CreateDatabase(databaseName, ServiceTier.PremiumS1);
@@ -78,6 +76,89 @@ namespace IntegrationTests
             var replicaDatabase = (await EastAsiaDatabaseServer.Databases.AsTask()).Single(x => x.Name == databaseName);
             var replica = (await replicaDatabase.Replicas.AsTask()).SingleOrDefault(x => x.DestinationDatabaseName == databaseName);
             Assert.IsNotNull(replica);
+        }
+
+        [TestMethod]
+        public async Task CanTerminateReplicationOnPrimaryDatabaseIfNotForced()
+        {
+            const string databaseName = "TerminateReplicationPrimaryDatabaseNotForced";
+            var database = await SoutheastAsiaDatabaseServer.CreateDatabase(databaseName, ServiceTier.PremiumS1);
+
+            await database.CreateLiveReplica(AustraliaDatabaseServer);
+
+            var replica = (await database.Replicas.AsTask()).SingleOrDefault();
+            Assert.IsNotNull(replica);
+
+            Thread.Sleep(120000);
+            await replica.Stop(false);
+
+            var replicaNew = (await database.Replicas.AsTask()).SingleOrDefault();
+            Assert.IsNull(replicaNew);
+        }
+
+        [TestMethod]
+        public async Task CanNotTerminateReplicationOnSecondaryDatabaseIfNotForced()
+        {
+            const string databaseName = "TerminateReplicationSecondaryDatabaseNotForced";
+            var database = await SoutheastAsiaDatabaseServer.CreateDatabase(databaseName, ServiceTier.PremiumS1);
+
+            await database.CreateLiveReplica(AustraliaDatabaseServer);
+            var sourceReplica = (await database.Replicas.AsTask()).SingleOrDefault(x => x.DestinationDatabaseName == databaseName);
+            Assert.IsNotNull(sourceReplica);
+
+            var replicaDatabase = (await AustraliaDatabaseServer.Databases.AsTask()).Single(x => x.Name == databaseName);
+            var destReplica = (await replicaDatabase.Replicas.AsTask()).SingleOrDefault(x => x.DestinationDatabaseName == databaseName);
+            Assert.IsNotNull(destReplica);
+
+            var throwsAzureRestException = false;
+            try
+            {
+                await destReplica.Stop(false);
+                Assert.Fail("AzureRestException expected to be thrown");
+            }
+            catch (AzureRestException e)
+            {
+                throwsAzureRestException = true;
+            }
+
+            Assert.IsTrue(throwsAzureRestException);
+        }
+
+        [TestMethod]
+        public async Task CanTerminateReplicationOnPrimaryDatabaseIfForced()
+        {
+            const string databaseName = "TerminateReplicationPrimaryDatabaseForced";
+            var database = await SoutheastAsiaDatabaseServer.CreateDatabase(databaseName, ServiceTier.PremiumS1);
+
+            await database.CreateLiveReplica(AustraliaDatabaseServer);
+
+            var replica = (await database.Replicas.AsTask()).SingleOrDefault();
+            Assert.IsNotNull(replica);
+
+            await replica.Stop(true);
+
+            var replicaNew = (await database.Replicas.AsTask()).SingleOrDefault();
+            Assert.IsNull(replicaNew);
+        }
+
+        [TestMethod]
+        public async Task CanTerminateReplicationOnSecondaryDatabaseIfForced()
+        {
+            const string databaseName = "TerminateReplicationSecondaryDatabaseForced";
+            var database = await SoutheastAsiaDatabaseServer.CreateDatabase(databaseName, ServiceTier.PremiumS1);
+
+            await database.CreateLiveReplica(AustraliaDatabaseServer);
+            var sourceReplica = (await database.Replicas.AsTask()).SingleOrDefault(x => x.DestinationDatabaseName == databaseName);
+            Assert.IsNotNull(sourceReplica);
+
+            var replicaDatabase = (await AustraliaDatabaseServer.Databases.AsTask()).Single(x => x.Name == databaseName);
+            var destReplica = (await replicaDatabase.Replicas.AsTask()).SingleOrDefault(x => x.DestinationDatabaseName == databaseName);
+            Assert.IsNotNull(destReplica);
+
+            await destReplica.Stop(true);
+
+            var replicaNew = (await database.Replicas.AsTask()).SingleOrDefault();
+            Assert.IsNull(replicaNew);
         }
 
         [TestCleanup]
@@ -113,8 +194,7 @@ namespace IntegrationTests
             var allReplicas = databases.SelectMany(d => d.Replicas.AsArray()).Where(r => r.IsContinuous).ToArray();
             if (allReplicas.Any())
             {
-                await Task.WhenAll(allReplicas.Select(x => x.SetForcedTerminationAllowed(true)));
-                await Task.WhenAll(allReplicas.Select(x => x.Stop()));
+                await Task.WhenAll(allReplicas.Select(x => x.Stop(true)));
             }
         }
     }

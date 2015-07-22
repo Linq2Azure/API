@@ -35,24 +35,29 @@ namespace Linq2Azure.SqlDatabases
         public bool IsLocalDatabaseReplicationTarget { get; private set; }
         public bool IsInterlinkConnected { get; private set; }
 
-        public async Task<Database> Stop()
+        public async Task Stop(bool isForcedTerminate)
         {
             var client = GetRestClient(Database.DatabaseServer, Database.Name);
-            var response = await client.DeleteAsync();
-            await Database.DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
-            return Database;
+
+            await SendIsForcedTerminateUpdate(client, isForcedTerminate);
+            await SendDelete(client);
         }
 
-        public async Task<Database> SetForcedTerminationAllowed(bool forced)
+        private async Task SendIsForcedTerminateUpdate(AzureRestClient client, bool isForcedTerminate)
         {
             var ns = XmlNamespaces.WindowsAzure;
             var content = new XElement(ns + "ServiceResource",
-                new XElement(ns + "IsForcedTerminate", forced)
+                new XElement(ns + "IsForcedTerminate", isForcedTerminate)
                 );
-            var client = GetRestClient(Database.DatabaseServer, Database.Name);
+
             var response = await client.PutAsync(content);
             await Database.DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
-            return Database;
+        }
+
+        private async Task SendDelete(AzureRestClient client)
+        {
+            var response = await client.DeleteAsync();
+            await Database.DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
         }
 
         private AzureRestClient GetRestClient(DatabaseServer server, string databaseName)

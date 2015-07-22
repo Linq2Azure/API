@@ -81,6 +81,7 @@ namespace Linq2Azure.SqlDatabases
 
             var restClient = GetRestClient();
             var response = await restClient.PostAsync(content);
+            await DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
 
             return new Replica(XElement.Parse(await response.Content.ReadAsStringAsync()), this);
 
@@ -90,7 +91,9 @@ namespace Linq2Azure.SqlDatabases
         {
             var servicePath = "services/sqlservers/servers/" + DatabaseServer.Name + "/databases/" + Name;
             var client = DatabaseServer.Subscription.GetDatabaseRestClient(servicePath);
-            await client.DeleteAsync();
+            var response = await client.DeleteAsync();
+            await DatabaseServer.Subscription.WaitForOperationCompletionAsync(response);
+
             return DatabaseServer;
         }
 
