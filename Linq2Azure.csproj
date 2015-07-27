@@ -116,10 +116,16 @@
     <Compile Include="SqlDatabases\Database.cs" />
     <Compile Include="CloudServices\DeploymentType.cs" />
     <Compile Include="SqlDatabases\DatabaseServer.cs" />
+    <Compile Include="SqlDatabases\Edition.cs" />
+    <Compile Include="SqlDatabases\EnumExtensions.cs" />
     <Compile Include="SqlDatabases\FirewallRule.cs" />
     <Compile Include="LatentSequence.cs" />
     <Compile Include="CloudServices\RoleInstance.cs" />
     <Compile Include="CloudServices\ServiceCertificate.cs" />
+    <Compile Include="SqlDatabases\Replica.cs" />
+    <Compile Include="SqlDatabases\ServiceTier.cs" />
+    <Compile Include="SqlDatabases\ServiceTierMetadataAttribute.cs" />
+    <Compile Include="SqlDatabases\Tier.cs" />
     <Compile Include="StorageAccounts\KeyType.cs" />
     <Compile Include="StorageAccounts\StorageAccount.cs" />
     <Compile Include="StorageAccounts\StorageAccountKey.cs" />
