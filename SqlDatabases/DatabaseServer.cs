@@ -34,13 +34,14 @@ namespace Linq2Azure.SqlDatabases
             Subscription = subscription;
         }
 
-        public DatabaseServer(string administratorLogin, string location) : this()
+        public DatabaseServer(string administratorLogin, string location, string version = "12.0") : this()
         {
             Contract.Requires(!string.IsNullOrWhiteSpace(administratorLogin));
             Contract.Requires(!string.IsNullOrWhiteSpace(location));
 
             AdministratorLogin = administratorLogin;
             Location = location;
+            Version = version;
         }
 
         internal async Task CreateAsync(Subscription subscription, string adminPassword)
@@ -55,7 +56,8 @@ namespace Linq2Azure.SqlDatabases
             var content = new XElement(ns + "Server",
                 new XElement(ns + "AdministratorLogin", AdministratorLogin),
                 new XElement(ns + "AdministratorLoginPassword", adminPassword),
-                new XElement(ns + "Location", Location)
+                new XElement(ns + "Location", Location),
+                new XElement(ns + "Version", Version)
                 );
 
             var hc = GetRestClient(subscription);
@@ -150,6 +152,5 @@ namespace Linq2Azure.SqlDatabases
             if (!string.IsNullOrEmpty(pathSuffix)) servicePath += pathSuffix;
             return subscription.GetDatabaseRestClient(servicePath);
         }
-
     }
 }
