@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
     <metadata>
         <id>Linq2Azure</id>
-        <version>1.1.0.0</version>
+        <version>1.6.0.0</version>
         <title>Linq2Azure</title>
         <authors>Eric Winkler,James Miles,Joe Albahari,Colin Scott,Rhys Campbell</authors>
         <owners>Copyright (C) 2013-2014 Cash Converters International Pty. Ltd.</owners>
